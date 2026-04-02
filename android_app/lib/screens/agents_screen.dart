@@ -1,5 +1,6 @@
 // agents_screen.dart — Agents overview and management
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/neon_theme.dart';
@@ -170,8 +171,6 @@ class _NetworkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    import 'dart:math' as math;
-
     final colors = [NeonColors.cyan, NeonColors.purple, NeonColors.green, NeonColors.orange];
     final n = agents.length.clamp(1, 4);
     final cx = size.width / 2;
