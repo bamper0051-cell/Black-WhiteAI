@@ -112,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _InfoRow('Пользователь', _username.isNotEmpty ? _username : '—'),
                   _InfoRow('Сессия',
                       _sessionToken.isNotEmpty
-                          ? '${_sessionToken.substring(0, 8)}...'
+                          ? '${_sessionToken.length >= 8 ? _sessionToken.substring(0, 8) : _sessionToken}...'
                           : '—'),
                 ],
               ),

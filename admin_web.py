@@ -3,7 +3,7 @@ admin_web.py — REST API + Web Panel для АВТОМУВИ
 Порт: ADMIN_WEB_PORT (default 8080)
 Auth: username/password (session token) или X-Admin-Token header / ?token=...
 """
-import os, sys, json, time, threading, subprocess, platform, hashlib, secrets, sqlite3
+import os, sys, json, time, threading, subprocess, platform, secrets, sqlite3
 from datetime import datetime
 from functools import wraps
 from flask import Flask, request, jsonify, send_file
@@ -34,8 +34,15 @@ def _init_panel_db():
 
 _init_panel_db()
 
-def _hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+def _hash_password(password: str) -> bytes:
+    import bcrypt
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+def _check_password(password: str, pw_hash) -> bool:
+    import bcrypt
+    if isinstance(pw_hash, str):
+        pw_hash = pw_hash.encode('utf-8')
+    return bcrypt.checkpw(password.encode('utf-8'), pw_hash)
 
 def _panel_user_exists(username: str) -> bool:
     with sqlite3.connect(_PANEL_DB) as con:
@@ -49,7 +56,7 @@ def _panel_any_user() -> bool:
 
 def _panel_register(username: str, password: str) -> str:
     """Register user and return session token."""
-    pw_hash = _hash_password(password)
+    pw_hash = _hash_password(password).decode('utf-8')
     token = secrets.token_hex(32)
     with sqlite3.connect(_PANEL_DB) as con:
         con.execute('INSERT INTO panel_users (username, password_hash, created_at) VALUES (?,?,?)',
@@ -61,11 +68,10 @@ def _panel_register(username: str, password: str) -> str:
 
 def _panel_login(username: str, password: str):
     """Returns session token on success, None on failure."""
-    pw_hash = _hash_password(password)
     with sqlite3.connect(_PANEL_DB) as con:
-        row = con.execute('SELECT 1 FROM panel_users WHERE username=? AND password_hash=?',
-                          (username, pw_hash)).fetchone()
-    if not row:
+        row = con.execute('SELECT password_hash FROM panel_users WHERE username=?',
+                          (username,)).fetchone()
+    if not row or not _check_password(password, row[0]):
         return None
     token = secrets.token_hex(32)
     with sqlite3.connect(_PANEL_DB) as con:
@@ -185,8 +191,8 @@ def api_auth_register():
     try:
         token = _panel_register(username, password)
         return jsonify({'ok': True, 'token': token, 'username': username})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        return jsonify({'error': 'Registration failed. Please try again.'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
