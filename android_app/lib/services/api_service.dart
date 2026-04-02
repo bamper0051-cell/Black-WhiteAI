@@ -39,6 +39,18 @@ class ApiService {
     return _handle(response);
   }
 
+  Future<dynamic> _postNoAuth(String path, Map<String, dynamic> body) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final response = await http
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 10));
+    return _handle(response);
+  }
+
   dynamic _handle(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return {};
@@ -59,6 +71,16 @@ class ApiService {
       final data = await _get('/api/health');
       return data['status'] == 'ok';
     } catch (_) {
+      // Fallback to /health
+      try {
+        final uri = Uri.parse('$baseUrl/health');
+        final response =
+            await http.get(uri).timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          return data['status'] == 'ok';
+        }
+      } catch (_) {}
       return false;
     }
   }
@@ -66,6 +88,45 @@ class ApiService {
   Future<SystemStats> getStats() async {
     final data = await _get('/api/stats');
     return SystemStats.fromJson(data);
+  }
+
+  // ─── App Auth (login / register) ──────────────────────────────────────────
+
+  /// Register a new user. Returns [AppAuthResult] with token and username.
+  Future<AppAuthResult> register(String username, String password) async {
+    final data = await _postNoAuth('/api/app/register', {
+      'username': username,
+      'password': password,
+    });
+    if (data['ok'] != true) {
+      throw ApiException(400, data['error'] ?? 'Registration failed');
+    }
+    return AppAuthResult(
+      token: data['token'] as String,
+      username: data['username'] as String,
+    );
+  }
+
+  /// Login an existing user. Returns [AppAuthResult] with token and username.
+  Future<AppAuthResult> login(String username, String password) async {
+    final data = await _postNoAuth('/api/app/login', {
+      'username': username,
+      'password': password,
+    });
+    if (data['ok'] != true) {
+      throw ApiException(401, data['error'] ?? 'Login failed');
+    }
+    return AppAuthResult(
+      token: data['token'] as String,
+      username: data['username'] as String,
+    );
+  }
+
+  /// Logout — invalidate the current session token.
+  Future<void> logout() async {
+    try {
+      await _post('/api/app/logout', {});
+    } catch (_) {}
   }
 
   // ─── Tasks ────────────────────────────────────────────────────────────────
@@ -188,4 +249,11 @@ class ApiService {
       return [];
     }
   }
+}
+
+/// Result returned by [ApiService.login] and [ApiService.register].
+class AppAuthResult {
+  final String token;
+  final String username;
+  const AppAuthResult({required this.token, required this.username});
 }
