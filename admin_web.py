@@ -3,7 +3,7 @@ admin_web.py — REST API + Web Panel для АВТОМУВИ
 Порт: ADMIN_WEB_PORT (default 8080)
 Auth: X-Admin-Token header или ?token=...
 """
-import os, sys, json, time, threading, subprocess, platform, sqlite3, uuid, hashlib
+import os, sys, json, time, threading, subprocess, platform, sqlite3, uuid
 from datetime import datetime
 from functools import wraps
 from flask import Flask, request, jsonify, send_file
@@ -106,8 +106,8 @@ def api_health():
         except Exception:
             db_ok = False
         return jsonify({'status': 'ok' if db_ok else 'degraded'}), 200 if db_ok else 503
-    except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 503
+    except Exception:
+        return jsonify({'status': 'error'}), 503
 
 # ── App-User auth (mobile login / register) ───────────────────────────────────
 _APP_USERS_DB = os.path.join(BASE, 'app_users.db')
@@ -134,8 +134,17 @@ def _get_app_db():
     return conn
 
 def _hash_password(password: str) -> str:
-    """SHA-256 hash of password."""
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    """Bcrypt hash of password (auto-salted)."""
+    import bcrypt as _bcrypt
+    return _bcrypt.hashpw(password.encode('utf-8'), _bcrypt.gensalt()).decode('utf-8')
+
+def _check_password(password: str, pass_hash: str) -> bool:
+    """Verify password against a bcrypt hash."""
+    import bcrypt as _bcrypt
+    try:
+        return _bcrypt.checkpw(password.encode('utf-8'), pass_hash.encode('utf-8'))
+    except Exception:
+        return False
 
 @app.route('/api/app/register', methods=['POST'])
 def api_app_register():
@@ -171,8 +180,8 @@ def api_app_register():
             )
             conn.commit()
         return jsonify({'ok': True, 'token': token, 'username': username}), 201
-    except Exception as e:
-        return jsonify({'ok': False, 'error': str(e)}), 500
+    except Exception:
+        return jsonify({'ok': False, 'error': 'registration failed'}), 500
 
 @app.route('/api/app/login', methods=['POST'])
 def api_app_login():
@@ -185,10 +194,10 @@ def api_app_login():
     try:
         with _get_app_db() as conn:
             row = conn.execute(
-                'SELECT id FROM app_users WHERE username=? AND pass_hash=?',
-                (username, _hash_password(password))
+                'SELECT id, pass_hash FROM app_users WHERE username=?',
+                (username,)
             ).fetchone()
-            if not row:
+            if not row or not _check_password(password, row[1]):
                 return jsonify({'ok': False, 'error': 'invalid username or password'}), 401
             user_id = row[0]
             token = str(uuid.uuid4())
@@ -198,13 +207,16 @@ def api_app_login():
             )
             conn.commit()
         return jsonify({'ok': True, 'token': token, 'username': username})
-    except Exception as e:
-        return jsonify({'ok': False, 'error': str(e)}), 500
+    except Exception:
+        return jsonify({'ok': False, 'error': 'login failed'}), 500
 
 @app.route('/api/app/logout', methods=['POST'])
 def api_app_logout():
-    """Invalidate a session token."""
+    """Invalidate a session token (from Authorization header or request body)."""
     token = (request.headers.get('Authorization') or '').replace('Bearer ', '').strip()
+    if not token:
+        data = request.get_json(silent=True) or {}
+        token = (data.get('token') or '').strip()
     if token:
         try:
             with _get_app_db() as conn:

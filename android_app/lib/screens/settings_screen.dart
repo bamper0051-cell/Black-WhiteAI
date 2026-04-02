@@ -55,11 +55,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString('base_url') ?? '';
+    final adminToken = prefs.getString('admin_token') ?? '';
     final appToken = prefs.getString('app_token') ?? '';
     if (baseUrl.isNotEmpty && appToken.isNotEmpty) {
       try {
-        final api = ApiService(baseUrl: baseUrl, adminToken: appToken);
-        await api.logout();
+        final api = ApiService(baseUrl: baseUrl, adminToken: adminToken);
+        await api.logout(appToken);
       } catch (_) {}
     }
     await prefs.remove('app_token');

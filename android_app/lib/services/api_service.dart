@@ -122,10 +122,10 @@ class ApiService {
     );
   }
 
-  /// Logout — invalidate the current session token.
-  Future<void> logout() async {
+  /// Logout — invalidate the current session token by sending it in the body.
+  Future<void> logout(String appToken) async {
     try {
-      await _post('/api/app/logout', {});
+      await _postNoAuth('/api/app/logout', {'token': appToken});
     } catch (_) {}
   }
 
