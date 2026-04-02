@@ -3,7 +3,7 @@ admin_web.py — REST API + Web Panel для АВТОМУВИ
 Порт: ADMIN_WEB_PORT (default 8080)
 Auth: X-Admin-Token header или ?token=...
 """
-import os, sys, json, time, threading, subprocess, platform
+import os, sys, json, time, threading, subprocess, platform, sqlite3, uuid
 from datetime import datetime
 from functools import wraps
 from flask import Flask, request, jsonify, send_file
@@ -94,6 +94,139 @@ def health():
         }), 200 if db_ok else 503
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 503
+
+# ── API health alias (for mobile app) ────────────────────────────────────────
+@app.route('/api/health')
+def api_health():
+    try:
+        db_ok = True
+        try:
+            with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
+                c.execute('SELECT 1')
+        except Exception:
+            db_ok = False
+        return jsonify({'status': 'ok' if db_ok else 'degraded'}), 200 if db_ok else 503
+    except Exception:
+        return jsonify({'status': 'error'}), 503
+
+# ── App-User auth (mobile login / register) ───────────────────────────────────
+_APP_USERS_DB = os.path.join(BASE, 'app_users.db')
+
+def _get_app_db():
+    """Return connection to app_users SQLite DB (auto-creates tables)."""
+    conn = sqlite3.connect(_APP_USERS_DB)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS app_users (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            username   TEXT    UNIQUE NOT NULL,
+            pass_hash  TEXT    NOT NULL,
+            created_at REAL    NOT NULL
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS app_sessions (
+            token      TEXT PRIMARY KEY,
+            user_id    INTEGER NOT NULL,
+            created_at REAL    NOT NULL
+        )
+    ''')
+    conn.commit()
+    return conn
+
+def _hash_password(password: str) -> str:
+    """Bcrypt hash of password (auto-salted)."""
+    import bcrypt as _bcrypt
+    return _bcrypt.hashpw(password.encode('utf-8'), _bcrypt.gensalt()).decode('utf-8')
+
+def _check_password(password: str, pass_hash: str) -> bool:
+    """Verify password against a bcrypt hash."""
+    import bcrypt as _bcrypt
+    try:
+        return _bcrypt.checkpw(password.encode('utf-8'), pass_hash.encode('utf-8'))
+    except Exception:
+        return False
+
+@app.route('/api/app/register', methods=['POST'])
+def api_app_register():
+    """Register a new mobile-app user (username + password)."""
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+    if not username or not password:
+        return jsonify({'ok': False, 'error': 'username and password required'}), 400
+    if len(username) < 3:
+        return jsonify({'ok': False, 'error': 'username too short (min 3 chars)'}), 400
+    if len(password) < 4:
+        return jsonify({'ok': False, 'error': 'password too short (min 4 chars)'}), 400
+    try:
+        with _get_app_db() as conn:
+            existing = conn.execute(
+                'SELECT id FROM app_users WHERE username=?', (username,)
+            ).fetchone()
+            if existing:
+                return jsonify({'ok': False, 'error': 'username already taken'}), 409
+            conn.execute(
+                'INSERT INTO app_users (username, pass_hash, created_at) VALUES (?,?,?)',
+                (username, _hash_password(password), time.time())
+            )
+            conn.commit()
+            user_id = conn.execute(
+                'SELECT id FROM app_users WHERE username=?', (username,)
+            ).fetchone()[0]
+            token = str(uuid.uuid4())
+            conn.execute(
+                'INSERT INTO app_sessions (token, user_id, created_at) VALUES (?,?,?)',
+                (token, user_id, time.time())
+            )
+            conn.commit()
+        return jsonify({'ok': True, 'token': token, 'username': username}), 201
+    except Exception:
+        import traceback; traceback.print_exc()
+        return jsonify({'ok': False, 'error': 'registration failed'}), 500
+
+@app.route('/api/app/login', methods=['POST'])
+def api_app_login():
+    """Login with username + password → returns session token."""
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+    if not username or not password:
+        return jsonify({'ok': False, 'error': 'username and password required'}), 400
+    try:
+        with _get_app_db() as conn:
+            row = conn.execute(
+                'SELECT id, pass_hash FROM app_users WHERE username=?',
+                (username,)
+            ).fetchone()
+            if not row or not _check_password(password, row[1]):
+                return jsonify({'ok': False, 'error': 'invalid username or password'}), 401
+            user_id = row[0]
+            token = str(uuid.uuid4())
+            conn.execute(
+                'INSERT INTO app_sessions (token, user_id, created_at) VALUES (?,?,?)',
+                (token, user_id, time.time())
+            )
+            conn.commit()
+        return jsonify({'ok': True, 'token': token, 'username': username})
+    except Exception:
+        import traceback; traceback.print_exc()
+        return jsonify({'ok': False, 'error': 'login failed'}), 500
+
+@app.route('/api/app/logout', methods=['POST'])
+def api_app_logout():
+    """Invalidate a session token (from Authorization header or request body)."""
+    token = (request.headers.get('Authorization') or '').replace('Bearer ', '').strip()
+    if not token:
+        data = request.get_json(silent=True) or {}
+        token = (data.get('token') or '').strip()
+    if token:
+        try:
+            with _get_app_db() as conn:
+                conn.execute('DELETE FROM app_sessions WHERE token=?', (token,))
+                conn.commit()
+        except Exception:
+            pass
+    return jsonify({'ok': True})
 
 # ── Status ────────────────────────────────────────────────────────────────────
 @app.route('/api/status')

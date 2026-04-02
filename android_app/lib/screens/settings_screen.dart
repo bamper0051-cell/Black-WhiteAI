@@ -7,7 +7,9 @@ import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../widgets/neon_text_field.dart';
 import '../widgets/neon_card.dart';
+import '../services/api_service.dart';
 import 'setup_screen.dart';
+import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _tokenCtrl = TextEditingController();
   bool _saving = false;
   bool _obscureToken = true;
+  String _username = '';
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _urlCtrl.text = prefs.getString('base_url') ?? '';
       _tokenCtrl.text = prefs.getString('admin_token') ?? '';
+      _username = prefs.getString('app_username') ?? '';
     });
   }
 
@@ -48,10 +52,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final baseUrl = prefs.getString('base_url') ?? '';
+    final adminToken = prefs.getString('admin_token') ?? '';
+    final appToken = prefs.getString('app_token') ?? '';
+    if (baseUrl.isNotEmpty && appToken.isNotEmpty) {
+      try {
+        final api = ApiService(baseUrl: baseUrl, adminToken: adminToken);
+        await api.logout(appToken);
+      } catch (_) {}
+    }
+    await prefs.remove('app_token');
+    await prefs.remove('app_username');
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      NeonPageRoute(child: const LoginScreen()),
+      (_) => false,
+    );
+  }
+
   Future<void> _disconnect() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('base_url');
     await prefs.remove('admin_token');
+    await prefs.remove('app_token');
+    await prefs.remove('app_username');
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       NeonPageRoute(child: const SetupScreen()),
@@ -72,6 +98,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Account info
+            if (_username.isNotEmpty)
+              NeonCard(
+                glowColor: NeonColors.cyan,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const NeonText('> АККАУНТ', color: NeonColors.cyan,
+                        fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
+                    const SizedBox(height: 12),
+                    _InfoRow('Пользователь', _username),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: GestureDetector(
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            backgroundColor: NeonColors.bgDark,
+                            title: const NeonText('ВЫЙТИ?',
+                                color: NeonColors.orange,
+                                fontSize: 14, fontFamily: 'Orbitron'),
+                            content: const Text(
+                              'Вы будете перенаправлены на экран входа.',
+                              style: TextStyle(
+                                color: NeonColors.textSecondary,
+                                fontFamily: 'JetBrainsMono',
+                                fontSize: 12,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('ОТМЕНА',
+                                    style: TextStyle(
+                                        color: NeonColors.textSecondary)),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _logout();
+                                },
+                                child: const NeonText('ВЫЙТИ',
+                                    color: NeonColors.orange,
+                                    fontFamily: 'Orbitron', fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: NeonColors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: NeonColors.orange.withOpacity(0.5)),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout,
+                                  color: NeonColors.orange, size: 16),
+                              SizedBox(width: 8),
+                              NeonText('ВЫЙТИ ИЗ АККАУНТА',
+                                  color: NeonColors.orange,
+                                  fontSize: 11, fontFamily: 'Orbitron',
+                                  fontWeight: FontWeight.w700),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 400.ms),
+
+            if (_username.isNotEmpty) const SizedBox(height: 16),
+
             // Server settings
             NeonCard(
               child: Column(
@@ -108,7 +212,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 16),
                   _saving
                       ? const Center(
-                          child: NeonLoadingIndicator(size: 32, label: 'SAVING...'))
+                          child: NeonLoadingIndicator(
+                              size: 32, label: 'SAVING...'))
                       : SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -173,7 +278,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             TextButton(
                               onPressed: () => Navigator.pop(context),
                               child: const Text('CANCEL',
-                                  style: TextStyle(color: NeonColors.textSecondary)),
+                                  style: TextStyle(
+                                      color: NeonColors.textSecondary)),
                             ),
                             TextButton(
                               onPressed: () {
