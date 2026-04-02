@@ -69,6 +69,8 @@ created_bots/
 *.jpg
 *.jpeg
 *.png
+# Allow Android launcher icons
+!android_app/android/app/src/main/res/mipmap-*/ic_launcher.png
 *.gif
 *.webp
 *.zip
