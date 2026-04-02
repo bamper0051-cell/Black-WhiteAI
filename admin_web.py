@@ -180,8 +180,8 @@ def api_auth_register():
         return jsonify({'ok': True, 'token': token, 'username': username}), 201
     except sqlite3.IntegrityError:
         return jsonify({'ok': False, 'error': 'Пользователь уже существует'}), 409
-    except Exception as e:
-        return jsonify({'ok': False, 'error': str(e)}), 500
+    except Exception:
+        return jsonify({'ok': False, 'error': 'Внутренняя ошибка сервера'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
@@ -206,8 +206,8 @@ def api_auth_login():
             c.execute('UPDATE app_users SET last_login = ? WHERE id = ?', (time.time(), user_id))
         token = _jwt_create(user_id, username, role or 'user')
         return jsonify({'ok': True, 'token': token, 'username': username, 'role': role or 'user'})
-    except Exception as e:
-        return jsonify({'ok': False, 'error': str(e)}), 500
+    except Exception:
+        return jsonify({'ok': False, 'error': 'Внутренняя ошибка сервера'}), 500
 
 
 # ── Status ────────────────────────────────────────────────────────────────────
