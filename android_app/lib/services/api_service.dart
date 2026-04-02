@@ -15,13 +15,15 @@ class ApiException implements Exception {
 
 class ApiService {
   final String baseUrl;
-  final String adminToken;
 
-  ApiService({required this.baseUrl, required this.adminToken});
+  /// JWT токен пользователя (логин/пароль) или admin token
+  final String token;
+
+  ApiService({required this.baseUrl, required this.token});
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $adminToken',
+        'Authorization': 'Bearer $token',
       };
 
   Future<dynamic> _get(String path) async {
@@ -39,6 +41,17 @@ class ApiService {
     return _handle(response);
   }
 
+  /// POST без авторизации — для login/register
+  Future<dynamic> _postPublic(String path, Map<String, dynamic> body) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final response = await http
+        .post(uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body))
+        .timeout(const Duration(seconds: 10));
+    return _handle(response);
+  }
+
   dynamic _handle(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return {};
@@ -52,12 +65,38 @@ class ApiService {
     throw ApiException(response.statusCode, msg);
   }
 
+  // ─── Auth ─────────────────────────────────────────────────────────────────
+
+  /// Вход по логину и паролю. Возвращает JWT токен.
+  Future<Map<String, dynamic>> login(String username, String password) async {
+    final data = await _postPublic('/api/auth/login', {
+      'username': username,
+      'password': password,
+    });
+    return Map<String, dynamic>.from(data);
+  }
+
+  /// Регистрация нового пользователя. Возвращает JWT токен.
+  Future<Map<String, dynamic>> register(String username, String password) async {
+    final data = await _postPublic('/api/auth/register', {
+      'username': username,
+      'password': password,
+    });
+    return Map<String, dynamic>.from(data);
+  }
+
   // ─── System ───────────────────────────────────────────────────────────────
 
   Future<bool> ping() async {
     try {
-      final data = await _get('/api/health');
-      return data['status'] == 'ok';
+      final uri = Uri.parse('$baseUrl/api/health');
+      final response =
+          await http.get(uri).timeout(const Duration(seconds: 10));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+        return data['status'] == 'ok' || data['ok'] == true;
+      }
+      return false;
     } catch (_) {
       return false;
     }

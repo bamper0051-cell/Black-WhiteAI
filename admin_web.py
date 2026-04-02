@@ -1,18 +1,69 @@
 """
 admin_web.py — REST API + Web Panel для АВТОМУВИ
 Порт: ADMIN_WEB_PORT (default 8080)
-Auth: X-Admin-Token header или ?token=...
+Auth: X-Admin-Token header, ?token=..., или Bearer JWT (для мобильного приложения)
 """
-import os, sys, json, time, threading, subprocess, platform
+import os, sys, json, time, threading, subprocess, platform, hmac, hashlib, base64, sqlite3
 from datetime import datetime
 from functools import wraps
 from flask import Flask, request, jsonify, send_file
 
 import config
+import bcrypt
 
 ADMIN_WEB_PORT  = int(os.environ.get('ADMIN_WEB_PORT', 8080))
 ADMIN_WEB_TOKEN = os.environ.get('ADMIN_WEB_TOKEN', 'changeme_secret_token')
 BASE = config.BASE_DIR
+
+# ── App Users DB (для входа по логину/паролю из мобильного приложения) ─────────
+_APP_USERS_DB = os.path.join(config.DATA_DIR, 'app_users.db')
+
+def _init_app_users_db():
+    with sqlite3.connect(_APP_USERS_DB) as c:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS app_users (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                username      TEXT    UNIQUE NOT NULL,
+                password_hash TEXT    NOT NULL,
+                role          TEXT    DEFAULT 'user',
+                created_at    REAL    NOT NULL,
+                last_login    REAL
+            )
+        ''')
+
+_init_app_users_db()
+
+# ── JWT helpers (HMAC-SHA256, без внешних зависимостей) ───────────────────────
+def _jwt_create(user_id: int, username: str, role: str = 'user') -> str:
+    payload = json.dumps({
+        'sub':      str(user_id),
+        'username': username,
+        'role':     role,
+        'exp':      int(time.time()) + config.JWT_EXPIRE_HOURS * 3600,
+    }, separators=(',', ':'))
+    payload_b64 = base64.urlsafe_b64encode(payload.encode()).decode().rstrip('=')
+    sig = hmac.new(config.JWT_SECRET.encode(), payload_b64.encode(), hashlib.sha256).hexdigest()
+    return f"{payload_b64}.{sig}"
+
+def _jwt_verify(token: str):
+    """Возвращает payload dict или None."""
+    try:
+        parts = token.split('.')
+        if len(parts) != 2:
+            return None
+        payload_b64, sig = parts
+        expected = hmac.new(config.JWT_SECRET.encode(), payload_b64.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected):
+            return None
+        pad = 4 - len(payload_b64) % 4
+        if pad != 4:
+            payload_b64 += '=' * pad
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode())
+        if payload.get('exp', 0) < time.time():
+            return None
+        return payload
+    except Exception:
+        return None
 
 app = Flask(__name__)
 app.config['JSON_ENSURE_ASCII'] = False
@@ -45,21 +96,31 @@ def install_log_capture():
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 def require_token(f):
+    """Принимает X-Admin-Token, ?token= или Bearer JWT от мобильного приложения."""
     @wraps(f)
     def wrapper(*args, **kwargs):
+        # 1. Bearer JWT (мобильное приложение)
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            jwt_token = auth_header[7:]
+            if _jwt_verify(jwt_token) is not None:
+                return f(*args, **kwargs)
+
+        # 2. Классический admin token
         token = (request.headers.get('X-Admin-Token') or
                  request.args.get('token') or
                  (request.get_json(silent=True) or {}).get('token', ''))
-        if token != ADMIN_WEB_TOKEN:
-            return jsonify({'error': 'Unauthorized'}), 401
-        return f(*args, **kwargs)
+        if token == ADMIN_WEB_TOKEN:
+            return f(*args, **kwargs)
+
+        return jsonify({'error': 'Unauthorized'}), 401
     return wrapper
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 @app.after_request
 def add_cors(resp):
     resp.headers['Access-Control-Allow-Origin']  = '*'
-    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, Authorization'
     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
     return resp
 
@@ -75,12 +136,11 @@ def ping():
     return jsonify({'ok': True, 'pong': True, 'port': ADMIN_WEB_PORT}), 200
 
 @app.route('/health')
+@app.route('/api/health')
 def health():
     try:
         uptime = int(time.time() - _start_time)
         h, r = divmod(uptime, 3600); m, s = divmod(r, 60)
-        # Проверяем БД
-        import sqlite3
         db_ok = True
         try:
             with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
@@ -94,6 +154,61 @@ def health():
         }), 200 if db_ok else 503
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 503
+
+# ── App Auth (логин/пароль для мобильного приложения) ─────────────────────────
+@app.route('/api/auth/register', methods=['POST'])
+def api_auth_register():
+    """Регистрация нового пользователя приложения."""
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+    if not username or not password:
+        return jsonify({'ok': False, 'error': 'username и password обязательны'}), 400
+    if len(username) < 3 or len(username) > 32:
+        return jsonify({'ok': False, 'error': 'username: от 3 до 32 символов'}), 400
+    if len(password) < 6:
+        return jsonify({'ok': False, 'error': 'password: минимум 6 символов'}), 400
+    try:
+        pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        with sqlite3.connect(_APP_USERS_DB) as c:
+            c.execute(
+                'INSERT INTO app_users (username, password_hash, created_at) VALUES (?, ?, ?)',
+                (username, pw_hash, time.time())
+            )
+            user_id = c.lastrowid
+        token = _jwt_create(user_id, username)
+        return jsonify({'ok': True, 'token': token, 'username': username}), 201
+    except sqlite3.IntegrityError:
+        return jsonify({'ok': False, 'error': 'Пользователь уже существует'}), 409
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_auth_login():
+    """Вход по логину и паролю, возвращает JWT токен."""
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+    if not username or not password:
+        return jsonify({'ok': False, 'error': 'username и password обязательны'}), 400
+    try:
+        with sqlite3.connect(_APP_USERS_DB) as c:
+            row = c.execute(
+                'SELECT id, password_hash, role FROM app_users WHERE username = ?',
+                (username,)
+            ).fetchone()
+        if not row:
+            return jsonify({'ok': False, 'error': 'Неверный логин или пароль'}), 401
+        user_id, pw_hash, role = row
+        if not bcrypt.checkpw(password.encode(), pw_hash.encode()):
+            return jsonify({'ok': False, 'error': 'Неверный логин или пароль'}), 401
+        with sqlite3.connect(_APP_USERS_DB) as c:
+            c.execute('UPDATE app_users SET last_login = ? WHERE id = ?', (time.time(), user_id))
+        token = _jwt_create(user_id, username, role or 'user')
+        return jsonify({'ok': True, 'token': token, 'username': username, 'role': role or 'user'})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
 
 # ── Status ────────────────────────────────────────────────────────────────────
 @app.route('/api/status')

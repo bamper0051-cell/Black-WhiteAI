@@ -1,4 +1,4 @@
-// setup_screen.dart — Initial setup: connect to BlackBugsAI server
+// login_screen.dart — Login with username and password
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -7,25 +7,29 @@ import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
 import '../widgets/neon_text_field.dart';
-import 'login_screen.dart';
+import 'main_shell.dart';
+import 'register_screen.dart';
 
-class SetupScreen extends StatefulWidget {
-  const SetupScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<SetupScreen> createState() => _SetupScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _SetupScreenState extends State<SetupScreen> {
-  final _urlCtrl = TextEditingController(text: 'http://');
+class _LoginScreenState extends State<LoginScreen> {
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
+  bool _obscurePassword = true;
 
-  Future<void> _connect() async {
-    final url = _urlCtrl.text.trim().replaceAll(RegExp(r'/$'), '');
+  Future<void> _login() async {
+    final username = _usernameCtrl.text.trim();
+    final password = _passwordCtrl.text.trim();
 
-    if (url.isEmpty || url == 'http://' || url == 'https://') {
-      setState(() => _error = 'Введи URL сервера');
+    if (username.isEmpty || password.isEmpty) {
+      setState(() => _error = 'Заполни все поля');
       return;
     }
 
@@ -35,27 +39,29 @@ class _SetupScreenState extends State<SetupScreen> {
     });
 
     try {
-      final api = ApiService(baseUrl: url, token: '');
-      final ok = await api.ping();
+      final prefs = await SharedPreferences.getInstance();
+      final baseUrl = prefs.getString('base_url') ?? '';
+      final api = ApiService(baseUrl: baseUrl, token: '');
+      final result = await api.login(username, password);
 
-      if (!ok) {
+      if (result['ok'] != true) {
         setState(() {
-          _error = 'Сервер не отвечает. Проверь URL.';
+          _error = result['error'] ?? 'Ошибка входа';
           _loading = false;
         });
         return;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('base_url', url);
+      await prefs.setString('auth_token', result['token'] as String);
+      await prefs.setString('username', username);
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        NeonPageRoute(child: const LoginScreen()),
+        NeonPageRoute(child: const MainShell()),
       );
     } catch (e) {
       setState(() {
-        _error = 'Ошибка подключения: $e';
+        _error = 'Ошибка: $e';
         _loading = false;
       });
     }
@@ -67,20 +73,17 @@ class _SetupScreenState extends State<SetupScreen> {
       backgroundColor: NeonColors.bgDeep,
       body: Stack(
         children: [
-          // Background grid
           CustomPaint(
-            painter: _SetupBgPainter(),
+            painter: _BgPainter(),
             size: MediaQuery.of(context).size,
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 48),
 
-                  // Logo
                   NeonText(
                     'BLACKBUGS AI',
                     color: NeonColors.cyan,
@@ -92,7 +95,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 8),
                   NeonText(
-                    'CONNECT TO SERVER',
+                    'ВХОД В СИСТЕМУ',
                     color: NeonColors.purple,
                     fontSize: 11,
                     fontFamily: 'Orbitron',
@@ -101,7 +104,6 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Connection card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: neonCardDecoration(glowColor: NeonColors.cyan),
@@ -109,7 +111,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         NeonText(
-                          '> SERVER URL',
+                          '> LOGIN',
                           color: NeonColors.cyan,
                           fontSize: 12,
                           fontFamily: 'Orbitron',
@@ -118,11 +120,30 @@ class _SetupScreenState extends State<SetupScreen> {
                         const SizedBox(height: 20),
 
                         NeonTextField(
-                          controller: _urlCtrl,
-                          label: 'SERVER URL',
-                          hint: 'http://192.168.1.1:8080',
-                          prefixIcon: Icons.dns_outlined,
-                          keyboardType: TextInputType.url,
+                          controller: _usernameCtrl,
+                          label: 'USERNAME',
+                          hint: 'your_username',
+                          prefixIcon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
+
+                        NeonTextField(
+                          controller: _passwordCtrl,
+                          label: 'PASSWORD',
+                          hint: '••••••••',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: NeonColors.textSecondary,
+                              size: 18,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscurePassword = !_obscurePassword),
+                          ),
                         ),
 
                         if (_error != null) ...[
@@ -162,42 +183,52 @@ class _SetupScreenState extends State<SetupScreen> {
                           child: _loading
                               ? const Center(
                                   child: NeonLoadingIndicator(
-                                    label: 'CONNECTING...',
+                                    label: 'ВХОДИМ...',
                                     size: 40,
                                   ),
                                 )
                               : _NeonButton(
-                                  label: 'CONNECT',
-                                  icon: Icons.link,
+                                  label: 'ВОЙТИ',
+                                  icon: Icons.login,
                                   color: NeonColors.cyan,
-                                  onTap: _connect,
+                                  onTap: _login,
                                 ),
                         ),
                       ],
                     ),
                   ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(begin: 0.2),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
-                  // Hints
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: NeonColors.bgCard.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: NeonColors.purpleGlow, width: 1),
+                  // Register link
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pushReplacement(
+                      NeonPageRoute(child: const RegisterScreen()),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        NeonText('> QUICK START', color: NeonColors.purple,
-                            fontSize: 10, fontFamily: 'Orbitron'),
-                        const SizedBox(height: 10),
-                        _hintRow('1', 'Запусти docker-compose up -d'),
-                        _hintRow('2', 'URL: http://<ip>:8080'),
-                        _hintRow('3', 'Зарегистрируйся или войди'),
-                      ],
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: NeonColors.bgCard.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: NeonColors.purpleGlow, width: 1),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.person_add_outlined,
+                              color: NeonColors.purple, size: 16),
+                          const SizedBox(width: 8),
+                          NeonText(
+                            'НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ',
+                            color: NeonColors.purple,
+                            fontSize: 10,
+                            fontFamily: 'Orbitron',
+                            glowRadius: 4,
+                          ),
+                        ],
+                      ),
                     ),
                   ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
                 ],
@@ -208,50 +239,13 @@ class _SetupScreenState extends State<SetupScreen> {
       ),
     );
   }
-
-  Widget _hintRow(String num, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color: NeonColors.purple.withOpacity(0.6)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              num,
-              style: const TextStyle(
-                color: NeonColors.purple,
-                fontSize: 10,
-                fontFamily: 'Orbitron',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              color: NeonColors.textSecondary,
-              fontSize: 11,
-              fontFamily: 'JetBrainsMono',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-class _SetupBgPainter extends CustomPainter {
+class _BgPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = NeonColors.purple.withOpacity(0.03)
+      ..color = NeonColors.cyan.withOpacity(0.03)
       ..strokeWidth = 1;
     const step = 50.0;
     for (double x = 0; x < size.width; x += step) {

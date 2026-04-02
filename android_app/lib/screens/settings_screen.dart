@@ -8,6 +8,7 @@ import '../animations/neon_animations.dart';
 import '../widgets/neon_text_field.dart';
 import '../widgets/neon_card.dart';
 import 'setup_screen.dart';
+import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,9 +19,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _urlCtrl = TextEditingController();
-  final _tokenCtrl = TextEditingController();
+  String _username = '';
   bool _saving = false;
-  bool _obscureToken = true;
 
   @override
   void initState() {
@@ -32,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _urlCtrl.text = prefs.getString('base_url') ?? '';
-      _tokenCtrl.text = prefs.getString('admin_token') ?? '';
+      _username = prefs.getString('username') ?? '';
     });
   }
 
@@ -40,7 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _saving = true);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('base_url', _urlCtrl.text.trim());
-    await prefs.setString('admin_token', _tokenCtrl.text.trim());
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -48,10 +47,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('username');
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      NeonPageRoute(child: const LoginScreen()),
+      (_) => false,
+    );
+  }
+
   Future<void> _disconnect() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('base_url');
-    await prefs.remove('admin_token');
+    await prefs.remove('auth_token');
+    await prefs.remove('username');
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       NeonPageRoute(child: const SetupScreen()),
@@ -86,25 +97,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     hint: 'http://192.168.1.1:8080',
                     prefixIcon: Icons.dns_outlined,
                   ),
-                  const SizedBox(height: 12),
-                  NeonTextField(
-                    controller: _tokenCtrl,
-                    label: 'ADMIN TOKEN',
-                    hint: '••••••••',
-                    prefixIcon: Icons.key_outlined,
-                    obscureText: _obscureToken,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureToken
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: NeonColors.textSecondary,
-                        size: 18,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscureToken = !_obscureToken),
-                    ),
-                  ),
                   const SizedBox(height: 16),
                   _saving
                       ? const Center(
@@ -123,6 +115,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 16),
 
+            // Account info
+            NeonCard(
+              glowColor: NeonColors.purple,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NeonText('> ACCOUNT', color: NeonColors.purple,
+                      fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
+                  const SizedBox(height: 12),
+                  _InfoRow('User', _username.isEmpty ? '—' : _username),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: GestureDetector(
+                      onTap: _logout,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: NeonColors.purple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: NeonColors.purple.withOpacity(0.5)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.logout, color: NeonColors.purple, size: 16),
+                            SizedBox(width: 8),
+                            NeonText('LOGOUT', color: NeonColors.purple,
+                                fontSize: 11, fontFamily: 'Orbitron',
+                                fontWeight: FontWeight.w700),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
+
             // App info
             NeonCard(
               glowColor: NeonColors.purple,
@@ -138,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _InfoRow('Framework', 'Flutter 3.x'),
                 ],
               ),
-            ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+            ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
 
             const SizedBox(height: 16),
 
@@ -162,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               color: NeonColors.pink,
                               fontSize: 14, fontFamily: 'Orbitron'),
                           content: const Text(
-                            'This will clear all saved settings.',
+                            'This will clear all saved settings and log you out.',
                             style: TextStyle(
                               color: NeonColors.textSecondary,
                               fontFamily: 'JetBrainsMono',
@@ -253,3 +287,5 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
+
