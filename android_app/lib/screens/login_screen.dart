@@ -328,9 +328,9 @@ class _NeonButtonState extends State<_NeonButton> {
               style: TextStyle(
                 color: widget.color,
                 fontFamily: 'Orbitron',
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 2,
+                letterSpacing: 1.5,
               ),
             ),
           ],

@@ -181,6 +181,7 @@ def api_app_register():
             conn.commit()
         return jsonify({'ok': True, 'token': token, 'username': username}), 201
     except Exception:
+        import traceback; traceback.print_exc()
         return jsonify({'ok': False, 'error': 'registration failed'}), 500
 
 @app.route('/api/app/login', methods=['POST'])
@@ -208,6 +209,7 @@ def api_app_login():
             conn.commit()
         return jsonify({'ok': True, 'token': token, 'username': username})
     except Exception:
+        import traceback; traceback.print_exc()
         return jsonify({'ok': False, 'error': 'login failed'}), 500
 
 @app.route('/api/app/logout', methods=['POST'])
