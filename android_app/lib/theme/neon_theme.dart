@@ -115,7 +115,7 @@ class NeonTheme {
           ),
           iconTheme: IconThemeData(color: NeonColors.cyan),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: NeonColors.bgCard,
           elevation: 0,
           shape: RoundedRectangleBorder(

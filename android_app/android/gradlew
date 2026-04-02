@@ -1,0 +1,3 @@
+#!/bin/sh
+# Use system Gradle 8.14.3
+exec /opt/gradle/bin/gradle "$@"

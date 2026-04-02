@@ -61,14 +61,4 @@ flutter:
     - assets/animations/
     - assets/images/
 
-  fonts:
-    - family: Orbitron
-      fonts:
-        - asset: assets/fonts/Orbitron-Regular.ttf
-        - asset: assets/fonts/Orbitron-Bold.ttf
-          weight: 700
-    - family: JetBrainsMono
-      fonts:
-        - asset: assets/fonts/JetBrainsMono-Regular.ttf
-        - asset: assets/fonts/JetBrainsMono-Bold.ttf
-          weight: 700
+  # Fonts will use system defaults (Orbitron and JetBrainsMono TTF files optional)
