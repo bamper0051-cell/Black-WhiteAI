@@ -68,6 +68,78 @@ def add_cors(resp):
 def options_handler(path=''):
     return '', 204
 
+# ── Web Auth (логин/пароль для мобильного приложения) ────────────────────────
+import sqlite3 as _sqlite3, hashlib as _hashlib, secrets as _secrets
+
+_WEB_AUTH_DB = os.path.join(BASE, 'web_users.db')
+
+def _init_web_auth():
+    with _sqlite3.connect(_WEB_AUTH_DB) as c:
+        c.execute('''CREATE TABLE IF NOT EXISTS web_users (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            pw_hash  TEXT NOT NULL,
+            role     TEXT DEFAULT 'user',
+            token    TEXT,
+            created  TEXT
+        )''')
+        # Создаём admin-аккаунт из ADMIN_WEB_TOKEN если не существует
+        existing = c.execute("SELECT id FROM web_users WHERE username='admin'").fetchone()
+        if not existing:
+            ph = _hashlib.sha256(ADMIN_WEB_TOKEN.encode()).hexdigest()
+            c.execute("INSERT INTO web_users (username,pw_hash,role,created) VALUES (?,?,?,?)",
+                      ('admin', ph, 'admin', datetime.now().isoformat()))
+
+_init_web_auth()
+
+def _pw_hash(pw: str) -> str:
+    return _hashlib.sha256(pw.encode()).hexdigest()
+
+@app.route('/api/auth/register', methods=['POST'])
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    if len(username) < 3:
+        return jsonify({'error': 'username too short (min 3)'}), 400
+    if len(password) < 6:
+        return jsonify({'error': 'password too short (min 6)'}), 400
+    token = _secrets.token_hex(24)
+    try:
+        with _sqlite3.connect(_WEB_AUTH_DB) as c:
+            c.execute("INSERT INTO web_users (username,pw_hash,role,token,created) VALUES (?,?,?,?,?)",
+                      (username, _pw_hash(password), 'user', token, datetime.now().isoformat()))
+        return jsonify({'ok': True, 'username': username, 'token': token, 'role': 'user'}), 201
+    except _sqlite3.IntegrityError:
+        return jsonify({'error': 'username already taken'}), 409
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    with _sqlite3.connect(_WEB_AUTH_DB) as c:
+        c.row_factory = _sqlite3.Row
+        row = c.execute("SELECT * FROM web_users WHERE username=?", (username,)).fetchone()
+    if not row or row['pw_hash'] != _pw_hash(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+    # Выдаём токен (admin получает ADMIN_WEB_TOKEN, обычные — свой)
+    api_token = ADMIN_WEB_TOKEN if row['role'] == 'admin' else row['token']
+    if not api_token:
+        api_token = _secrets.token_hex(24)
+        with _sqlite3.connect(_WEB_AUTH_DB) as c:
+            c.execute("UPDATE web_users SET token=? WHERE username=?", (api_token, username))
+    return jsonify({'ok': True, 'username': username, 'role': row['role'], 'token': api_token}), 200
+
+@app.route('/api/auth/me')
+@require_token
+def api_auth_me():
+    return jsonify({'ok': True, 'token_valid': True, 'server_version': '1.0'}), 200
+
 # ── Health (без токена — для Docker healthcheck) ───────────────────────────────
 @app.route('/ping')
 def ping():

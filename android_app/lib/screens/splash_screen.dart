@@ -1,9 +1,10 @@
-// splash_screen.dart — Boot/Splash screen with neon animation
+// splash_screen.dart — Boot animation + auto-connect to server
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../animations/neon_animations.dart';
+import '../services/auth_service.dart';
 import 'setup_screen.dart';
+import 'login_screen.dart';
 import 'main_shell.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -13,21 +14,33 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeonBootAnimation(
       onComplete: () async {
-        final prefs = await SharedPreferences.getInstance();
-        final baseUrl = prefs.getString('base_url');
-        final token = prefs.getString('admin_token');
+        final session = await AuthService.loadSession();
 
         if (!context.mounted) return;
 
-        if (baseUrl == null || token == null) {
+        final baseUrl = session['base_url'];
+        final token = session['token'];
+
+        // No server configured — go to setup
+        if (baseUrl == null || baseUrl.isEmpty) {
           Navigator.of(context).pushReplacement(
             NeonPageRoute(child: const SetupScreen()),
           );
-        } else {
-          Navigator.of(context).pushReplacement(
-            NeonPageRoute(child: const MainShell()),
-          );
+          return;
         }
+
+        // Server configured but not logged in — ping then go to login
+        if (token == null || token.isEmpty) {
+          Navigator.of(context).pushReplacement(
+            NeonPageRoute(child: LoginScreen(baseUrl: baseUrl)),
+          );
+          return;
+        }
+
+        // Fully logged in — auto-connect to main shell
+        Navigator.of(context).pushReplacement(
+          NeonPageRoute(child: const MainShell()),
+        );
       },
     );
   }
