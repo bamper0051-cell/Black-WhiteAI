@@ -1,0 +1,983 @@
+{
+  "project": "BlackBugsAI",
+  "mode": "full",
+  "timestamp": "20260321_003758",
+  "hostname": "unknown",
+  "files": [
+    {
+      "path": ".env",
+      "size": 5272,
+      "sha256": "70f49ecf9581"
+    },
+    {
+      "path": ".env.example",
+      "size": 3114,
+      "sha256": "0bb41f2e6db7"
+    },
+    {
+      "path": "admin_module.py",
+      "size": 18330,
+      "sha256": "9003eeb2f968"
+    },
+    {
+      "path": "admin_panel.html",
+      "size": 68145,
+      "sha256": "d63dfb29d1ee"
+    },
+    {
+      "path": "admin_web.py",
+      "size": 27002,
+      "sha256": "bc13ace161e5"
+    },
+    {
+      "path": "agent_code.py",
+      "size": 9490,
+      "sha256": "e86071549298"
+    },
+    {
+      "path": "agent_core.py",
+      "size": 8652,
+      "sha256": "974b89549c6b"
+    },
+    {
+      "path": "agent_executor.py",
+      "size": 8521,
+      "sha256": "cb634f754221"
+    },
+    {
+      "path": "agent_memory.py",
+      "size": 7373,
+      "sha256": "56f119a30861"
+    },
+    {
+      "path": "agent_planner.py",
+      "size": 6283,
+      "sha256": "720fa8721743"
+    },
+    {
+      "path": "agent_roles.py",
+      "size": 7120,
+      "sha256": "52206c808044"
+    },
+    {
+      "path": "agent_session (1).py",
+      "size": 35689,
+      "sha256": "ddb970d5ee15"
+    },
+    {
+      "path": "agent_session (2).py",
+      "size": 50563,
+      "sha256": "82416098b5c4"
+    },
+    {
+      "path": "agent_session.py",
+      "size": 50880,
+      "sha256": "c2c8f88a7607"
+    },
+    {
+      "path": "agent_tools_registry.py",
+      "size": 85642,
+      "sha256": "4ba8a606cde6"
+    },
+    {
+      "path": "asd.html",
+      "size": 1007991,
+      "sha256": "eed5ecf5cd15"
+    },
+    {
+      "path": "auth.db",
+      "size": 40960,
+      "sha256": "bab7b026763f"
+    },
+    {
+      "path": "auth_module.py",
+      "size": 34060,
+      "sha256": "ee6d039c320e"
+    },
+    {
+      "path": "autofix.py",
+      "size": 1934,
+      "sha256": "a4521063d70f"
+    },
+    {
+      "path": "automuvie.db",
+      "size": 2240512,
+      "sha256": "fc780f7662b0"
+    },
+    {
+      "path": "backup.py",
+      "size": 10666,
+      "sha256": "1bcd0ddaf98e"
+    },
+    {
+      "path": "billing.py",
+      "size": 9080,
+      "sha256": "5e63217ac561"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\.env.example",
+      "size": 3114,
+      "sha256": "0bb41f2e6db7"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\admin_module.py",
+      "size": 16480,
+      "sha256": "2c010cd3cb19"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\admin_panel.html",
+      "size": 64910,
+      "sha256": "134e256de0f1"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\admin_web.py",
+      "size": 21821,
+      "sha256": "99269e80d0a8"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_core.py",
+      "size": 8277,
+      "sha256": "04902af7e564"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_executor.py",
+      "size": 8455,
+      "sha256": "0236c198f284"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_memory.py",
+      "size": 7373,
+      "sha256": "56f119a30861"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_planner.py",
+      "size": 6283,
+      "sha256": "720fa8721743"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_roles.py",
+      "size": 6972,
+      "sha256": "0327259393d5"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\agent_tools_registry.py",
+      "size": 79337,
+      "sha256": "b695acc74a87"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\app_new\\agent_code.py",
+      "size": 9490,
+      "sha256": "e86071549298"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\app_new\\settings.py",
+      "size": 7213,
+      "sha256": "75e56bc2c421"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\app_new\\tool_registry.py",
+      "size": 6023,
+      "sha256": "8ce9cd3d2b99"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\auth_module.py",
+      "size": 15435,
+      "sha256": "7de79d5e6b7e"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\billing.py",
+      "size": 5789,
+      "sha256": "ed8e52e556c8"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\bot.py",
+      "size": 347751,
+      "sha256": "c4dd1dd51fb1"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\CHANGELOG.md",
+      "size": 1795,
+      "sha256": "aa8e8edf817a"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\chat_agent.py",
+      "size": 110073,
+      "sha256": "2be31cd18cc4"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\config.py",
+      "size": 17480,
+      "sha256": "3ee2cf9bb665"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\database.py",
+      "size": 4385,
+      "sha256": "4d4388912173"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\docker-compose.yml",
+      "size": 1463,
+      "sha256": "fd7ec16d0ac2"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\Dockerfile",
+      "size": 1213,
+      "sha256": "a80d5f051c4c"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\entrypoint.sh",
+      "size": 366,
+      "sha256": "f456f5f046d6"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\fish_v2_merged\\telegram_client.py",
+      "size": 7119,
+      "sha256": "93c5001d8688"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\init.bat",
+      "size": 771,
+      "sha256": "4395a9e6194e"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\proxy_manager.py",
+      "size": 3773,
+      "sha256": "e10345323e19"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\README.md",
+      "size": 9949,
+      "sha256": "8eb99c65806d"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\rebuild.bat",
+      "size": 857,
+      "sha256": "6f31b0498c57"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\requirements.txt",
+      "size": 313,
+      "sha256": "23bcfe92f221"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\STRUCTURE.txt",
+      "size": 2463,
+      "sha256": "412e4b6a5339"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\structured_logger.py",
+      "size": 4587,
+      "sha256": "9d54436b1074"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\task_queue.py",
+      "size": 16120,
+      "sha256": "89f67b8197b8"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\telegram\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\telegram\\commands.py",
+      "size": 692,
+      "sha256": "4a351927c5fc"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\telegram\\handlers.py",
+      "size": 456,
+      "sha256": "6d38349651a0"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\telegram\\keyboards.py",
+      "size": 9937,
+      "sha256": "f4ee130249ef"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\tools\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\tools\\python_sandbox.py",
+      "size": 2670,
+      "sha256": "da171a3671de"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\tools\\shell.py",
+      "size": 2423,
+      "sha256": "d8284fc37d8b"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\tools\\speech.py",
+      "size": 3249,
+      "sha256": "311094f2467b"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\tools\\video.py",
+      "size": 3790,
+      "sha256": "74fd33c8823d"
+    },
+    {
+      "path": "BlackBugsAI_v1.0\\BlackBugsAI\\user_settings.py",
+      "size": 7442,
+      "sha256": "3894ff22cdd9"
+    },
+    {
+      "path": "bot.py",
+      "size": 438846,
+      "sha256": "59852dcb7ce0"
+    },
+    {
+      "path": "bot_tools.py",
+      "size": 15103,
+      "sha256": "1a095ac60647"
+    },
+    {
+      "path": "captcha.py",
+      "size": 1128,
+      "sha256": "b7c796460d65"
+    },
+    {
+      "path": "captcha_handler.py",
+      "size": 381,
+      "sha256": "c949f9340d6d"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 2191,
+      "sha256": "40a17e9d9a8e"
+    },
+    {
+      "path": "chat_agent.py",
+      "size": 110040,
+      "sha256": "0278972bf615"
+    },
+    {
+      "path": "check_imports.py",
+      "size": 1107,
+      "sha256": "65e02ba49691"
+    },
+    {
+      "path": "cloudflare_qr_bot.py",
+      "size": 8333,
+      "sha256": "a4fb63ad2c75"
+    },
+    {
+      "path": "config.py",
+      "size": 17490,
+      "sha256": "eef50cd7db75"
+    },
+    {
+      "path": "data\\active.txt",
+      "size": 10,
+      "sha256": "d7cb06cde354"
+    },
+    {
+      "path": "data\\auth.db",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "data\\billing.db",
+      "size": 24576,
+      "sha256": "d72529295ae1"
+    },
+    {
+      "path": "data\\phishing.db",
+      "size": 139264,
+      "sha256": "8ab6a7361bb5"
+    },
+    {
+      "path": "database.py",
+      "size": 4385,
+      "sha256": "4d4388912173"
+    },
+    {
+      "path": "desktop\\.env.example",
+      "size": 3205,
+      "sha256": "3321885cc0b3"
+    },
+    {
+      "path": "desktop\\.vs\\desktop\\CopilotIndices\\18.0.955.22606\\CodeChunks.db",
+      "size": 319488,
+      "sha256": "220c48d5bccc"
+    },
+    {
+      "path": "desktop\\.vs\\desktop\\CopilotIndices\\18.0.955.22606\\SemanticSymbols.db",
+      "size": 53248,
+      "sha256": "9bf351f2f953"
+    },
+    {
+      "path": "desktop\\.vs\\desktop.slnx\\v18\\DocumentLayout.json",
+      "size": 25614,
+      "sha256": "3efc347dff1d"
+    },
+    {
+      "path": "desktop\\.vs\\ProjectSettings.json",
+      "size": 37,
+      "sha256": "debe308c356f"
+    },
+    {
+      "path": "desktop\\.vs\\slnx.sqlite",
+      "size": 90112,
+      "sha256": "ff06c6ec419e"
+    },
+    {
+      "path": "desktop\\.vs\\VSWorkspaceState.json",
+      "size": 110,
+      "sha256": "2d45deb3255c"
+    },
+    {
+      "path": "desktop\\BUILD.md",
+      "size": 6643,
+      "sha256": "16a65779a078"
+    },
+    {
+      "path": "desktop\\config.py",
+      "size": 1916,
+      "sha256": "3544f64d5a1d"
+    },
+    {
+      "path": "desktop\\core\\__init__.py",
+      "size": 15,
+      "sha256": "4c44d2b604e8"
+    },
+    {
+      "path": "desktop\\core\\ai_provider.py",
+      "size": 15093,
+      "sha256": "d4ce876ee647"
+    },
+    {
+      "path": "desktop\\core\\api_server.py",
+      "size": 4064,
+      "sha256": "b978f00c7e44"
+    },
+    {
+      "path": "desktop\\core\\config.py",
+      "size": 2787,
+      "sha256": "f689314bfb29"
+    },
+    {
+      "path": "desktop\\core\\file_processor.py",
+      "size": 7139,
+      "sha256": "d6e9be3eff25"
+    },
+    {
+      "path": "desktop\\core\\history.py",
+      "size": 4470,
+      "sha256": "932b6875fb0e"
+    },
+    {
+      "path": "desktop\\core\\llm_engine.py",
+      "size": 6154,
+      "sha256": "493ef4cd7a7d"
+    },
+    {
+      "path": "desktop\\core\\providers.py",
+      "size": 10918,
+      "sha256": "9daa264647c2"
+    },
+    {
+      "path": "desktop\\core\\sandbox.py",
+      "size": 7865,
+      "sha256": "5d30ffdb3da0"
+    },
+    {
+      "path": "desktop\\core\\telegram_bridge.py",
+      "size": 3899,
+      "sha256": "d30aa2488c3f"
+    },
+    {
+      "path": "desktop\\DELIVERABLES.md",
+      "size": 13880,
+      "sha256": "b1bb4492fb2a"
+    },
+    {
+      "path": "desktop\\FEATURES.md",
+      "size": 9950,
+      "sha256": "1305fc00e89f"
+    },
+    {
+      "path": "desktop\\IMPLEMENTATION_SUMMARY.md",
+      "size": 10195,
+      "sha256": "91b784a38118"
+    },
+    {
+      "path": "desktop\\LAUNCH_CHECKLIST.md",
+      "size": 6804,
+      "sha256": "1178a919e5bf"
+    },
+    {
+      "path": "desktop\\main.py",
+      "size": 870,
+      "sha256": "6140ccc8acc0"
+    },
+    {
+      "path": "desktop\\PROJECT_COMPLETE.md",
+      "size": 8355,
+      "sha256": "27f4c50531b7"
+    },
+    {
+      "path": "desktop\\QUICK_REFERENCE.md",
+      "size": 7258,
+      "sha256": "e8dc0df0307b"
+    },
+    {
+      "path": "desktop\\README.md",
+      "size": 10735,
+      "sha256": "62ee947c751e"
+    },
+    {
+      "path": "desktop\\requirements.txt",
+      "size": 2712,
+      "sha256": "5b04d12ddbd5"
+    },
+    {
+      "path": "desktop\\run.bat",
+      "size": 1931,
+      "sha256": "1ffe183dbef4"
+    },
+    {
+      "path": "desktop\\SETUP_GUIDE.md",
+      "size": 10481,
+      "sha256": "2fd5385709ab"
+    },
+    {
+      "path": "desktop\\test_all.py",
+      "size": 5291,
+      "sha256": "94bea9ad4659"
+    },
+    {
+      "path": "desktop\\ui\\__init__.py",
+      "size": 13,
+      "sha256": "691344da94b9"
+    },
+    {
+      "path": "desktop\\ui\\chat_widget.py",
+      "size": 13346,
+      "sha256": "4cf3fea0feaa"
+    },
+    {
+      "path": "desktop\\ui\\code_editor.py",
+      "size": 8987,
+      "sha256": "4716f00b6b27"
+    },
+    {
+      "path": "desktop\\ui\\main_window.py",
+      "size": 14098,
+      "sha256": "8e19b5923ec4"
+    },
+    {
+      "path": "desktop\\ui\\models_panel.py",
+      "size": 6599,
+      "sha256": "87f392c2e90d"
+    },
+    {
+      "path": "desktop\\ui\\settings_dialog.py",
+      "size": 12692,
+      "sha256": "bff9a62c2387"
+    },
+    {
+      "path": "desktop\\ui\\styles.py",
+      "size": 9547,
+      "sha256": "b95b8d14558b"
+    },
+    {
+      "path": "desktop\\validate.py",
+      "size": 8573,
+      "sha256": "0ad8840b6ce6"
+    },
+    {
+      "path": "docker-compose.yml",
+      "size": 3668,
+      "sha256": "9bdf822f7b82"
+    },
+    {
+      "path": "Dockerfile",
+      "size": 1213,
+      "sha256": "a80d5f051c4c"
+    },
+    {
+      "path": "Dockerfile.dockerfile",
+      "size": 143,
+      "sha256": "9bdca435c829"
+    },
+    {
+      "path": "entrypoint.sh",
+      "size": 850,
+      "sha256": "9d37f74cf6cd"
+    },
+    {
+      "path": "file_agent.py",
+      "size": 12440,
+      "sha256": "903c4b261a5f"
+    },
+    {
+      "path": "file_manager.py",
+      "size": 7289,
+      "sha256": "ff3488572978"
+    },
+    {
+      "path": "fish_bot_state.py",
+      "size": 972,
+      "sha256": "ab03d2526c24"
+    },
+    {
+      "path": "fish_config.py",
+      "size": 1972,
+      "sha256": "39545a6b28f7"
+    },
+    {
+      "path": "fish_db.py",
+      "size": 5469,
+      "sha256": "d7e0c2ab9e8e"
+    },
+    {
+      "path": "fish_downloader.py",
+      "size": 15377,
+      "sha256": "f49d4f425d7d"
+    },
+    {
+      "path": "fish_utils.py",
+      "size": 15191,
+      "sha256": "ab64f5f00ff1"
+    },
+    {
+      "path": "fish_web.py",
+      "size": 11239,
+      "sha256": "5b71225f4d24"
+    },
+    {
+      "path": "GAME.py",
+      "size": 11397,
+      "sha256": "234af0650a5b"
+    },
+    {
+      "path": "graceful_shutdown.py",
+      "size": 3624,
+      "sha256": "87fa959f7d7e"
+    },
+    {
+      "path": "harry_potter_script.txt",
+      "size": 60,
+      "sha256": "e914c95e7f05"
+    },
+    {
+      "path": "image_gen.py",
+      "size": 13957,
+      "sha256": "bfb4b322fff3"
+    },
+    {
+      "path": "init.bat",
+      "size": 771,
+      "sha256": "4395a9e6194e"
+    },
+    {
+      "path": "keyboards.py",
+      "size": 9937,
+      "sha256": "f4ee130249ef"
+    },
+    {
+      "path": "landing.html",
+      "size": 27016,
+      "sha256": "783df5915f01"
+    },
+    {
+      "path": "Limpa.ru.html",
+      "size": 58757,
+      "sha256": "dbda668e4b4f"
+    },
+    {
+      "path": "llm_checker.py",
+      "size": 21085,
+      "sha256": "c726e36f56c9"
+    },
+    {
+      "path": "llm_client.py",
+      "size": 28204,
+      "sha256": "5cc3e31095cc"
+    },
+    {
+      "path": "memory.db",
+      "size": 40960,
+      "sha256": "fbbefb02274b"
+    },
+    {
+      "path": "model_discovery.py",
+      "size": 19183,
+      "sha256": "3b1a8a6e284d"
+    },
+    {
+      "path": "msg_sender.py",
+      "size": 8702,
+      "sha256": "c53fa73b8819"
+    },
+    {
+      "path": "news_parser.py",
+      "size": 3949,
+      "sha256": "012e2c6b9a9d"
+    },
+    {
+      "path": "pars\\app\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "pars\\app\\main.py",
+      "size": 340,
+      "sha256": "0c8cbc634540"
+    },
+    {
+      "path": "pars\\app\\models\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "pars\\app\\models\\entity.py",
+      "size": 166,
+      "sha256": "da736e140839"
+    },
+    {
+      "path": "pars\\app\\parsers\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "pars\\app\\parsers\\telegram_parser.py",
+      "size": 307,
+      "sha256": "a9f9921d5157"
+    },
+    {
+      "path": "pars\\config.py",
+      "size": 287,
+      "sha256": "3f357d0d0904"
+    },
+    {
+      "path": "pars\\logs\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "pars\\logs\\logger.py",
+      "size": 197,
+      "sha256": "62b9ce43a13f"
+    },
+    {
+      "path": "pars\\README.md",
+      "size": 83,
+      "sha256": "e2bf23a9763e"
+    },
+    {
+      "path": "pars\\requirements.txt",
+      "size": 40,
+      "sha256": "f32bd0e259c8"
+    },
+    {
+      "path": "pars\\run_parser.py",
+      "size": 245,
+      "sha256": "41f167e8fb2e"
+    },
+    {
+      "path": "pars\\utils\\__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc"
+    },
+    {
+      "path": "pars\\utils\\db_utils.py",
+      "size": 292,
+      "sha256": "dde6ca2c4adb"
+    },
+    {
+      "path": "pars.py",
+      "size": 1119,
+      "sha256": "e515cc5622d9"
+    },
+    {
+      "path": "pipeline.py",
+      "size": 1592,
+      "sha256": "5b9e4d694688"
+    },
+    {
+      "path": "promts.py",
+      "size": 6468,
+      "sha256": "4de08eedc90f"
+    },
+    {
+      "path": "providers_hub.py",
+      "size": 20339,
+      "sha256": "8ca02392e10f"
+    },
+    {
+      "path": "proxy_manager.py",
+      "size": 2741,
+      "sha256": "7fce9c69bd4a"
+    },
+    {
+      "path": "python_sandbox.py",
+      "size": 2670,
+      "sha256": "da171a3671de"
+    },
+    {
+      "path": "README.md",
+      "size": 9949,
+      "sha256": "8eb99c65806d"
+    },
+    {
+      "path": "rebuild.bat",
+      "size": 857,
+      "sha256": "6f31b0498c57"
+    },
+    {
+      "path": "requirements.txt",
+      "size": 280,
+      "sha256": "9af011a65bfb"
+    },
+    {
+      "path": "requirements_windows.txt",
+      "size": 508,
+      "sha256": "6b5d2d3b4870"
+    },
+    {
+      "path": "rewriter.py",
+      "size": 1270,
+      "sha256": "250131e2951a"
+    },
+    {
+      "path": "roles.py",
+      "size": 6247,
+      "sha256": "b2791662edeb"
+    },
+    {
+      "path": "sessions.db",
+      "size": 16384,
+      "sha256": "0cc58670e55c"
+    },
+    {
+      "path": "settings.py",
+      "size": 6370,
+      "sha256": "dbae9eebadb3"
+    },
+    {
+      "path": "setup.sh",
+      "size": 496,
+      "sha256": "44c6d4342b2a"
+    },
+    {
+      "path": "setup_wizard.py",
+      "size": 2952,
+      "sha256": "7bb36646cc69"
+    },
+    {
+      "path": "shell.py",
+      "size": 2423,
+      "sha256": "d8284fc37d8b"
+    },
+    {
+      "path": "speech.py",
+      "size": 3249,
+      "sha256": "311094f2467b"
+    },
+    {
+      "path": "sss.html",
+      "size": 106897,
+      "sha256": "0168cb623f75"
+    },
+    {
+      "path": "static\\current_site\\index.html",
+      "size": 19222,
+      "sha256": "206f14d43960"
+    },
+    {
+      "path": "static\\current_site\\login.tmp.html",
+      "size": 19198,
+      "sha256": "18c6ee0f2f92"
+    },
+    {
+      "path": "status_manager.py",
+      "size": 3350,
+      "sha256": "e83b71058d37"
+    },
+    {
+      "path": "structured_logger.py",
+      "size": 4587,
+      "sha256": "9d54436b1074"
+    },
+    {
+      "path": "task_queue.py",
+      "size": 15960,
+      "sha256": "269e4e249721"
+    },
+    {
+      "path": "tasks.db",
+      "size": 28672,
+      "sha256": "c900ee8c4dce"
+    },
+    {
+      "path": "telegram_client.py",
+      "size": 12211,
+      "sha256": "8ace1a2cf0a5"
+    },
+    {
+      "path": "templates\\dashboard.html",
+      "size": 9272,
+      "sha256": "fa9e9e1cf95c"
+    },
+    {
+      "path": "templates\\download_template.html",
+      "size": 209,
+      "sha256": "1a7123e9be2d"
+    },
+    {
+      "path": "templates\\index.html",
+      "size": 34423,
+      "sha256": "078297012f78"
+    },
+    {
+      "path": "test_admin_web.py",
+      "size": 1173,
+      "sha256": "808d435bdcb9"
+    },
+    {
+      "path": "test_agents.py",
+      "size": 8033,
+      "sha256": "b48e2a436814"
+    },
+    {
+      "path": "tool_registry.py",
+      "size": 6023,
+      "sha256": "8ce9cd3d2b99"
+    },
+    {
+      "path": "tools.py",
+      "size": 878,
+      "sha256": "52fd2f209523"
+    },
+    {
+      "path": "tts_engine.py",
+      "size": 5808,
+      "sha256": "9c34453bd388"
+    },
+    {
+      "path": "updater.py",
+      "size": 6330,
+      "sha256": "baab4868ded3"
+    },
+    {
+      "path": "user_settings.py",
+      "size": 7442,
+      "sha256": "3894ff22cdd9"
+    },
+    {
+      "path": "video.py",
+      "size": 3794,
+      "sha256": "5e1f64254d08"
+    },
+    {
+      "path": "╨Ч╨Р╨Я╨г╨б╨в╨Ш╨в╨м.bat",
+      "size": 693,
+      "sha256": "a80dfa288a44"
+    }
+  ]
+}
