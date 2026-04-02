@@ -1,4 +1,4 @@
-// setup_screen.dart — Initial setup: connect to BlackBugsAI server
+// setup_screen.dart — Initial setup: login/register + Telegram config
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -9,6 +9,8 @@ import '../services/api_service.dart';
 import '../widgets/neon_text_field.dart';
 import 'main_shell.dart';
 
+enum _SetupMode { login, register }
+
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
 
@@ -17,19 +19,47 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> {
+  // Admin panel connection
   final _urlCtrl = TextEditingController(text: 'http://');
-  final _tokenCtrl = TextEditingController();
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _pass2Ctrl = TextEditingController();
+
+  // Telegram
+  final _tgTokenCtrl = TextEditingController();
+  final _tgAdminCtrl = TextEditingController();
+
+  _SetupMode _mode = _SetupMode.login;
   bool _loading = false;
   String? _error;
-  bool _obscureToken = true;
+  bool _obscurePass = true;
+  bool _obscurePass2 = true;
 
-  Future<void> _connect() async {
+  @override
+  void dispose() {
+    _urlCtrl.dispose();
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    _pass2Ctrl.dispose();
+    _tgTokenCtrl.dispose();
+    _tgAdminCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
     final url = _urlCtrl.text.trim().replaceAll(RegExp(r'/$'), '');
-    final token = _tokenCtrl.text.trim();
+    final username = _userCtrl.text.trim();
+    final password = _passCtrl.text;
 
-    if (url.isEmpty || token.isEmpty) {
-      setState(() => _error = 'Заполни все поля');
+    if (url.isEmpty || username.isEmpty || password.isEmpty) {
+      setState(() => _error = 'Заполни все обязательные поля');
       return;
+    }
+    if (_mode == _SetupMode.register) {
+      if (_passCtrl.text != _pass2Ctrl.text) {
+        setState(() => _error = 'Пароли не совпадают');
+        return;
+      }
     }
 
     setState(() {
@@ -38,25 +68,32 @@ class _SetupScreenState extends State<SetupScreen> {
     });
 
     try {
-      final api = ApiService(baseUrl: url, adminToken: token);
-      final ok = await api.ping();
-
-      if (!ok) {
-        setState(() {
-          _error = 'Сервер не отвечает. Проверь URL и токен.';
-          _loading = false;
-        });
-        return;
+      String token;
+      if (_mode == _SetupMode.register) {
+        token = await ApiService.register(url, username, password);
+      } else {
+        token = await ApiService.login(url, username, password);
       }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('base_url', url);
-      await prefs.setString('admin_token', token);
+      await prefs.setString('session_token', token);
+      await prefs.setString('username', username);
+      // Telegram settings (optional)
+      final tgToken = _tgTokenCtrl.text.trim();
+      final tgAdmin = _tgAdminCtrl.text.trim();
+      if (tgToken.isNotEmpty) await prefs.setString('telegram_token', tgToken);
+      if (tgAdmin.isNotEmpty) await prefs.setString('admin_id', tgAdmin);
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         NeonPageRoute(child: const MainShell()),
       );
+    } on ApiException catch (e) {
+      setState(() {
+        _error = e.message;
+        _loading = false;
+      });
     } catch (e) {
       setState(() {
         _error = 'Ошибка подключения: $e';
@@ -71,12 +108,10 @@ class _SetupScreenState extends State<SetupScreen> {
       backgroundColor: NeonColors.bgDeep,
       body: Stack(
         children: [
-          // Background grid
           CustomPaint(
             painter: _SetupBgPainter(),
             size: MediaQuery.of(context).size,
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -96,7 +131,9 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 8),
                   NeonText(
-                    'CONNECT TO SERVER',
+                    _mode == _SetupMode.login
+                        ? 'ВХОД В СИСТЕМУ'
+                        : 'РЕГИСТРАЦИЯ',
                     color: NeonColors.purple,
                     fontSize: 11,
                     fontFamily: 'Orbitron',
@@ -105,7 +142,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Connection card
+                  // ── Admin Panel Auth Card ──────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: neonCardDecoration(glowColor: NeonColors.cyan),
@@ -113,11 +150,20 @@ class _SetupScreenState extends State<SetupScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         NeonText(
-                          '> SERVER CONFIG',
+                          '> ADMIN PANEL',
                           color: NeonColors.cyan,
                           fontSize: 12,
                           fontFamily: 'Orbitron',
                           glowRadius: 4,
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Для подключения к серверу управления',
+                          style: TextStyle(
+                            color: NeonColors.textSecondary,
+                            fontSize: 10,
+                            fontFamily: 'JetBrainsMono',
+                          ),
                         ),
                         const SizedBox(height: 20),
 
@@ -128,26 +174,56 @@ class _SetupScreenState extends State<SetupScreen> {
                           prefixIcon: Icons.dns_outlined,
                           keyboardType: TextInputType.url,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
                         NeonTextField(
-                          controller: _tokenCtrl,
-                          label: 'ADMIN TOKEN',
-                          hint: 'your_secret_token',
-                          prefixIcon: Icons.key_outlined,
-                          obscureText: _obscureToken,
+                          controller: _userCtrl,
+                          label: 'ИМЯ ПОЛЬЗОВАТЕЛЯ',
+                          hint: 'admin',
+                          prefixIcon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 12),
+
+                        NeonTextField(
+                          controller: _passCtrl,
+                          label: 'ПАРОЛЬ',
+                          hint: '••••••••',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: _obscurePass,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureToken
+                              _obscurePass
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
                               color: NeonColors.textSecondary,
                               size: 18,
                             ),
                             onPressed: () =>
-                                setState(() => _obscureToken = !_obscureToken),
+                                setState(() => _obscurePass = !_obscurePass),
                           ),
                         ),
+
+                        if (_mode == _SetupMode.register) ...[
+                          const SizedBox(height: 12),
+                          NeonTextField(
+                            controller: _pass2Ctrl,
+                            label: 'ПОВТОР ПАРОЛЯ',
+                            hint: '••••••••',
+                            prefixIcon: Icons.lock_outline,
+                            obscureText: _obscurePass2,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePass2
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: NeonColors.textSecondary,
+                                size: 18,
+                              ),
+                              onPressed: () => setState(
+                                  () => _obscurePass2 = !_obscurePass2),
+                            ),
+                          ),
+                        ],
 
                         if (_error != null) ...[
                           const SizedBox(height: 12),
@@ -186,24 +262,100 @@ class _SetupScreenState extends State<SetupScreen> {
                           child: _loading
                               ? const Center(
                                   child: NeonLoadingIndicator(
-                                    label: 'CONNECTING...',
+                                    label: 'ПОДКЛЮЧЕНИЕ...',
                                     size: 40,
                                   ),
                                 )
                               : _NeonButton(
-                                  label: 'CONNECT',
-                                  icon: Icons.link,
+                                  label: _mode == _SetupMode.login
+                                      ? 'ВОЙТИ'
+                                      : 'ЗАРЕГИСТРИРОВАТЬСЯ',
+                                  icon: _mode == _SetupMode.login
+                                      ? Icons.login
+                                      : Icons.person_add_outlined,
                                   color: NeonColors.cyan,
-                                  onTap: _connect,
+                                  onTap: _submit,
                                 ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Toggle login / register
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _mode = _mode == _SetupMode.login
+                                ? _SetupMode.register
+                                : _SetupMode.login;
+                            _error = null;
+                          }),
+                          child: Center(
+                            child: Text(
+                              _mode == _SetupMode.login
+                                  ? 'Нет аккаунта? Зарегистрироваться'
+                                  : 'Уже есть аккаунт? Войти',
+                              style: const TextStyle(
+                                color: NeonColors.cyan,
+                                fontSize: 11,
+                                fontFamily: 'JetBrainsMono',
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(begin: 0.2),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
-                  // Hints
+                  // ── Telegram Config Card ──────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration:
+                        neonCardDecoration(glowColor: NeonColors.purple),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        NeonText(
+                          '> TELEGRAM',
+                          color: NeonColors.purple,
+                          fontSize: 12,
+                          fontFamily: 'Orbitron',
+                          glowRadius: 4,
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Для связи с Telegram ботом (необязательно)',
+                          style: TextStyle(
+                            color: NeonColors.textSecondary,
+                            fontSize: 10,
+                            fontFamily: 'JetBrainsMono',
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        NeonTextField(
+                          controller: _tgTokenCtrl,
+                          label: 'BOT TOKEN',
+                          hint: '123456:ABC-DEF...',
+                          prefixIcon: Icons.telegram_outlined,
+                        ),
+                        const SizedBox(height: 12),
+
+                        NeonTextField(
+                          controller: _tgAdminCtrl,
+                          label: 'ADMIN ID',
+                          hint: '123456789',
+                          prefixIcon: Icons.admin_panel_settings_outlined,
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 500.ms, duration: 600.ms),
+
+                  const SizedBox(height: 24),
+
+                  // ── Hints ─────────────────────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -215,15 +367,20 @@ class _SetupScreenState extends State<SetupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        NeonText('> QUICK START', color: NeonColors.purple,
-                            fontSize: 10, fontFamily: 'Orbitron'),
+                        NeonText('> QUICK START',
+                            color: NeonColors.purple,
+                            fontSize: 10,
+                            fontFamily: 'Orbitron'),
                         const SizedBox(height: 10),
-                        _hintRow('1', 'Запусти docker-compose up -d'),
+                        _hintRow('1', 'Запусти: python main.py'),
                         _hintRow('2', 'URL: http://<ip>:8080'),
-                        _hintRow('3', 'Токен: ADMIN_TOKEN из .env'),
+                        _hintRow('3', 'Зарегистрируй первого admin'),
+                        _hintRow('4', 'Telegram: задай BOT TOKEN'),
                       ],
                     ),
                   ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
+
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -243,7 +400,8 @@ class _SetupScreenState extends State<SetupScreen> {
             height: 18,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              border: Border.all(color: NeonColors.purple.withOpacity(0.6)),
+              border:
+                  Border.all(color: NeonColors.purple.withOpacity(0.6)),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -257,12 +415,14 @@ class _SetupScreenState extends State<SetupScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              color: NeonColors.textSecondary,
-              fontSize: 11,
-              fontFamily: 'JetBrainsMono',
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: NeonColors.textSecondary,
+                fontSize: 11,
+                fontFamily: 'JetBrainsMono',
+              ),
             ),
           ),
         ],

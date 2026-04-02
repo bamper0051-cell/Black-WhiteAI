@@ -53,8 +53,8 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString('base_url') ?? '';
-    final token = prefs.getString('admin_token') ?? '';
-    _api = ApiService(baseUrl: baseUrl, adminToken: token);
+    final token = prefs.getString('session_token') ?? '';
+    _api = ApiService(baseUrl: baseUrl, sessionToken: token);
     setState(() => _initialized = true);
   }
 
