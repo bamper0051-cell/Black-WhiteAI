@@ -1,9 +1,9 @@
 // main_shell.dart — Main navigation shell with bottom nav bar
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
+import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 import 'tasks_screen.dart';
@@ -234,6 +234,3 @@ class _NeonBottomNav extends StatelessWidget {
   }
 }
 
-// ─── Loading indicator import ─────────────────────────────────────────────────
-
-import '../animations/neon_animations.dart';
