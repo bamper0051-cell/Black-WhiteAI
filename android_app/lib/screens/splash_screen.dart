@@ -15,11 +15,11 @@ class SplashScreen extends StatelessWidget {
       onComplete: () async {
         final prefs = await SharedPreferences.getInstance();
         final baseUrl = prefs.getString('base_url');
-        final token = prefs.getString('admin_token');
+        final sessionToken = prefs.getString('session_token');
 
         if (!context.mounted) return;
 
-        if (baseUrl == null || token == null) {
+        if (baseUrl == null || sessionToken == null || sessionToken.isEmpty) {
           Navigator.of(context).pushReplacement(
             NeonPageRoute(child: const SetupScreen()),
           );

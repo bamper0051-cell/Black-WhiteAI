@@ -237,7 +237,16 @@ class LlmProvider {
 
 class AppConfig {
   final String baseUrl;
-  final String adminToken;
+  final String sessionToken;
+  final String username;
+  final String telegramToken;
+  final String adminId;
 
-  const AppConfig({required this.baseUrl, required this.adminToken});
+  const AppConfig({
+    required this.baseUrl,
+    required this.sessionToken,
+    required this.username,
+    this.telegramToken = '',
+    this.adminId = '',
+  });
 }

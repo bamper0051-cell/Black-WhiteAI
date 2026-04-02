@@ -15,13 +15,13 @@ class ApiException implements Exception {
 
 class ApiService {
   final String baseUrl;
-  final String adminToken;
+  final String sessionToken;
 
-  ApiService({required this.baseUrl, required this.adminToken});
+  ApiService({required this.baseUrl, required this.sessionToken});
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $adminToken',
+        'Authorization': 'Bearer $sessionToken',
       };
 
   Future<dynamic> _get(String path) async {
@@ -52,12 +52,103 @@ class ApiService {
     throw ApiException(response.statusCode, msg);
   }
 
+  // ─── Auth (static — no token needed) ─────────────────────────────────────
+
+  /// Check if the server has any registered admin users.
+  static Future<bool> checkHasUsers(String baseUrl) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/auth/status');
+      final resp = await http.get(uri,
+          headers: {'Content-Type': 'application/json'}).timeout(
+        const Duration(seconds: 10),
+      );
+      if (resp.statusCode == 200) {
+        return jsonDecode(resp.body)['has_users'] == true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Register a new admin user. Returns session token on success.
+  static Future<String> register(
+      String baseUrl, String username, String password,
+      {String? existingToken}) async {
+    final uri = Uri.parse('$baseUrl/api/auth/register');
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    if (existingToken != null && existingToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $existingToken';
+    }
+    final resp = await http
+        .post(uri,
+            headers: headers,
+            body: jsonEncode({'username': username, 'password': password}))
+        .timeout(const Duration(seconds: 10));
+    if (resp.statusCode == 200) {
+      return jsonDecode(resp.body)['token'] as String;
+    }
+    String msg = 'HTTP ${resp.statusCode}';
+    try {
+      msg = jsonDecode(resp.body)['error'] ?? msg;
+    } catch (_) {}
+    throw ApiException(resp.statusCode, msg);
+  }
+
+  /// Login with username/password. Returns session token on success.
+  static Future<String> login(
+      String baseUrl, String username, String password) async {
+    final uri = Uri.parse('$baseUrl/api/auth/login');
+    final resp = await http
+        .post(uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'username': username, 'password': password}))
+        .timeout(const Duration(seconds: 10));
+    if (resp.statusCode == 200) {
+      return jsonDecode(resp.body)['token'] as String;
+    }
+    String msg = 'HTTP ${resp.statusCode}';
+    try {
+      msg = jsonDecode(resp.body)['error'] ?? msg;
+    } catch (_) {}
+    throw ApiException(resp.statusCode, msg);
+  }
+
+  /// Verify that a session token is still valid.
+  static Future<bool> verifyToken(String baseUrl, String token) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/auth/verify');
+      final resp = await http
+          .post(uri,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+              },
+              body: jsonEncode({'token': token}))
+          .timeout(const Duration(seconds: 10));
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ─── System ───────────────────────────────────────────────────────────────
 
   Future<bool> ping() async {
     try {
-      final data = await _get('/api/health');
-      return data['status'] == 'ok';
+      final uri = Uri.parse('$baseUrl/api/health');
+      final resp = await http.get(uri, headers: _headers).timeout(
+        const Duration(seconds: 10),
+      );
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+        return data['status'] == 'ok' || data['status'] == 'degraded';
+      }
+    } catch (_) {}
+    try {
+      final uri = Uri.parse('$baseUrl/ping');
+      final resp = await http
+          .get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 10));
+      return resp.statusCode == 200;
     } catch (_) {
       return false;
     }

@@ -1,9 +1,9 @@
 """
 admin_web.py — REST API + Web Panel для АВТОМУВИ
 Порт: ADMIN_WEB_PORT (default 8080)
-Auth: X-Admin-Token header или ?token=...
+Auth: username/password (session token) или X-Admin-Token header / ?token=...
 """
-import os, sys, json, time, threading, subprocess, platform
+import os, sys, json, time, threading, subprocess, platform, hashlib, secrets, sqlite3
 from datetime import datetime
 from functools import wraps
 from flask import Flask, request, jsonify, send_file
@@ -13,6 +13,72 @@ import config
 ADMIN_WEB_PORT  = int(os.environ.get('ADMIN_WEB_PORT', 8080))
 ADMIN_WEB_TOKEN = os.environ.get('ADMIN_WEB_TOKEN', 'changeme_secret_token')
 BASE = config.BASE_DIR
+
+# ── Admin Panel Users DB (username/password auth) ─────────────────────────────
+_PANEL_DB = os.path.join(BASE, 'panel_users.db')
+
+def _init_panel_db():
+    with sqlite3.connect(_PANEL_DB) as con:
+        con.execute('''CREATE TABLE IF NOT EXISTS panel_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at REAL NOT NULL
+        )''')
+        con.execute('''CREATE TABLE IF NOT EXISTS panel_sessions (
+            token TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            created_at REAL NOT NULL
+        )''')
+        con.commit()
+
+_init_panel_db()
+
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def _panel_user_exists(username: str) -> bool:
+    with sqlite3.connect(_PANEL_DB) as con:
+        row = con.execute('SELECT 1 FROM panel_users WHERE username=?', (username,)).fetchone()
+    return row is not None
+
+def _panel_any_user() -> bool:
+    with sqlite3.connect(_PANEL_DB) as con:
+        row = con.execute('SELECT 1 FROM panel_users LIMIT 1').fetchone()
+    return row is not None
+
+def _panel_register(username: str, password: str) -> str:
+    """Register user and return session token."""
+    pw_hash = _hash_password(password)
+    token = secrets.token_hex(32)
+    with sqlite3.connect(_PANEL_DB) as con:
+        con.execute('INSERT INTO panel_users (username, password_hash, created_at) VALUES (?,?,?)',
+                    (username, pw_hash, time.time()))
+        con.execute('INSERT INTO panel_sessions (token, username, created_at) VALUES (?,?,?)',
+                    (token, username, time.time()))
+        con.commit()
+    return token
+
+def _panel_login(username: str, password: str):
+    """Returns session token on success, None on failure."""
+    pw_hash = _hash_password(password)
+    with sqlite3.connect(_PANEL_DB) as con:
+        row = con.execute('SELECT 1 FROM panel_users WHERE username=? AND password_hash=?',
+                          (username, pw_hash)).fetchone()
+    if not row:
+        return None
+    token = secrets.token_hex(32)
+    with sqlite3.connect(_PANEL_DB) as con:
+        con.execute('INSERT INTO panel_sessions (token, username, created_at) VALUES (?,?,?)',
+                    (token, username, time.time()))
+        con.commit()
+    return token
+
+def _panel_verify_token(token: str) -> bool:
+    """Check if session token is valid."""
+    with sqlite3.connect(_PANEL_DB) as con:
+        row = con.execute('SELECT 1 FROM panel_sessions WHERE token=?', (token,)).fetchone()
+    return row is not None
 
 app = Flask(__name__)
 app.config['JSON_ENSURE_ASCII'] = False
@@ -44,22 +110,35 @@ def install_log_capture():
     sys.stderr = _LogCapture(sys.stderr)
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
+def _extract_bearer(header: str) -> str:
+    """Extract token from 'Bearer <token>' header value."""
+    if header and header.lower().startswith('bearer '):
+        return header[7:].strip()
+    return header or ''
+
 def require_token(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        token = (request.headers.get('X-Admin-Token') or
-                 request.args.get('token') or
-                 (request.get_json(silent=True) or {}).get('token', ''))
-        if token != ADMIN_WEB_TOKEN:
-            return jsonify({'error': 'Unauthorized'}), 401
-        return f(*args, **kwargs)
+        # Accept: Authorization: Bearer <session_token>
+        #         X-Admin-Token: <legacy_token>
+        #         ?token=...
+        auth_header = request.headers.get('Authorization', '')
+        session_token = _extract_bearer(auth_header)
+        legacy_token = (request.headers.get('X-Admin-Token') or
+                        request.args.get('token') or
+                        (request.get_json(silent=True) or {}).get('token', ''))
+        if session_token and _panel_verify_token(session_token):
+            return f(*args, **kwargs)
+        if legacy_token == ADMIN_WEB_TOKEN:
+            return f(*args, **kwargs)
+        return jsonify({'error': 'Unauthorized'}), 401
     return wrapper
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 @app.after_request
 def add_cors(resp):
     resp.headers['Access-Control-Allow-Origin']  = '*'
-    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, Authorization'
     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
     return resp
 
@@ -73,6 +152,62 @@ def options_handler(path=''):
 def ping():
     """Самый простой эндпоинт — без токена, без зависимостей."""
     return jsonify({'ok': True, 'pong': True, 'port': ADMIN_WEB_PORT}), 200
+
+# ── Panel Auth (username/password) ────────────────────────────────────────────
+@app.route('/api/auth/status')
+def api_auth_status():
+    """Returns whether any admin user exists (needed for first-run registration)."""
+    return jsonify({'has_users': _panel_any_user()})
+
+@app.route('/api/auth/register', methods=['POST'])
+def api_auth_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    if len(username) < 3:
+        return jsonify({'error': 'username must be at least 3 characters'}), 400
+    if len(password) < 6:
+        return jsonify({'error': 'password must be at least 6 characters'}), 400
+    if _panel_user_exists(username):
+        return jsonify({'error': 'username already taken'}), 409
+    # If users already exist, only allow registration with valid session
+    if _panel_any_user():
+        auth_header = request.headers.get('Authorization', '')
+        legacy_token = request.headers.get('X-Admin-Token', '') or request.args.get('token', '')
+        session_token = _extract_bearer(auth_header)
+        if not (
+            (session_token and _panel_verify_token(session_token)) or
+            legacy_token == ADMIN_WEB_TOKEN
+        ):
+            return jsonify({'error': 'Unauthorized: existing admin session required for new registrations'}), 401
+    try:
+        token = _panel_register(username, password)
+        return jsonify({'ok': True, 'token': token, 'username': username})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_auth_login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    token = _panel_login(username, password)
+    if token is None:
+        return jsonify({'error': 'Invalid username or password'}), 401
+    return jsonify({'ok': True, 'token': token, 'username': username})
+
+@app.route('/api/auth/verify', methods=['POST'])
+def api_auth_verify():
+    """Check if a session token is valid."""
+    data = request.get_json(silent=True) or {}
+    token = data.get('token') or _extract_bearer(request.headers.get('Authorization', ''))
+    if token and _panel_verify_token(token):
+        return jsonify({'ok': True, 'valid': True})
+    return jsonify({'ok': False, 'valid': False}), 401
 
 @app.route('/health')
 def health():
