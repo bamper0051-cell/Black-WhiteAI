@@ -12,9 +12,12 @@ on:
         required: false
         default: 'latest'
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
-    name: Build Release APK
+    name: Build Android APKs
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +43,11 @@ jobs:
 
       - name: Analyze code
         working-directory: android_app
-        run: flutter analyze --no-fatal-infos || true
+        run: flutter analyze --no-fatal-infos
+
+      - name: Build Debug APK (assembleDebug)
+        working-directory: android_app
+        run: flutter build apk --debug
 
       - name: Build Release APK
         working-directory: android_app
@@ -56,9 +63,11 @@ jobs:
             --build-name=1.0.0 \
             --build-number=${{ github.run_number }}
 
-      - name: Rename APKs
+      - name: Collect APKs
         run: |
-          mkdir -p release-apks
+          mkdir -p release-apks debug-apks
+          cp android_app/build/app/outputs/flutter-apk/app-debug.apk \
+             debug-apks/BlackBugsAI-debug.apk
           cp android_app/build/app/outputs/flutter-apk/app-release.apk \
              release-apks/BlackBugsAI-universal.apk
           cp android_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
@@ -67,12 +76,19 @@ jobs:
              release-apks/BlackBugsAI-arm32.apk || true
           cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
              release-apks/BlackBugsAI-x86_64.apk || true
-          ls -lh release-apks/
+          ls -lh debug-apks/ release-apks/
 
-      - name: Upload APK artifacts
+      - name: Upload Debug APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BlackBugsAI-APKs
+          name: BlackBugsAI-Debug-APK
+          path: debug-apks/
+          retention-days: 30
+
+      - name: Upload Release APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackBugsAI-Release-APKs
           path: release-apks/
           retention-days: 30
 

@@ -22,7 +22,6 @@ class _NeonBootAnimationState extends State<NeonBootAnimation>
   late AnimationController _textCtrl;
   late Animation<double> _glowAnim;
   late Animation<double> _scanAnim;
-  late Animation<double> _textAnim;
 
   final List<String> _bootLines = [
     '> INITIALIZING BLACKBUGSAI...',
@@ -61,8 +60,6 @@ class _NeonBootAnimationState extends State<NeonBootAnimation>
     _scanAnim = Tween<double>(begin: -1.0, end: 2.0).animate(
       CurvedAnimation(parent: _scanCtrl, curve: Curves.linear),
     );
-    _textAnim = Tween<double>(begin: 0, end: 1).animate(_textCtrl);
-
     _textCtrl.forward();
 
     // Progress through boot lines
