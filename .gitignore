@@ -1,0 +1,143 @@
+# ============================================================
+# BlackBugsAI — .gitignore
+# ============================================================
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+MANIFEST
+
+# === Virtual Environments ===
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+.python-version
+
+# === Environment / Secrets ===
+.env
+.env.local
+.env.*.local
+*.secret
+secrets.json
+credentials.json
+service_account.json
+
+# === Docker ===
+.dockerignore.local
+docker-compose.override.yml
+docker-compose.local.yml
+
+# === Logs ===
+logs/
+*.log
+*.log.*
+log_*.txt
+
+# === Databases / Data ===
+data/
+*.db
+*.sqlite
+*.sqlite3
+tasks.db
+users.db
+sessions.db
+
+# === Runtime Workspaces ===
+neo_workspace/
+matrix_workspace/
+agent_projects/
+artifacts/
+created_bots/
+/workspace/
+/tmp_agent/
+
+# === Media / Generated Content ===
+*.mp3
+*.mp4
+*.wav
+*.ogg
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.zip
+!BlackBugsAI.zip
+
+# === OS Files ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# === IDE / Editors ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# === Tests / Coverage ===
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+nosetests.xml
+test-results/
+
+# === Flutter / Dart ===
+android_app/.dart_tool/
+android_app/.flutter-plugins
+android_app/.flutter-plugins-dependencies
+android_app/.packages
+android_app/build/
+android_app/.pub-cache/
+android_app/.pub/
+android_app/android/.gradle/
+android_app/android/local.properties
+android_app/android/key.properties
+android_app/android/app/debug/
+android_app/android/app/release/
+android_app/android/app/profile/
+android_app/*.apk
+android_app/*.aab
+android_app/ios/
+android_app/web/
+android_app/linux/
+android_app/macos/
+android_app/windows/
+android_app/pubspec.lock
+
+# === Node / JS (if any) ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Misc ===
+*.bak
+*.tmp
+*.temp
+*.swp
+.cache/
+tmp/
+temp/
