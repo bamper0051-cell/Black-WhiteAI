@@ -77,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen>
         token: result.token!,
         username: result.username!,
         role: result.role ?? 'user',
+        authMode: 'login',
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

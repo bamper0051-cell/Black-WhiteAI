@@ -1,4 +1,12 @@
-// splash_screen.dart — Boot animation + auto-connect to server
+// splash_screen.dart — Boot animation + session-aware routing
+//
+// Routing logic:
+//   No base_url              → SetupScreen
+//   Has base_url, no token:
+//     auth_mode == 'token'   → SetupScreen (re-enter token)
+//     auth_mode == 'login'   → LoginScreen
+//     auth_mode == null      → SetupScreen
+//   Has base_url + token     → MainShell (auto-connect)
 
 import 'package:flutter/material.dart';
 import '../animations/neon_animations.dart';
@@ -15,13 +23,13 @@ class SplashScreen extends StatelessWidget {
     return NeonBootAnimation(
       onComplete: () async {
         final session = await AuthService.loadSession();
-
         if (!context.mounted) return;
 
-        final baseUrl = session['base_url'];
-        final token = session['token'];
+        final baseUrl  = session['base_url'];
+        final token    = session['token'];
+        final authMode = session['auth_mode'];
 
-        // No server configured — go to setup
+        // No server configured
         if (baseUrl == null || baseUrl.isEmpty) {
           Navigator.of(context).pushReplacement(
             NeonPageRoute(child: const SetupScreen()),
@@ -29,15 +37,22 @@ class SplashScreen extends StatelessWidget {
           return;
         }
 
-        // Server configured but not logged in — ping then go to login
+        // Server known but no token
         if (token == null || token.isEmpty) {
-          Navigator.of(context).pushReplacement(
-            NeonPageRoute(child: LoginScreen(baseUrl: baseUrl)),
-          );
+          if (authMode == 'login') {
+            Navigator.of(context).pushReplacement(
+              NeonPageRoute(child: LoginScreen(baseUrl: baseUrl)),
+            );
+          } else {
+            // token mode or unknown — re-setup
+            Navigator.of(context).pushReplacement(
+              NeonPageRoute(child: const SetupScreen()),
+            );
+          }
           return;
         }
 
-        // Fully logged in — auto-connect to main shell
+        // Fully authenticated — go to main shell
         Navigator.of(context).pushReplacement(
           NeonPageRoute(child: const MainShell()),
         );

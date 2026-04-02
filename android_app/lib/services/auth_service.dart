@@ -1,4 +1,7 @@
 // auth_service.dart — Login, register, session management
+// Supports two auth modes:
+//   'login'  — username + password via /api/auth/login
+//   'token'  — direct admin token (X-Admin-Token / Bearer)
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -21,6 +24,8 @@ class AuthService {
 
   Map<String, String> get _headers => {'Content-Type': 'application/json'};
 
+  // ── Server auth mode ─────────────────────────────────────────────────────────
+
   Future<AuthResult> login(String username, String password) async {
     try {
       final resp = await http.post(
@@ -40,7 +45,7 @@ class AuthService {
       }
       return AuthResult(ok: false, error: data['error'] ?? 'Login failed');
     } catch (e) {
-      return AuthResult(ok: false, error: 'Connection error: $e');
+      return AuthResult(ok: false, error: 'Ошибка подключения: $e');
     }
   }
 
@@ -63,9 +68,40 @@ class AuthService {
       }
       return AuthResult(ok: false, error: data['error'] ?? 'Registration failed');
     } catch (e) {
-      return AuthResult(ok: false, error: 'Connection error: $e');
+      return AuthResult(ok: false, error: 'Ошибка подключения: $e');
     }
   }
+
+  // ── Token mode ───────────────────────────────────────────────────────────────
+
+  /// Validates a raw admin token by hitting /ping or /api/stats
+  Future<AuthResult> validateToken(String token) async {
+    try {
+      final resp = await http.get(
+        Uri.parse('$baseUrl/api/stats'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'X-Admin-Token': token,
+        },
+      ).timeout(const Duration(seconds: 8));
+
+      if (resp.statusCode == 200) {
+        return AuthResult(ok: true, token: token, username: 'admin', role: 'admin');
+      }
+      if (resp.statusCode == 401 || resp.statusCode == 403) {
+        return AuthResult(ok: false, error: 'Неверный токен');
+      }
+      // If endpoint doesn't exist but server is alive, token is accepted
+      if (resp.statusCode == 404) {
+        return AuthResult(ok: true, token: token, username: 'admin', role: 'admin');
+      }
+      return AuthResult(ok: false, error: 'Сервер вернул ${resp.statusCode}');
+    } catch (e) {
+      return AuthResult(ok: false, error: 'Ошибка подключения: $e');
+    }
+  }
+
+  // ── Ping ─────────────────────────────────────────────────────────────────────
 
   Future<bool> ping() async {
     try {
@@ -78,40 +114,51 @@ class AuthService {
     }
   }
 
-  // ── Persist session ─────────────────────────────────────────────────────────
+  // ── Session persistence ──────────────────────────────────────────────────────
 
+  /// [authMode] must be 'login' or 'token'
   static Future<void> saveSession({
     required String baseUrl,
     required String token,
     required String username,
     required String role,
+    required String authMode,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('base_url', baseUrl);
     await prefs.setString('admin_token', token);
     await prefs.setString('username', username);
     await prefs.setString('role', role);
+    await prefs.setString('auth_mode', authMode);
   }
 
   static Future<Map<String, String?>> loadSession() async {
     final prefs = await SharedPreferences.getInstance();
     return {
-      'base_url': prefs.getString('base_url'),
-      'token': prefs.getString('admin_token'),
-      'username': prefs.getString('username'),
-      'role': prefs.getString('role'),
+      'base_url':   prefs.getString('base_url'),
+      'token':      prefs.getString('admin_token'),
+      'username':   prefs.getString('username'),
+      'role':       prefs.getString('role'),
+      'auth_mode':  prefs.getString('auth_mode'),
     };
   }
 
+  /// Clears credentials but keeps base_url and auth_mode
   static Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('admin_token');
     await prefs.remove('username');
     await prefs.remove('role');
-    // Keep base_url so user doesn't have to re-enter server address
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
   static bool isLoggedIn(Map<String, String?> session) {
-    return session['token'] != null && session['base_url'] != null;
+    return session['token'] != null &&
+        session['token']!.isNotEmpty &&
+        session['base_url'] != null;
   }
 }

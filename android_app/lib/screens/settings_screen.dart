@@ -1,8 +1,7 @@
-// settings_screen.dart — App settings, account management, server config
+// settings_screen.dart — Account, server config, auth mode management
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../widgets/neon_text_field.dart';
@@ -25,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _username;
   String? _role;
   String? _baseUrl;
+  String? _authMode;    // 'login' | 'token'
 
   @override
   void initState() {
@@ -42,8 +42,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final session = await AuthService.loadSession();
     setState(() {
       _username = session['username'];
-      _role = session['role'];
-      _baseUrl = session['base_url'];
+      _role     = session['role'];
+      _baseUrl  = session['base_url'];
+      _authMode = session['auth_mode'];
       _urlCtrl.text = session['base_url'] ?? '';
     });
   }
@@ -53,9 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (url.isEmpty) return;
     setState(() => _savingUrl = true);
 
-    // Test connection
-    final auth = AuthService(baseUrl: url);
-    final ok = await auth.ping();
+    final ok = await AuthService(baseUrl: url).ping();
     if (!mounted) return;
 
     if (!ok) {
@@ -66,8 +65,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('base_url', url);
+    final session = await AuthService.loadSession();
+    await AuthService.saveSession(
+      baseUrl: url,
+      token: session['token'] ?? '',
+      username: session['username'] ?? '',
+      role: session['role'] ?? 'user',
+      authMode: session['auth_mode'] ?? 'login',
+    );
     if (!mounted) return;
     setState(() {
       _baseUrl = url;
@@ -78,18 +83,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Logout: clear token but keep URL + auth_mode → back to login or setup
   Future<void> _logout() async {
+    final mode = _authMode;
+    final url  = _baseUrl ?? '';
     await AuthService.clearSession();
     if (!mounted) return;
+    Widget dest = mode == 'login'
+        ? LoginScreen(baseUrl: url)
+        : const SetupScreen();
     Navigator.of(context).pushAndRemoveUntil(
-      NeonPageRoute(child: LoginScreen(baseUrl: _baseUrl ?? '')),
+      NeonPageRoute(child: dest),
       (_) => false,
     );
   }
 
+  /// Switch mode: clears session and goes back to setup
+  Future<void> _switchMode() async {
+    await AuthService.clearSession();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      NeonPageRoute(child: const SetupScreen()),
+      (_) => false,
+    );
+  }
+
+  /// Full reset: clears everything
   Future<void> _disconnect() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await AuthService.clearAll();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       NeonPageRoute(child: const SetupScreen()),
@@ -99,6 +120,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLogin = _authMode == 'login';
+    final modeColor  = isLogin ? NeonColors.purple : NeonColors.green;
+    final modeLabel  = isLogin ? 'ЛОГИН / ПАРОЛЬ' : 'ADMIN ТОКЕН';
+    final modeIcon   = isLogin ? Icons.person_outlined : Icons.key_outlined;
+
     return Scaffold(
       backgroundColor: NeonColors.bgDeep,
       appBar: AppBar(
@@ -110,28 +136,102 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Account section ──────────────────────────────────────────────
+
+            // ── Auth mode badge ──────────────────────────────────────────────
             NeonCard(
-              glowColor: NeonColors.purple,
+              glowColor: modeColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const NeonText('> АККАУНТ', color: NeonColors.purple,
+                  const NeonText('> РЕЖИМ ДОСТУПА', color: NeonColors.textSecondary,
+                      fontSize: 10, fontFamily: 'Orbitron', glowRadius: 2),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: modeColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: modeColor.withOpacity(0.4)),
+                        ),
+                        child: Icon(modeIcon, color: modeColor, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            NeonText(modeLabel,
+                                color: modeColor,
+                                fontSize: 13, fontFamily: 'Orbitron',
+                                fontWeight: FontWeight.w700, glowRadius: 4),
+                            const SizedBox(height: 3),
+                            Text(
+                              isLogin
+                                  ? 'Авторизация через сервер'
+                                  : 'Прямой токен доступа',
+                              style: const TextStyle(
+                                color: NeonColors.textSecondary,
+                                fontFamily: 'JetBrainsMono',
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _switchMode,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: NeonColors.bgCard,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                                color: NeonColors.textDisabled.withOpacity(0.4)),
+                          ),
+                          child: const Text(
+                            'СМЕНИТЬ',
+                            style: TextStyle(
+                              color: NeonColors.textSecondary,
+                              fontFamily: 'Orbitron',
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(duration: 300.ms),
+
+            const SizedBox(height: 14),
+
+            // ── Account section ──────────────────────────────────────────────
+            NeonCard(
+              glowColor: NeonColors.cyan,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NeonText('> АККАУНТ', color: NeonColors.cyan,
                       fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: NeonColors.purple.withOpacity(0.1),
+                          color: NeonColors.cyan.withOpacity(0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: NeonColors.purple.withOpacity(0.4)),
+                              color: NeonColors.cyan.withOpacity(0.4)),
                         ),
                         child: const Icon(Icons.person,
-                            color: NeonColors.purple, size: 24),
+                            color: NeonColors.cyan, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Column(
@@ -149,14 +249,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: _role == 'admin'
-                                  ? NeonColors.cyan.withOpacity(0.1)
-                                  : NeonColors.purple.withOpacity(0.1),
+                              color: (_role == 'admin'
+                                      ? NeonColors.cyan
+                                      : NeonColors.purple)
+                                  .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(
-                                color: _role == 'admin'
-                                    ? NeonColors.cyan.withOpacity(0.5)
-                                    : NeonColors.purple.withOpacity(0.5),
+                                color: (_role == 'admin'
+                                        ? NeonColors.cyan
+                                        : NeonColors.purple)
+                                    .withOpacity(0.5),
                               ),
                             ),
                             child: Text(
@@ -177,96 +279,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: GestureDetector(
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          backgroundColor: NeonColors.bgDark,
-                          title: const NeonText('ВЫЙТИ?',
-                              color: NeonColors.purple,
-                              fontSize: 14, fontFamily: 'Orbitron'),
-                          content: const Text(
-                            'Вы будете перенаправлены на экран входа.',
-                            style: TextStyle(
-                              color: NeonColors.textSecondary,
-                              fontFamily: 'JetBrainsMono',
-                              fontSize: 12,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('ОТМЕНА',
-                                  style: TextStyle(
-                                      color: NeonColors.textSecondary)),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _logout();
-                              },
-                              child: const NeonText('ВЫЙТИ',
-                                  color: NeonColors.purple,
-                                  fontFamily: 'Orbitron', fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: NeonColors.purple.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: NeonColors.purple.withOpacity(0.5)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.logout,
-                                color: NeonColors.purple, size: 16),
-                            SizedBox(width: 8),
-                            NeonText('ВЫЙТИ ИЗ АККАУНТА',
-                                color: NeonColors.purple,
-                                fontSize: 11, fontFamily: 'Orbitron',
-                                fontWeight: FontWeight.w700),
-                          ],
-                        ),
-                      ),
+                  _OutlineButton(
+                    label: 'ВЫЙТИ ИЗ АККАУНТА',
+                    icon: Icons.logout,
+                    color: NeonColors.cyan,
+                    onTap: () => _confirmDialog(
+                      title: 'ВЫЙТИ?',
+                      body: isLogin
+                          ? 'Вернёт на экран входа.'
+                          : 'Вернёт на экран настройки токена.',
+                      color: NeonColors.cyan,
+                      actionLabel: 'ВЫЙТИ',
+                      onConfirm: _logout,
                     ),
                   ),
                 ],
               ),
-            ).animate().fadeIn(duration: 400.ms),
+            ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             // ── Server settings ──────────────────────────────────────────────
             NeonCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const NeonText('> СЕРВЕР', color: NeonColors.cyan,
+                  const NeonText('> СЕРВЕР', color: NeonColors.purple,
                       fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   NeonTextField(
                     controller: _urlCtrl,
                     label: 'АДРЕС СЕРВЕРА',
                     hint: 'http://192.168.1.1:8080',
                     prefixIcon: Icons.dns_outlined,
+                    color: NeonColors.purple,
                     keyboardType: TextInputType.url,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   _savingUrl
                       ? const Center(
                           child: NeonLoadingIndicator(
-                              size: 32, label: 'ПРОВЕРЯЕМ...'))
+                              size: 30, label: 'ПРОВЕРЯЕМ...'))
                       : SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -277,9 +334,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                 ],
               ),
-            ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+            ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             // ── App info ─────────────────────────────────────────────────────
             NeonCard(
@@ -289,18 +346,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   const NeonText('> О ПРИЛОЖЕНИИ', color: NeonColors.green,
                       fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   _InfoRow('Версия', '1.0.0'),
                   _InfoRow('Платформа', 'Android'),
                   _InfoRow('Тема', 'Neon Dark'),
-                  _InfoRow('Framework', 'Flutter 3.x'),
                   if (_baseUrl != null)
                     _InfoRow('Сервер', _baseUrl!),
                 ],
               ),
-            ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+            ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             // ── Danger zone ──────────────────────────────────────────────────
             NeonCard(
@@ -310,72 +366,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   const NeonText('> ОПАСНАЯ ЗОНА', color: NeonColors.pink,
                       fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: GestureDetector(
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          backgroundColor: NeonColors.bgDark,
-                          title: const NeonText('СБРОСИТЬ ВСЁ?',
-                              color: NeonColors.pink,
-                              fontSize: 14, fontFamily: 'Orbitron'),
-                          content: const Text(
-                            'Все настройки и сессия будут удалены.',
-                            style: TextStyle(
-                              color: NeonColors.textSecondary,
-                              fontFamily: 'JetBrainsMono',
-                              fontSize: 12,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('ОТМЕНА',
-                                  style: TextStyle(
-                                      color: NeonColors.textSecondary)),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _disconnect();
-                              },
-                              child: const NeonText('СБРОСИТЬ',
-                                  color: NeonColors.pink,
-                                  fontFamily: 'Orbitron', fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: NeonColors.pink.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: NeonColors.pink.withOpacity(0.5)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.link_off,
-                                color: NeonColors.pink, size: 16),
-                            SizedBox(width: 8),
-                            NeonText('СБРОСИТЬ И ПЕРЕПОДКЛЮЧИТЬСЯ',
-                                color: NeonColors.pink,
-                                fontSize: 10, fontFamily: 'Orbitron',
-                                fontWeight: FontWeight.w700),
-                          ],
-                        ),
-                      ),
+                  const SizedBox(height: 10),
+                  _OutlineButton(
+                    label: 'СБРОСИТЬ И ПЕРЕПОДКЛЮЧИТЬСЯ',
+                    icon: Icons.link_off,
+                    color: NeonColors.pink,
+                    onTap: () => _confirmDialog(
+                      title: 'СБРОСИТЬ ВСЁ?',
+                      body: 'Все настройки и сессия будут удалены.',
+                      color: NeonColors.pink,
+                      actionLabel: 'СБРОСИТЬ',
+                      onConfirm: _disconnect,
                     ),
                   ),
                 ],
               ),
-            ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+            ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
 
             const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDialog({
+    required String title,
+    required String body,
+    required Color color,
+    required String actionLabel,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: NeonColors.bgDark,
+        title: NeonText(title,
+            color: color, fontSize: 14, fontFamily: 'Orbitron'),
+        content: Text(
+          body,
+          style: const TextStyle(
+            color: NeonColors.textSecondary,
+            fontFamily: 'JetBrainsMono',
+            fontSize: 12,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ОТМЕНА',
+                style: TextStyle(color: NeonColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: NeonText(actionLabel,
+                color: color, fontFamily: 'Orbitron', fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Shared widgets ────────────────────────────────────────────────────────────
+
+class _OutlineButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _OutlineButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.5)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 8),
+            NeonText(label,
+                color: color,
+                fontSize: 10, fontFamily: 'Orbitron',
+                fontWeight: FontWeight.w700),
           ],
         ),
       ),
@@ -386,7 +477,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
-
   const _InfoRow(this.label, this.value);
 
   @override
@@ -395,26 +485,22 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: NeonColors.textSecondary,
-              fontFamily: 'JetBrainsMono',
-              fontSize: 11,
-            ),
-          ),
-          const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
+          Text(label,
               style: const TextStyle(
-                color: NeonColors.textPrimary,
+                color: NeonColors.textSecondary,
                 fontFamily: 'JetBrainsMono',
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+              )),
+          const Spacer(),
+          Flexible(
+            child: Text(value,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: NeonColors.textPrimary,
+                  fontFamily: 'JetBrainsMono',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                )),
           ),
         ],
       ),
