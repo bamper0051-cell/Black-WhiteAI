@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
+// TelegramBotStats, TelegramUser, TelegramMessage are exported from models.dart
 
 class ApiException implements Exception {
   final int statusCode;
@@ -186,6 +187,92 @@ class ApiService {
       return List<String>.from(data['lines'] ?? []);
     } catch (_) {
       return [];
+    }
+  }
+
+  // ─── Telegram Bot ─────────────────────────────────────────────────────────
+
+  Future<TelegramBotStats> getBotStats() async {
+    try {
+      final data = await _get('/api/telegram/stats');
+      return TelegramBotStats.fromJson(data);
+    } catch (_) {
+      return const TelegramBotStats(
+        botUsername: 'BlackBugsBot',
+        isOnline: false,
+        totalUsers: 0,
+        activeToday: 0,
+        messagesToday: 0,
+        totalMessages: 0,
+        usersByRole: {},
+      );
+    }
+  }
+
+  Future<List<TelegramUser>> getBotUsers({String? role, int limit = 50}) async {
+    try {
+      String path = '/api/telegram/users?limit=$limit';
+      if (role != null) path += '&role=$role';
+      final data = await _get(path) as List;
+      return data.map((j) => TelegramUser.fromJson(j)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<bool> setUserRole(String userId, String role) async {
+    try {
+      await _post('/api/telegram/users/$userId/role', {'role': role});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> banUser(String userId) async {
+    try {
+      await _post('/api/telegram/users/$userId/ban', {});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> unbanUser(String userId) async {
+    try {
+      await _post('/api/telegram/users/$userId/unban', {});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> sendBroadcast(String message, {String? role}) async {
+    try {
+      final body = <String, dynamic>{'text': message};
+      if (role != null) body['role'] = role;
+      await _post('/api/telegram/broadcast', body);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<List<TelegramMessage>> getBotMessages({int limit = 30}) async {
+    try {
+      final data = await _get('/api/telegram/messages?limit=$limit') as List;
+      return data.map((j) => TelegramMessage.fromJson(j)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<bool> restartBot() async {
+    try {
+      await _post('/api/telegram/restart', {});
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

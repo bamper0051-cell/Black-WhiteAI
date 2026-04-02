@@ -241,3 +241,114 @@ class AppConfig {
 
   const AppConfig({required this.baseUrl, required this.adminToken});
 }
+
+// ─── Telegram Bot Models ──────────────────────────────────────────────────────
+
+class TelegramBotStats {
+  final String botUsername;
+  final bool isOnline;
+  final int totalUsers;
+  final int activeToday;
+  final int messagesToday;
+  final int totalMessages;
+  final Map<String, int> usersByRole;
+  final DateTime? lastActivity;
+
+  const TelegramBotStats({
+    required this.botUsername,
+    required this.isOnline,
+    required this.totalUsers,
+    required this.activeToday,
+    required this.messagesToday,
+    required this.totalMessages,
+    required this.usersByRole,
+    this.lastActivity,
+  });
+
+  factory TelegramBotStats.fromJson(Map<String, dynamic> j) => TelegramBotStats(
+        botUsername: j['bot_username'] ?? 'unknown',
+        isOnline: j['is_online'] ?? false,
+        totalUsers: j['total_users'] ?? 0,
+        activeToday: j['active_today'] ?? 0,
+        messagesToday: j['messages_today'] ?? 0,
+        totalMessages: j['total_messages'] ?? 0,
+        usersByRole: Map<String, int>.from(j['users_by_role'] ?? {}),
+        lastActivity: j['last_activity'] != null
+            ? DateTime.tryParse(j['last_activity'])
+            : null,
+      );
+}
+
+class TelegramUser {
+  final String id;
+  final String username;
+  final String firstName;
+  final String lastName;
+  final String role; // god | admin | vip | user | noob | ban
+  final bool isActive;
+  final int messageCount;
+  final DateTime? joinedAt;
+  final DateTime? lastSeen;
+
+  const TelegramUser({
+    required this.id,
+    required this.username,
+    required this.firstName,
+    this.lastName = '',
+    required this.role,
+    required this.isActive,
+    this.messageCount = 0,
+    this.joinedAt,
+    this.lastSeen,
+  });
+
+  factory TelegramUser.fromJson(Map<String, dynamic> j) => TelegramUser(
+        id: j['id']?.toString() ?? '',
+        username: j['username'] ?? '',
+        firstName: j['first_name'] ?? '',
+        lastName: j['last_name'] ?? '',
+        role: j['role'] ?? 'user',
+        isActive: j['is_active'] ?? true,
+        messageCount: j['message_count'] ?? 0,
+        joinedAt: j['joined_at'] != null ? DateTime.tryParse(j['joined_at']) : null,
+        lastSeen: j['last_seen'] != null ? DateTime.tryParse(j['last_seen']) : null,
+      );
+
+  String get displayName {
+    if (firstName.isNotEmpty) return firstName;
+    if (username.isNotEmpty) return '@$username';
+    return 'User $id';
+  }
+
+  bool get isBanned => role == 'ban';
+  bool get isAdmin => role == 'admin' || role == 'god';
+}
+
+class TelegramMessage {
+  final String id;
+  final String userId;
+  final String username;
+  final String text;
+  final String direction; // in | out
+  final DateTime timestamp;
+
+  const TelegramMessage({
+    required this.id,
+    required this.userId,
+    required this.username,
+    required this.text,
+    required this.direction,
+    required this.timestamp,
+  });
+
+  factory TelegramMessage.fromJson(Map<String, dynamic> j) => TelegramMessage(
+        id: j['id']?.toString() ?? '',
+        userId: j['user_id']?.toString() ?? '',
+        username: j['username'] ?? '',
+        text: j['text'] ?? '',
+        direction: j['direction'] ?? 'in',
+        timestamp: DateTime.tryParse(j['timestamp'] ?? '') ?? DateTime.now(),
+      );
+
+  bool get isIncoming => direction == 'in';
+}

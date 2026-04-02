@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
+import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 import 'tasks_screen.dart';
 import 'agents_screen.dart';
 import 'terminal_screen.dart';
 import 'settings_screen.dart';
+import 'telegram_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -28,6 +30,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     DashboardScreen(),
     TasksScreen(),
     AgentsScreen(),
+    TelegramScreen(),
     TerminalScreen(),
     SettingsScreen(),
   ];
@@ -36,6 +39,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'MATRIX'),
     _NavItem(icon: Icons.list_outlined, activeIcon: Icons.list, label: 'TASKS'),
     _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy, label: 'AGENTS'),
+    _NavItem(icon: Icons.telegram_outlined, activeIcon: Icons.telegram, label: 'BOT'),
     _NavItem(icon: Icons.terminal_outlined, activeIcon: Icons.terminal, label: 'SHELL'),
     _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'CONFIG'),
   ];
@@ -234,6 +238,3 @@ class _NeonBottomNav extends StatelessWidget {
   }
 }
 
-// ─── Loading indicator import ─────────────────────────────────────────────────
-
-import '../animations/neon_animations.dart';
