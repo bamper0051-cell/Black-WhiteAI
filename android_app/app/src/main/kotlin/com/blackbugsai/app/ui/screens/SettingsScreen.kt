@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blackbugsai.app.AppViewModel
+import com.blackbugsai.app.ui.screens.selectedLlmModel
 import com.blackbugsai.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,6 +29,19 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
     val adminToken by vm.adminToken.collectAsState()
 
     var showDisconnectDialog by remember { mutableStateOf(false) }
+    var currentLlm by selectedLlmModel
+    var showLlmMenu by remember { mutableStateOf(false) }
+
+    val llmModels = listOf(
+        "Claude Sonnet" to "Anthropic",
+        "Claude Haiku"  to "Anthropic",
+        "Claude Opus"   to "Anthropic",
+        "GPT-4o"        to "OpenAI",
+        "GPT-4o mini"   to "OpenAI",
+        "Gemini Pro"    to "Google",
+        "Gemini Flash"  to "Google",
+        "Llama 3.3 70B" to "Meta",
+    )
 
     Column(
         modifier = Modifier
@@ -92,6 +106,58 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
                 } else {
                     ConfigRow("Сервер", serverUrl)
                     ConfigRow("Токен", "•".repeat(8))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // LLM selector
+        NeonCard(glowColor = NeonYellow) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("> ВЫБОР МОДЕЛИ AI", color = NeonYellow,
+                    fontSize = 11.sp, fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(bottom = 12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Активная модель", color = TextSecondary, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                        Text(currentLlm, color = NeonYellow, fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    }
+                    Box {
+                        OutlinedButton(
+                            onClick = { showLlmMenu = true },
+                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonYellow.copy(alpha = 0.6f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonYellow),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("СМЕНИТЬ", fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                        }
+                        DropdownMenu(
+                            expanded = showLlmMenu,
+                            onDismissRequest = { showLlmMenu = false },
+                            modifier = Modifier.background(BgCard)
+                        ) {
+                            llmModels.forEach { (model, provider) ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(model, color = if (model == currentLlm) NeonYellow else TextPrimary,
+                                                    fontFamily = FontFamily.Monospace, fontSize = 13.sp)
+                                                Text(provider, color = TextSecondary, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                                            }
+                                            if (model == currentLlm) Icon(Icons.Filled.Check, contentDescription = null,
+                                                tint = NeonYellow, modifier = Modifier.size(16.dp))
+                                        }
+                                    },
+                                    onClick = { currentLlm = model; showLlmMenu = false }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

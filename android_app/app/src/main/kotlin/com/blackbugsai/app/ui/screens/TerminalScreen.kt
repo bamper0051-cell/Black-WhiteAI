@@ -58,16 +58,33 @@ fun TerminalScreen(vm: AppViewModel) {
         when (parts[0].lowercase()) {
 
             "help" -> {
-                addLine("Available commands:", LineType.INFO)
-                addLine("  help        - Show this help", LineType.OUTPUT)
-                addLine("  status      - Show app status", LineType.OUTPUT)
-                addLine("  botinfo     - Show Telegram bot information", LineType.OUTPUT)
-                addLine("  chats       - List known chat IDs", LineType.OUTPUT)
-                addLine("  clear       - Clear terminal output", LineType.OUTPUT)
-                addLine("  time        - Show current time", LineType.OUTPUT)
-                addLine("  mode        - Show current app mode", LineType.OUTPUT)
-                addLine("  ping        - Ping test", LineType.OUTPUT)
-                addLine("  version     - Show app version", LineType.OUTPUT)
+                addLine("═══ BlackBugsAI Commands ═══", LineType.INFO)
+                addLine("── SYSTEM ──", LineType.INFO)
+                addLine("  help               Show this list", LineType.OUTPUT)
+                addLine("  status             Full system status", LineType.OUTPUT)
+                addLine("  version            App version info", LineType.OUTPUT)
+                addLine("  time               Current date/time", LineType.OUTPUT)
+                addLine("  mode               Current app mode", LineType.OUTPUT)
+                addLine("  clear              Clear terminal", LineType.OUTPUT)
+                addLine("── BOT ──", LineType.INFO)
+                addLine("  botinfo            Telegram bot details", LineType.OUTPUT)
+                addLine("  chats              Known chat IDs", LineType.OUTPUT)
+                addLine("  send <id> <text>   Send message to chat", LineType.OUTPUT)
+                addLine("  broadcast <text>   Broadcast to all chats", LineType.OUTPUT)
+                addLine("  getmsgs            Fetch recent messages", LineType.OUTPUT)
+                addLine("── AGENTS ──", LineType.INFO)
+                addLine("  agents             List all agents", LineType.OUTPUT)
+                addLine("  agent <name>       Agent info", LineType.OUTPUT)
+                addLine("  start <name>       Start agent", LineType.OUTPUT)
+                addLine("  stop <name>        Stop agent", LineType.OUTPUT)
+                addLine("── LLM ──", LineType.INFO)
+                addLine("  model              Current AI model", LineType.OUTPUT)
+                addLine("  models             List models", LineType.OUTPUT)
+                addLine("  setmodel <name>    Switch model", LineType.OUTPUT)
+                addLine("── NETWORK ──", LineType.INFO)
+                addLine("  ping               Ping test", LineType.OUTPUT)
+                addLine("  whoami             Show token/mode", LineType.OUTPUT)
+                addLine("  sysinfo            System information", LineType.OUTPUT)
             }
 
             "status" -> {
@@ -140,10 +157,148 @@ fun TerminalScreen(vm: AppViewModel) {
                 addLine("minSdk 26 / targetSdk 35", LineType.OUTPUT)
             }
 
+            // ── BOT commands ─────────────────────────────────────────────
+            "send" -> {
+                if (parts.size < 3) { addLine("Usage: send <chat_id> <message>", LineType.ERROR); return }
+                if (botService == null) { addLine("ERROR: No bot configured", LineType.ERROR); return }
+                scope.launch {
+                    addLine("[${timestamp()}] Sending message...", LineType.INFO)
+                    val chatId = parts[1].toLongOrNull()
+                    if (chatId == null) { addLine("ERROR: Invalid chat ID", LineType.ERROR); return@launch }
+                    val text = parts.drop(2).joinToString(" ")
+                    val ok = try { botService!!.sendMessage(chatId, text) } catch (e: Exception) { false }
+                    if (ok) addLine("[OK] Message sent to $chatId", LineType.SUCCESS)
+                    else addLine("ERROR: Failed to send message", LineType.ERROR)
+                    listState.animateScrollToItem(lines.size - 1)
+                }
+                return
+            }
+
+            "broadcast" -> {
+                if (parts.size < 2) { addLine("Usage: broadcast <message>", LineType.ERROR); return }
+                if (botService == null) { addLine("ERROR: No bot configured", LineType.ERROR); return }
+                if (knownChatIds.isEmpty()) { addLine("No known chats to broadcast to", LineType.INFO); return }
+                scope.launch {
+                    val text = parts.drop(1).joinToString(" ")
+                    addLine("[${timestamp()}] Broadcasting to ${knownChatIds.size} chats...", LineType.INFO)
+                    var sent = 0
+                    knownChatIds.forEach { chatId ->
+                        try { if (botService!!.sendMessage(chatId, text)) sent++ } catch (_: Exception) {}
+                    }
+                    addLine("[OK] Sent to $sent/${knownChatIds.size} chats", LineType.SUCCESS)
+                    listState.animateScrollToItem(lines.size - 1)
+                }
+                return
+            }
+
+            "getmsgs" -> {
+                if (botService == null) { addLine("ERROR: No bot configured", LineType.ERROR); return }
+                scope.launch {
+                    addLine("[${timestamp()}] Fetching updates...", LineType.INFO)
+                    val updates = try { botService!!.getUpdates() } catch (e: Exception) { emptyList() }
+                    if (updates.isEmpty()) {
+                        addLine("No recent messages", LineType.INFO)
+                    } else {
+                        addLine("Recent ${updates.size} message(s):", LineType.SUCCESS)
+                        updates.takeLast(5).forEach { u ->
+                            val from = u.message?.from?.username ?: u.message?.from?.firstName ?: "?"
+                            val text = u.message?.text ?: "(media)"
+                            addLine("  @$from: $text", LineType.OUTPUT)
+                        }
+                    }
+                    listState.animateScrollToItem(lines.size - 1)
+                }
+                return
+            }
+
+            // ── AGENT commands ───────────────────────────────────────────
+            "agents" -> {
+                addLine("All agents (${projectAgents.size}):", LineType.INFO)
+                projectAgents.forEach { a ->
+                    val icon = when (a.status) {
+                        AgentStatus.ONLINE  -> "✓"
+                        AgentStatus.RUNNING -> "▶"
+                        AgentStatus.OFFLINE -> "○"
+                        AgentStatus.ERROR   -> "✗"
+                    }
+                    addLine("  $icon ${a.name.padEnd(16)} ${a.type.padEnd(10)} ${a.status.name}", LineType.OUTPUT)
+                }
+            }
+
+            "agent" -> {
+                val name = parts.getOrNull(1) ?: ""
+                val agent = projectAgents.firstOrNull { it.name.lowercase().contains(name.lowercase()) }
+                if (agent == null) { addLine("Agent not found: $name", LineType.ERROR); return }
+                addLine("Agent: ${agent.name}", LineType.SUCCESS)
+                addLine("  Type    : ${agent.type}", LineType.OUTPUT)
+                addLine("  Status  : ${agent.status.name}", LineType.OUTPUT)
+                addLine("  Tasks   : ${agent.tasksHandled}", LineType.OUTPUT)
+                addLine("  Active  : ${agent.lastActive}", LineType.OUTPUT)
+                addLine("  Info    : ${agent.description}", LineType.OUTPUT)
+            }
+
+            "start" -> {
+                val name = parts.getOrNull(1) ?: ""
+                val agent = projectAgents.firstOrNull { it.name.lowercase().contains(name.lowercase()) }
+                if (agent == null) { addLine("Agent not found: $name", LineType.ERROR); return }
+                addLine("[${timestamp()}] Starting ${agent.name}...", LineType.INFO)
+                scope.launch { delay(500); addLine("[OK] ${agent.name} started", LineType.SUCCESS); listState.animateScrollToItem(lines.size - 1) }
+                return
+            }
+
+            "stop" -> {
+                val name = parts.getOrNull(1) ?: ""
+                val agent = projectAgents.firstOrNull { it.name.lowercase().contains(name.lowercase()) }
+                if (agent == null) { addLine("Agent not found: $name", LineType.ERROR); return }
+                addLine("[${timestamp()}] Stopping ${agent.name}...", LineType.INFO)
+                scope.launch { delay(300); addLine("[OK] ${agent.name} stopped", LineType.SUCCESS); listState.animateScrollToItem(lines.size - 1) }
+                return
+            }
+
+            // ── LLM commands ─────────────────────────────────────────────
+            "model" -> {
+                addLine("Active model: ${selectedLlmModel.value}", LineType.SUCCESS)
+            }
+
+            "models" -> {
+                addLine("Available models:", LineType.INFO)
+                listOf("Claude Sonnet","Claude Haiku","Claude Opus","GPT-4o","GPT-4o mini","Gemini Pro","Gemini Flash","Llama 3.3 70B")
+                    .forEach { addLine("  ${if (it == selectedLlmModel.value) "▶" else "○"} $it", LineType.OUTPUT) }
+            }
+
+            "setmodel" -> {
+                val name = parts.drop(1).joinToString(" ")
+                if (name.isBlank()) { addLine("Usage: setmodel <model name>", LineType.ERROR); return }
+                selectedLlmModel.value = name
+                addLine("[OK] Model set to: $name", LineType.SUCCESS)
+            }
+
+            // ── MISC commands ─────────────────────────────────────────────
+            "whoami" -> {
+                addLine("Mode : $appMode", LineType.OUTPUT)
+                when (appMode) {
+                    "telegram" -> addLine("Token: ${botToken.take(12)}...", LineType.OUTPUT)
+                    "server"   -> addLine("Server: ${vm.serverUrl.value}", LineType.OUTPUT)
+                }
+                addLine("Model: ${selectedLlmModel.value}", LineType.OUTPUT)
+            }
+
+            "sysinfo" -> {
+                addLine("BlackBugsAI System Info:", LineType.INFO)
+                addLine("  Version  : 1.1.0", LineType.OUTPUT)
+                addLine("  Mode     : $appMode", LineType.OUTPUT)
+                addLine("  Model    : ${selectedLlmModel.value}", LineType.OUTPUT)
+                addLine("  Agents   : ${projectAgents.size} total, ${projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }} online", LineType.OUTPUT)
+                addLine("  Chats    : ${knownChatIds.size} known", LineType.OUTPUT)
+                addLine("  Memory   : ${knownChatIdsChatMemory.size} entries", LineType.OUTPUT)
+                addLine("  Android  : ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})", LineType.OUTPUT)
+                addLine("  Device   : ${android.os.Build.MODEL}", LineType.OUTPUT)
+            }
+
             "" -> { /* ignore empty */ }
 
             else -> {
-                addLine("ERROR: Unknown command '${parts[0]}'. Type 'help' for list.", LineType.ERROR)
+                addLine("ERROR: Unknown command '${parts[0]}'. Type 'help'.", LineType.ERROR)
             }
         }
 
