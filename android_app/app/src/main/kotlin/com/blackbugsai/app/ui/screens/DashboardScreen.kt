@@ -152,6 +152,30 @@ fun DashboardScreen(vm: AppViewModel) {
             }
         }
 
+        // ── Agents summary ────────────────────────────────────────────────────
+        NeonCard(modifier = Modifier.fillMaxWidth(), borderColor = NeonGreen) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("АГЕНТЫ", color = NeonGreen, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, fontSize = 13.sp)
+                Divider(color = NeonGreen.copy(alpha = 0.3f))
+                val onlineAgents  = projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }
+                val runningAgents = projectAgents.count { it.status == AgentStatus.RUNNING }
+                StatusRow("Всего агентов",  "${projectAgents.size}",   TextSecondary)
+                StatusRow("Онлайн",         "$onlineAgents",           NeonGreen)
+                StatusRow("Выполняются",    "$runningAgents",          NeonCyan)
+                StatusRow("Оффлайн",        "${projectAgents.count { it.status == AgentStatus.OFFLINE }}", TextSecondary)
+                Divider(color = NeonGreen.copy(alpha = 0.2f))
+                // Running agents list
+                projectAgents.filter { it.status == AgentStatus.RUNNING }.forEach { agent ->
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Box(Modifier.size(6.dp).background(NeonCyan, androidx.compose.foundation.shape.CircleShape))
+                        Spacer(Modifier.width(8.dp))
+                        Text(agent.name, color = TextPrimary, fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                        Text("RUNNING", color = NeonCyan, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    }
+                }
+            }
+        }
+
         // ── Quick actions ─────────────────────────────────────────────────────
         NeonCard(modifier = Modifier.fillMaxWidth(), borderColor = NeonYellow) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

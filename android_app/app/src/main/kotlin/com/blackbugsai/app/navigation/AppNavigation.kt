@@ -69,12 +69,14 @@ fun MainScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
 
     val telegramTabs = listOf(
         NavTab("dashboard", "ПАНЕЛЬ",    Icons.Filled.Dashboard),
+        NavTab("agents",    "АГЕНТЫ",    Icons.Filled.Psychology),
         NavTab("telegram",  "BOT",       Icons.Filled.SmartToy),
         NavTab("terminal",  "ТЕРМИНАЛ",  Icons.Filled.Terminal),
         NavTab("settings",  "НАСТРОЙКИ", Icons.Filled.Settings)
     )
     val serverTabs = listOf(
         NavTab("dashboard", "ПАНЕЛЬ",    Icons.Filled.Dashboard),
+        NavTab("agents",    "АГЕНТЫ",    Icons.Filled.Psychology),
         NavTab("tasks",     "ЗАДАЧИ",    Icons.Filled.Task),
         NavTab("telegram",  "BOT",       Icons.Filled.SmartToy),
         NavTab("terminal",  "ТЕРМИНАЛ",  Icons.Filled.Terminal),
@@ -127,6 +129,7 @@ fun MainScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("dashboard") { DashboardScreen(vm = vm) }
+            composable("agents")    { AgentsScreen(vm = vm) }
             composable("telegram")  { TelegramScreen(vm = vm) }
             composable("terminal")  { TerminalScreen(vm = vm) }
             composable("settings")  { SettingsScreen(vm = vm, onDisconnect = onDisconnect) }
