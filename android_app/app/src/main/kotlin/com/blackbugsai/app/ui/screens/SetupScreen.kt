@@ -185,7 +185,7 @@ fun SetupScreen(vm: AppViewModel, onConnected: () -> Unit) {
                             accentColor   = NeonPurple
                         )
 
-                        Divider(color = NeonPurple.copy(alpha = 0.2f))
+                        HorizontalDivider(color = NeonPurple.copy(alpha = 0.2f))
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.Wifi, contentDescription = null,

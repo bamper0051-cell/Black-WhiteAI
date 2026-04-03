@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -72,7 +74,7 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        if (appMode == "telegram") Icons.Filled.Send else Icons.Filled.Cloud,
+                        if (appMode == "telegram") Icons.AutoMirrored.Filled.Send else Icons.Filled.Cloud,
                         contentDescription = null,
                         tint = if (appMode == "telegram") NeonCyan else NeonPurple,
                         modifier = Modifier.size(24.dp)
@@ -206,7 +208,7 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
             shape = RoundedCornerShape(8.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink.copy(alpha = 0.6f))
         ) {
-            Icon(Icons.Filled.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
             Text("ОТКЛЮЧИТЬСЯ", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
         }

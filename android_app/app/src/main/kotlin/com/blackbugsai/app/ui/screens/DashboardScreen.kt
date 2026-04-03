@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -131,7 +132,7 @@ fun DashboardScreen(vm: AppViewModel) {
                     modifier    = Modifier.weight(1f),
                     label       = "MESSAGES",
                     value       = totalMessages.toString(),
-                    icon        = Icons.Filled.Message,
+                    icon        = Icons.AutoMirrored.Filled.Message,
                     borderColor = NeonCyan
                 )
                 StatCard(
@@ -148,7 +149,7 @@ fun DashboardScreen(vm: AppViewModel) {
         NeonCard(modifier = Modifier.fillMaxWidth(), borderColor = NeonPurple) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("SYSTEM STATUS", color = NeonPurple, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, fontSize = 13.sp)
-                Divider(color = NeonPurple.copy(alpha = 0.3f))
+                HorizontalDivider(color = NeonPurple.copy(alpha = 0.3f))
                 StatusRow("App Mode",    appMode.uppercase(),          NeonCyan)
                 StatusRow("Bot Status",  if (botService != null) "ONLINE" else "OFFLINE",
                     if (botService != null) NeonGreen else NeonPink)
@@ -161,14 +162,14 @@ fun DashboardScreen(vm: AppViewModel) {
         NeonCard(modifier = Modifier.fillMaxWidth(), borderColor = NeonGreen) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("АГЕНТЫ", color = NeonGreen, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, fontSize = 13.sp)
-                Divider(color = NeonGreen.copy(alpha = 0.3f))
+                HorizontalDivider(color = NeonGreen.copy(alpha = 0.3f))
                 val onlineAgents  = projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }
                 val runningAgents = projectAgents.count { it.status == AgentStatus.RUNNING }
                 StatusRow("Всего агентов",  "${projectAgents.size}",   TextSecondary)
                 StatusRow("Онлайн",         "$onlineAgents",           NeonGreen)
                 StatusRow("Выполняются",    "$runningAgents",          NeonCyan)
                 StatusRow("Оффлайн",        "${projectAgents.count { it.status == AgentStatus.OFFLINE }}", TextSecondary)
-                Divider(color = NeonGreen.copy(alpha = 0.2f))
+                HorizontalDivider(color = NeonGreen.copy(alpha = 0.2f))
                 // Running agents list
                 projectAgents.filter { it.status == AgentStatus.RUNNING }.forEach { agent ->
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -185,7 +186,7 @@ fun DashboardScreen(vm: AppViewModel) {
         NeonCard(modifier = Modifier.fillMaxWidth(), borderColor = NeonYellow) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("INFO", color = NeonYellow, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, fontSize = 13.sp)
-                Divider(color = NeonYellow.copy(alpha = 0.3f))
+                HorizontalDivider(color = NeonYellow.copy(alpha = 0.3f))
                 Text(
                     "BlackBugsAI operates entirely on-device.\n" +
                     "All data is stored locally via DataStore.\n" +
