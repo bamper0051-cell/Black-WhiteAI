@@ -79,7 +79,11 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        if (appMode == "telegram") "TELEGRAM BOT" else "SERVER",
+                        when {
+                            appMode == "telegram"                    -> "TELEGRAM BOT"
+                            appMode == "server" && botToken.isNotBlank() -> "SERVER + BOT"
+                            else                                     -> "SERVER"
+                        },
                         color = if (appMode == "telegram") NeonCyan else NeonPurple,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
@@ -105,7 +109,13 @@ fun SettingsScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
                     ConfigRow("Токен", "•".repeat(minOf(botToken.length, 8)) + botToken.takeLast(6))
                 } else {
                     ConfigRow("Сервер", serverUrl)
-                    ConfigRow("Токен", "•".repeat(8))
+                    ConfigRow("Admin Token", "•".repeat(8))
+                    if (botToken.isNotBlank()) {
+                        ConfigRow("Bot Token", "•".repeat(minOf(botToken.length, 8)) + botToken.takeLast(6))
+                        ConfigRow("Bot режим", "АКТИВЕН")
+                    } else {
+                        ConfigRow("Bot режим", "не настроен")
+                    }
                 }
             }
         }

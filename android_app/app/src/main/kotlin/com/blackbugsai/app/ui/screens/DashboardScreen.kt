@@ -101,15 +101,20 @@ fun DashboardScreen(vm: AppViewModel) {
                     tint = if (appMode == "telegram") NeonCyan else NeonPurple
                 )
                 Column {
+                    val serverUrl by vm.serverUrl.collectAsState()
                     Text(
-                        if (appMode == "telegram") "Telegram Bot Mode" else "Server Mode",
+                        when {
+                            appMode == "telegram"                     -> "Telegram Bot Mode"
+                            appMode == "server" && botService != null -> "Server + Bot Mode"
+                            else                                      -> "Server Mode"
+                        },
                         color      = TextPrimary,
                         fontWeight = FontWeight.SemiBold
                     )
                     botInfo?.let {
                         Text("@${it.username}  •  ${it.firstName}", color = TextSecondary, fontSize = 12.sp)
                     } ?: Text(
-                        if (appMode == "server") vm.serverUrl.collectAsState().value else "Loading bot info…",
+                        if (appMode == "server") serverUrl else "Loading bot info…",
                         color = TextSecondary, fontSize = 12.sp
                     )
                 }

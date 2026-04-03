@@ -62,7 +62,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _adminToken.value = admin
             _appMode.value    = mode
 
-            if (mode == "telegram" && token.isNotBlank()) {
+            // Create botService whenever a token is present, regardless of mode
+            if (token.isNotBlank()) {
                 _botService.value = TelegramBotService(token)
             }
         }
@@ -82,16 +83,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // ── Save server config ────────────────────────────────────────────────────
-    fun saveServerConfig(url: String, adminToken: String) {
+    fun saveServerConfig(url: String, adminToken: String, botToken: String = "") {
         viewModelScope.launch {
             dataStore.edit { prefs ->
                 prefs[PrefKeys.APP_MODE]    = "server"
                 prefs[PrefKeys.SERVER_URL]  = url
                 prefs[PrefKeys.ADMIN_TOKEN] = adminToken
+                if (botToken.isNotBlank()) prefs[PrefKeys.BOT_TOKEN] = botToken
+                else prefs.remove(PrefKeys.BOT_TOKEN)
             }
             _serverUrl.value  = url
             _adminToken.value = adminToken
             _appMode.value    = "server"
+            _botToken.value   = botToken
+            _botService.value = if (botToken.isNotBlank()) TelegramBotService(botToken) else null
         }
     }
 

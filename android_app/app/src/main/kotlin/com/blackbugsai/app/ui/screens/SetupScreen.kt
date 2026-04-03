@@ -32,10 +32,11 @@ fun SetupScreen(vm: AppViewModel, onConnected: () -> Unit) {
     var tgError    by remember { mutableStateOf("") }
 
     // Server tab state
-    var serverUrl  by remember { mutableStateOf("") }
-    var adminToken by remember { mutableStateOf("") }
-    var srvLoading by remember { mutableStateOf(false) }
-    var srvError   by remember { mutableStateOf("") }
+    var serverUrl       by remember { mutableStateOf("") }
+    var adminToken      by remember { mutableStateOf("") }
+    var srvBotToken     by remember { mutableStateOf("") }
+    var srvLoading      by remember { mutableStateOf(false) }
+    var srvError        by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -184,6 +185,25 @@ fun SetupScreen(vm: AppViewModel, onConnected: () -> Unit) {
                             accentColor   = NeonPurple
                         )
 
+                        Divider(color = NeonPurple.copy(alpha = 0.2f))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Wifi, contentDescription = null,
+                                tint = NeonCyan, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Telegram Bot Token (необязательно)", color = TextSecondary,
+                                fontSize = 12.sp)
+                        }
+
+                        NeonTextField(
+                            value         = srvBotToken,
+                            onValueChange = { srvBotToken = it; srvError = "" },
+                            label         = "Bot Token",
+                            placeholder   = "1234567890:AABBcc…  (оставьте пустым если не нужно)",
+                            modifier      = Modifier.fillMaxWidth(),
+                            accentColor   = NeonCyan
+                        )
+
                         AnimatedVisibility(srvError.isNotEmpty()) {
                             Text(srvError, color = NeonPink, fontSize = 13.sp)
                         }
@@ -195,7 +215,7 @@ fun SetupScreen(vm: AppViewModel, onConnected: () -> Unit) {
                                     return@NeonButton
                                 }
                                 srvLoading = true
-                                vm.saveServerConfig(serverUrl.trim(), adminToken.trim())
+                                vm.saveServerConfig(serverUrl.trim(), adminToken.trim(), srvBotToken.trim())
                                 srvLoading = false
                                 onConnected()
                             },
