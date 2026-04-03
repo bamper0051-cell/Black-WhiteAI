@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -409,7 +409,7 @@ fun TerminalScreen(vm: AppViewModel) {
                     .background(NeonGreen.copy(alpha = 0.15f), androidx.compose.foundation.shape.CircleShape)
                     .neonGlow(NeonGreen, 4.dp, 20.dp)
             ) {
-                Icon(Icons.Filled.Send, contentDescription = "Run", tint = NeonGreen)
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Run", tint = NeonGreen)
             }
         }
     }

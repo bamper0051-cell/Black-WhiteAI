@@ -19,38 +19,31 @@ import com.blackbugsai.app.AppViewModel
 import com.blackbugsai.app.knownChatIds
 import com.blackbugsai.app.services.TelegramBotService
 import com.blackbugsai.app.ui.theme.*
-import kotlinx.coroutines.delay
 
 @Composable
 fun DashboardScreen(vm: AppViewModel) {
-    val appMode   by vm.appMode.collectAsState()
+    val appMode    by vm.appMode.collectAsState()
     val botService by vm.botService.collectAsState()
+    val updates    by vm.updates.collectAsState()
+    val polling    by vm.polling.collectAsState()
+    val totalMessages = updates.count { it.message != null }
+    val activeUsers   = knownChatIds.size
 
-    var totalMessages by remember { mutableIntStateOf(0) }
-    var activeUsers   by remember { mutableIntStateOf(0) }
-    var botInfo       by remember { mutableStateOf<TelegramBotService.BotInfo?>(null) }
-    var lastRefresh   by remember { mutableStateOf("--") }
-    var isLoading     by remember { mutableStateOf(false) }
+    var botInfo     by remember { mutableStateOf<TelegramBotService.BotInfo?>(null) }
+    var lastRefresh by remember { mutableStateOf("--") }
 
-    // Auto-refresh every 30 s
+    // Fetch bot info once
     LaunchedEffect(botService) {
-        while (true) {
-            if (botService != null) {
-                isLoading = true
-                val updates = try { botService!!.getUpdates() } catch (e: Exception) { emptyList() }
-                updates.forEach { u ->
-                    u.message?.from?.let { knownChatIds.add(it.id) }
-                }
-                totalMessages = updates.size + totalMessages.coerceAtLeast(updates.size)
-                activeUsers   = knownChatIds.size
-                if (botInfo == null) {
-                    botInfo = try { botService!!.getBotInfo() } catch (e: Exception) { null }
-                }
-                lastRefresh = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
-                    .format(java.util.Date())
-                isLoading = false
-            }
-            delay(30_000)
+        if (botService != null && botInfo == null) {
+            botInfo = try { botService!!.getBotInfo() } catch (_: Exception) { null }
+        }
+    }
+
+    // Update lastRefresh whenever updates change
+    LaunchedEffect(updates) {
+        if (updates.isNotEmpty()) {
+            lastRefresh = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                .format(java.util.Date())
         }
     }
 
@@ -75,7 +68,7 @@ fun DashboardScreen(vm: AppViewModel) {
                 color      = NeonCyan,
                 letterSpacing = 3.sp
             )
-            if (isLoading) {
+            if (polling && updates.isEmpty()) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     color    = NeonCyan,

@@ -9,6 +9,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.blackbugsai.app.services.TelegramBotService
+import com.blackbugsai.app.ui.screens.AgentStatus
+import com.blackbugsai.app.ui.screens.projectAgents
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -33,13 +37,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val dataStore = application.dataStore
 
     // ── Exposed state ─────────────────────────────────────────────────────────
-    private val _appMode = MutableStateFlow("") // "" = not configured yet
+    private val _appMode    = MutableStateFlow("") // "" = not configured yet
     val appMode: StateFlow<String> = _appMode
 
-    private val _botToken = MutableStateFlow("")
+    private val _botToken   = MutableStateFlow("")
     val botToken: StateFlow<String> = _botToken
 
-    private val _serverUrl = MutableStateFlow("")
+    private val _serverUrl  = MutableStateFlow("")
     val serverUrl: StateFlow<String> = _serverUrl
 
     private val _adminToken = MutableStateFlow("")
@@ -47,6 +51,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _botService = MutableStateFlow<TelegramBotService?>(null)
     val botService: StateFlow<TelegramBotService?> = _botService
+
+    /** All received updates (max 200 kept in memory). */
+    private val _updates = MutableStateFlow<List<TelegramBotService.Update>>(emptyList())
+    val updates: StateFlow<List<TelegramBotService.Update>> = _updates
+
+    /** Whether the polling loop is currently running. */
+    private val _polling = MutableStateFlow(false)
+    val polling: StateFlow<Boolean> = _polling
+
+    private var pollingJob: Job? = null
+    private var lastOffset: Int = 0
 
     // ── Init: load config from DataStore ─────────────────────────────────────
     init {
@@ -62,9 +77,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _adminToken.value = admin
             _appMode.value    = mode
 
-            // Create botService whenever a token is present, regardless of mode
             if (token.isNotBlank()) {
-                _botService.value = TelegramBotService(token)
+                val svc = TelegramBotService(token)
+                _botService.value = svc
+                startPolling(svc)
             }
         }
     }
@@ -78,7 +94,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
             _botToken.value  = token
             _appMode.value   = "telegram"
-            _botService.value = TelegramBotService(token)
+            val svc = TelegramBotService(token)
+            _botService.value = svc
+            startPolling(svc)
         }
     }
 
@@ -96,12 +114,119 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _adminToken.value = adminToken
             _appMode.value    = "server"
             _botToken.value   = botToken
-            _botService.value = if (botToken.isNotBlank()) TelegramBotService(botToken) else null
+            if (botToken.isNotBlank()) {
+                val svc = TelegramBotService(botToken)
+                _botService.value = svc
+                startPolling(svc)
+            } else {
+                pollingJob?.cancel()
+                _botService.value = null
+            }
+        }
+    }
+
+    // ── Centralized polling ───────────────────────────────────────────────────
+    /**
+     * Starts a single long-poll loop. Cancels any previous loop first,
+     * which fixes the 409 Conflict error caused by multiple concurrent getUpdates calls.
+     */
+    private fun startPolling(svc: TelegramBotService) {
+        pollingJob?.cancel()
+        lastOffset = 0
+        _polling.value = true
+        pollingJob = viewModelScope.launch {
+            while (true) {
+                try {
+                    // long-poll with 10s server-side timeout
+                    val batch = svc.getUpdates(offset = lastOffset, timeout = 10)
+                    if (batch.isNotEmpty()) {
+                        lastOffset = batch.maxOf { it.updateId } + 1
+                        batch.forEach { u ->
+                            u.message?.from?.let { knownChatIds.add(it.id) }
+                            u.message?.chat?.let { knownChatIds.add(it.id) }
+                        }
+                        _updates.value = (_updates.value + batch).takeLast(200)
+                        handleCommands(svc, batch)
+                    }
+                } catch (_: Exception) {
+                    delay(5_000) // back-off on network error
+                }
+                // tiny pause before next long-poll request
+                delay(500)
+            }
+        }
+    }
+
+    // ── Bot command handler ───────────────────────────────────────────────────
+    private suspend fun handleCommands(
+        svc: TelegramBotService,
+        updates: List<TelegramBotService.Update>
+    ) {
+        for (update in updates) {
+            val msg    = update.message ?: continue
+            val chatId = msg.chat?.id ?: msg.from?.id ?: continue
+            val text   = msg.text?.trim() ?: continue
+            if (!text.startsWith("/")) continue
+
+            val cmd = text.substringBefore(" ").lowercase()
+            when (cmd) {
+                "/start" -> svc.sendMessage(
+                    chatId,
+                    "BlackBugsAI Admin Bot\n\n" +
+                    "Доступные команды:\n" +
+                    "/status — статус системы\n" +
+                    "/agents — список агентов\n" +
+                    "/online — активные агенты\n" +
+                    "/help — справка"
+                )
+                "/help" -> svc.sendMessage(
+                    chatId,
+                    "/status — статус системы\n" +
+                    "/agents — все агенты\n" +
+                    "/online — только активные\n" +
+                    "/start — приветствие"
+                )
+                "/status" -> {
+                    val online  = projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }
+                    val running = projectAgents.count { it.status == AgentStatus.RUNNING }
+                    val offline = projectAgents.count { it.status == AgentStatus.OFFLINE }
+                    svc.sendMessage(
+                        chatId,
+                        "Статус BlackBugsAI\n\n" +
+                        "Всего агентов: ${projectAgents.size}\n" +
+                        "Активных: $online\n" +
+                        "Выполняются: $running\n" +
+                        "Оффлайн: $offline\n" +
+                        "Известных чатов: ${knownChatIds.size}"
+                    )
+                }
+                "/agents" -> {
+                    val list = projectAgents.joinToString("\n") {
+                        val icon = when (it.status) {
+                            AgentStatus.ONLINE  -> "[ON]"
+                            AgentStatus.RUNNING -> "[RUN]"
+                            AgentStatus.OFFLINE -> "[OFF]"
+                            AgentStatus.ERROR   -> "[ERR]"
+                        }
+                        "$icon ${it.name} — ${it.type}"
+                    }
+                    svc.sendMessage(chatId, "Агенты BlackBugsAI:\n\n$list")
+                }
+                "/online" -> {
+                    val list = projectAgents
+                        .filter { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }
+                        .joinToString("\n") { "[${it.status.name}] ${it.name}" }
+                    svc.sendMessage(chatId, if (list.isBlank()) "Нет активных агентов" else "Активные агенты:\n\n$list")
+                }
+            }
         }
     }
 
     // ── Disconnect / reset ────────────────────────────────────────────────────
     fun disconnect() {
+        pollingJob?.cancel()
+        pollingJob = null
+        _polling.value = false
         viewModelScope.launch {
             dataStore.edit { it.clear() }
             _appMode.value    = ""
@@ -109,6 +234,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _serverUrl.value  = ""
             _adminToken.value = ""
             _botService.value = null
+            _updates.value    = emptyList()
+            lastOffset        = 0
             knownChatIds.clear()
         }
     }
