@@ -13,7 +13,8 @@ import '../widgets/task_status_bar.dart';
 import 'main_shell.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final String appMode;
+  const DashboardScreen({super.key, this.appMode = 'server'});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -41,6 +42,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _load() async {
+    if (widget.appMode == 'telegram') {
+      // In telegram mode, show bot stats via TelegramBotService
+      try {
+        final provider = AppStateProvider.of(context);
+        final tgService = provider.tgService;
+        if (tgService != null) {
+          final tgStats = await tgService.getBotStats();
+          if (!mounted) return;
+          setState(() {
+            _stats = SystemStats(
+              totalTasks: tgStats.totalMessages,
+              pendingTasks: 0,
+              runningTasks: 0,
+              doneTasks: tgStats.messagesToday,
+              failedTasks: 0,
+              totalUsers: tgStats.totalUsers,
+              agents: [],
+              tasksByType: {'messages': tgStats.totalMessages},
+              timestamp: DateTime.now(),
+            );
+            _agents = [];
+            _loading = false;
+            _error = null;
+            _lastRefresh = DateTime.now();
+          });
+        } else {
+          if (!mounted) return;
+          setState(() { _loading = false; _error = 'No Telegram service'; });
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setState(() { _error = e.toString(); _loading = false; });
+      }
+      return;
+    }
     try {
       final api = ApiServiceProvider.of(context);
       final stats = await api.getStats();

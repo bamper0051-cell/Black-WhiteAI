@@ -8,7 +8,8 @@ import '../animations/neon_animations.dart';
 import 'main_shell.dart';
 
 class TerminalScreen extends StatefulWidget {
-  const TerminalScreen({super.key});
+  final String appMode;
+  const TerminalScreen({super.key, this.appMode = 'telegram'});
 
   @override
   State<TerminalScreen> createState() => _TerminalScreenState();

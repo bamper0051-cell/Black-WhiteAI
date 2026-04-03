@@ -10,7 +10,8 @@ import '../widgets/neon_card.dart';
 import 'setup_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final String appMode;
+  const SettingsScreen({super.key, this.appMode = 'server'});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -19,8 +20,10 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _urlCtrl = TextEditingController();
   final _tokenCtrl = TextEditingController();
+  final _tgTokenCtrl = TextEditingController();
   bool _saving = false;
   bool _obscureToken = true;
+  bool _obscureTg = true;
 
   @override
   void initState() {
@@ -33,14 +36,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _urlCtrl.text = prefs.getString('base_url') ?? '';
       _tokenCtrl.text = prefs.getString('admin_token') ?? '';
+      _tgTokenCtrl.text = prefs.getString('telegram_token') ?? '';
     });
   }
 
   Future<void> _save() async {
     setState(() => _saving = true);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('base_url', _urlCtrl.text.trim());
-    await prefs.setString('admin_token', _tokenCtrl.text.trim());
+    if (widget.appMode == 'telegram') {
+      await prefs.setString('telegram_token', _tgTokenCtrl.text.trim());
+    } else {
+      await prefs.setString('base_url', _urlCtrl.text.trim());
+      await prefs.setString('admin_token', _tokenCtrl.text.trim());
+    }
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -52,6 +60,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('base_url');
     await prefs.remove('admin_token');
+    await prefs.remove('telegram_token');
+    await prefs.remove('app_mode');
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       NeonPageRoute(child: const SetupScreen()),
@@ -72,39 +82,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Server settings
+            // Connection settings
             NeonCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const NeonText('> SERVER', color: NeonColors.cyan,
-                      fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4),
+                  NeonText(
+                    widget.appMode == 'telegram' ? '> TELEGRAM BOT' : '> SERVER',
+                    color: NeonColors.cyan,
+                    fontSize: 11, fontFamily: 'Orbitron', glowRadius: 4,
+                  ),
                   const SizedBox(height: 16),
-                  NeonTextField(
-                    controller: _urlCtrl,
-                    label: 'SERVER URL',
-                    hint: 'http://192.168.1.1:8080',
-                    prefixIcon: Icons.dns_outlined,
-                  ),
-                  const SizedBox(height: 12),
-                  NeonTextField(
-                    controller: _tokenCtrl,
-                    label: 'ADMIN TOKEN',
-                    hint: '••••••••',
-                    prefixIcon: Icons.key_outlined,
-                    obscureText: _obscureToken,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureToken
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: NeonColors.textSecondary,
-                        size: 18,
+                  if (widget.appMode == 'telegram') ...[
+                    NeonTextField(
+                      controller: _tgTokenCtrl,
+                      label: 'BOT TOKEN',
+                      hint: '1234567890:AAExxxxxxxxxx',
+                      prefixIcon: Icons.telegram_outlined,
+                      obscureText: _obscureTg,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureTg
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: NeonColors.textSecondary,
+                          size: 18,
+                        ),
+                        onPressed: () => setState(() => _obscureTg = !_obscureTg),
                       ),
-                      onPressed: () =>
-                          setState(() => _obscureToken = !_obscureToken),
                     ),
-                  ),
+                  ] else ...[
+                    NeonTextField(
+                      controller: _urlCtrl,
+                      label: 'SERVER URL',
+                      hint: 'http://192.168.1.1:8080',
+                      prefixIcon: Icons.dns_outlined,
+                    ),
+                    const SizedBox(height: 12),
+                    NeonTextField(
+                      controller: _tokenCtrl,
+                      label: 'ADMIN TOKEN',
+                      hint: '••••••••',
+                      prefixIcon: Icons.key_outlined,
+                      obscureText: _obscureToken,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureToken
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: NeonColors.textSecondary,
+                          size: 18,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscureToken = !_obscureToken),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   _saving
                       ? const Center(

@@ -10,9 +10,11 @@ import '../models/models.dart';
 import '../widgets/neon_card.dart';
 import '../widgets/neon_text_field.dart';
 import 'main_shell.dart';
+import '../services/telegram_bot_service.dart';
 
 class TelegramScreen extends StatefulWidget {
-  const TelegramScreen({super.key});
+  final TelegramBotService? tgService;
+  const TelegramScreen({super.key, this.tgService});
 
   @override
   State<TelegramScreen> createState() => _TelegramScreenState();
@@ -43,8 +45,14 @@ class _TelegramScreenState extends State<TelegramScreen>
 
   Future<void> _loadStats() async {
     try {
-      final api = ApiServiceProvider.of(context);
-      final stats = await api.getBotStats();
+      TelegramBotStats stats;
+      final tgService = widget.tgService ?? AppStateProvider.of(context).tgService;
+      if (tgService != null) {
+        stats = await tgService.getBotStats();
+      } else {
+        final api = ApiServiceProvider.of(context);
+        stats = await api.getBotStats();
+      }
       if (!mounted) return;
       setState(() {
         _stats = stats;
@@ -57,7 +65,7 @@ class _TelegramScreenState extends State<TelegramScreen>
   }
 
   Future<void> _restartBot() async {
-    final api = ApiServiceProvider.of(context);
+    final api = AppStateProvider.of(context).api;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
