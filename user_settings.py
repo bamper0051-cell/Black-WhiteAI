@@ -6,13 +6,28 @@ from datetime import datetime
 import config
 
 DB_PATH = os.path.join(config.BASE_DIR, 'auth.db')
+# Ensure directory exists (fixes "unable to open database" on first run)
+os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
 
 def _db():
     c = sqlite3.connect(DB_PATH)
     c.row_factory = sqlite3.Row
     return c
 
-def _migrate():
+def _init_db():
+    """Create users table if not exists, then migrate columns."""
+    with sqlite3.connect(DB_PATH) as c:
+        c.execute('''CREATE TABLE IF NOT EXISTS users (
+            user_id   INTEGER PRIMARY KEY,
+            username  TEXT DEFAULT '',
+            first_name TEXT DEFAULT '',
+            role      TEXT DEFAULT 'user',
+            banned    INTEGER DEFAULT 0,
+            msg_count INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )''')
+        c.commit()
+    # migrate optional columns
     with _db() as c:
         for col, t in [
             ("agent_type",    "TEXT DEFAULT 'assistant'"),
@@ -29,7 +44,11 @@ def _migrate():
             try: c.execute(f"ALTER TABLE users ADD COLUMN {col} {t}"); c.commit()
             except: pass
 
-_migrate()
+try:
+    _init_db()
+except Exception as _e:
+    import sys
+    print(f"[user_settings] DB init warning: {_e}", file=sys.stderr)
 
 # ─── Agent types ──────────────────────────────────────────────────────────────
 

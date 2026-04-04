@@ -29,20 +29,45 @@ class ServerApiService(val baseUrl: String, val token: String) {
         Json.parseToJsonElement(conn.inputStream.bufferedReader().readText()).jsonObject
     }.getOrNull()
 
-    private fun post(path: String, body: Map<String, String> = emptyMap()): JsonObject? = runCatching {
+    private fun post(path: String, body: Map<String, String> = emptyMap()): JsonObject? =
+        postWithTimeout(path, body, 30_000)
+
+    private fun postWithTimeout(
+        path: String,
+        body: Map<String, String> = emptyMap(),
+        timeoutMs: Int = 30_000
+    ): JsonObject? = runCatching {
         val json = buildJsonObject { body.forEach { (k, v) -> put(k, v) } }.toString()
         val conn = (URL("${cleanBase()}$path").openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             setRequestProperty("X-Admin-Token", token)
             setRequestProperty("Content-Type", "application/json")
             doOutput = true
-            connectTimeout = 10_000; readTimeout = 30_000
+            connectTimeout = 10_000
+            readTimeout = timeoutMs
             connect()
             OutputStreamWriter(outputStream).use { it.write(json) }
         }
         if (conn.responseCode !in 200..299) return null
         Json.parseToJsonElement(conn.inputStream.bufferedReader().readText()).jsonObject
     }.getOrNull()
+
+    private fun postJsonObject(path: String, body: JsonObject, timeoutMs: Int = 30_000): JsonObject? =
+        runCatching {
+            val json = body.toString()
+            val conn = (URL("${cleanBase()}$path").openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                setRequestProperty("X-Admin-Token", token)
+                setRequestProperty("Content-Type", "application/json")
+                doOutput = true
+                connectTimeout = 10_000
+                readTimeout = timeoutMs
+                connect()
+                OutputStreamWriter(outputStream).use { it.write(json) }
+            }
+            if (conn.responseCode !in 200..299) return null
+            Json.parseToJsonElement(conn.inputStream.bufferedReader().readText()).jsonObject
+        }.getOrNull()
 
     // ── Health ────────────────────────────────────────────────────────────────
 
@@ -209,6 +234,156 @@ class ServerApiService(val baseUrl: String, val token: String) {
         j["result"]?.jsonPrimitive?.contentOrNull
     }
 
+    suspend fun deleteNeoTool(toolName: String): Boolean = withContext(Dispatchers.IO) {
+        post("/api/neo/tools/$toolName/delete") != null
+    }
+
+    // ── Agent task execution ──────────────────────────────────────────────────
+
+    /**
+     * Run a task through the appropriate agent API with a 120-second timeout.
+     * matrix/smith/coder3 → POST /api/matrix/run {"task": task}
+     * neo              → POST /api/workflow/execute {"nodes":[{"id":"1","task":task}],"agent":"neo"}
+     */
+    suspend fun runAgentTask(agentId: String, task: String): AgentResult? = withContext(Dispatchers.IO) {
+        val matrixAgents = setOf("matrix", "smith", "coder3")
+        val j: JsonObject? = if (agentId.lowercase() in matrixAgents) {
+            postWithTimeout("/api/matrix/run", mapOf("task" to task), 120_000)
+        } else {
+            // "neo" and any other agent: use workflow/execute with node structure
+            val body = buildJsonObject {
+                put("nodes", buildJsonArray {
+                    add(buildJsonObject {
+                        put("id", "1")
+                        put("task", task)
+                    })
+                })
+                put("agent", agentId)
+            }
+            postJsonObject("/api/workflow/execute", body, 120_000)
+        }
+        j ?: return@withContext null
+        AgentResult(
+            ok     = j["ok"]?.jsonPrimitive?.booleanOrNull ?: false,
+            result = j["result"]?.jsonPrimitive?.contentOrNull ?: "",
+            steps  = j["steps"]?.jsonArray?.mapNotNull {
+                runCatching { it.jsonPrimitive.contentOrNull }.getOrNull()
+                    ?: runCatching { it.jsonObject.toString() }.getOrNull()
+            } ?: emptyList(),
+            error  = j["error"]?.jsonPrimitive?.contentOrNull ?: ""
+        )
+    }
+
+    // ── LLM configuration ─────────────────────────────────────────────────────
+
+    /** POST /api/config — set LLM provider/model configuration */
+    suspend fun setLlmConfig(configs: Map<String, String>): Boolean = withContext(Dispatchers.IO) {
+        val j = post("/api/config", configs) ?: return@withContext false
+        j["ok"]?.jsonPrimitive?.booleanOrNull ?: false
+    }
+
+    // ── Provider status ───────────────────────────────────────────────────────
+
+    /** GET /api/providers/status */
+    suspend fun getProviderStatus(): ProviderStatus? = withContext(Dispatchers.IO) {
+        val j = get("/api/providers/status") ?: return@withContext null
+        ProviderStatus(
+            activeLlm   = j["active_llm"]?.jsonPrimitive?.contentOrNull ?: "?",
+            bestLlm     = j["best_llm"]?.jsonPrimitive?.contentOrNull ?: "?",
+            activeImage = j["active_image"]?.jsonPrimitive?.contentOrNull ?: "?"
+        )
+    }
+
+    // ── Tunnel control ────────────────────────────────────────────────────────
+
+    /** POST /api/tunnel/start {"type": type} */
+    suspend fun startTunnel(type: String): TunnelResult? = withContext(Dispatchers.IO) {
+        val j = post("/api/tunnel/start", mapOf("type" to type)) ?: return@withContext null
+        TunnelResult(
+            ok    = j["ok"]?.jsonPrimitive?.booleanOrNull ?: false,
+            url   = j["url"]?.jsonPrimitive?.contentOrNull ?: "",
+            error = j["error"]?.jsonPrimitive?.contentOrNull ?: ""
+        )
+    }
+
+    /** POST /api/tunnel/stop */
+    suspend fun stopTunnel(): Boolean = withContext(Dispatchers.IO) {
+        val j = post("/api/tunnel/stop") ?: return@withContext false
+        j["ok"]?.jsonPrimitive?.booleanOrNull ?: false
+    }
+
+    // ── Skills evolution ──────────────────────────────────────────────────────
+
+    /** GET /api/skills/evolution -> ok, skills[] */
+    suspend fun getSkillsEvolution(): List<Skill> = withContext(Dispatchers.IO) {
+        val j = get("/api/skills/evolution") ?: return@withContext emptyList()
+        j["skills"]?.jsonArray?.mapNotNull { el ->
+            runCatching {
+                val s = el.jsonObject
+                Skill(
+                    pattern = s["pattern"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null,
+                    tools   = s["tools"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull } ?: emptyList(),
+                    success = s["success"]?.jsonPrimitive?.intOrNull ?: 0,
+                    fail    = s["fail"]?.jsonPrimitive?.intOrNull ?: 0,
+                    rate    = s["rate"]?.jsonPrimitive?.intOrNull ?: 0,
+                    level   = s["level"]?.jsonPrimitive?.contentOrNull ?: "?"
+                )
+            }.getOrNull()
+        } ?: emptyList()
+    }
+
+    // ── Server restart ────────────────────────────────────────────────────────
+
+    /** POST /api/restart */
+    suspend fun restartServer(): Boolean = withContext(Dispatchers.IO) {
+        val j = post("/api/restart") ?: return@withContext false
+        j["ok"]?.jsonPrimitive?.booleanOrNull ?: false
+    }
+
+    // ── System info ───────────────────────────────────────────────────────────
+
+    /** GET /api/system — parse relevant fields into string map */
+    suspend fun getSystemInfo(): Map<String, String>? = withContext(Dispatchers.IO) {
+        val j = get("/api/system") ?: return@withContext null
+        buildMap {
+            j.forEach { (key, value) ->
+                val strVal = runCatching { value.jsonPrimitive.content }.getOrElse { value.toString() }
+                put(key, strVal)
+            }
+        }
+    }
+
+    // ── Learning stats ────────────────────────────────────────────────────────
+
+    /** GET /api/learning/stats */
+    suspend fun getLearningStats(): Map<String, String> = withContext(Dispatchers.IO) {
+        val j = get("/api/learning/stats") ?: return@withContext emptyMap()
+        j.entries.associate { (k, v) ->
+            k to (runCatching { v.jsonPrimitive.content }.getOrElse { v.toString() })
+        }
+    }
+
+    // ── Memory users ──────────────────────────────────────────────────────────
+
+    /** GET /api/memory/users */
+    suspend fun getMemoryUsers(): Map<String, String> = withContext(Dispatchers.IO) {
+        val j = get("/api/memory/users") ?: return@withContext emptyMap()
+        j.entries.associate { (k, v) ->
+            k to (runCatching { v.jsonPrimitive.content }.getOrElse { v.toString() })
+        }
+    }
+
+    // ── Models discovery ──────────────────────────────────────────────────────
+
+    /** GET /api/models/discover */
+    suspend fun discoverModels(): Map<String, List<String>> = withContext(Dispatchers.IO) {
+        val j = get("/api/models/discover") ?: return@withContext emptyMap()
+        val models = j["models"]?.jsonObject ?: return@withContext emptyMap()
+        models.entries.associate { (provider, arr) ->
+            provider to (arr.jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull })
+        }
+    }
+
     // ── Data models ───────────────────────────────────────────────────────────
 
     data class ServerStatus(val uptime: Int, val botRunning: Boolean,
@@ -224,4 +399,9 @@ class ServerApiService(val baseUrl: String, val token: String) {
                              val cpu: String, val mem: String)
     data class ServerTask(val id: String, val type: String, val status: String, val created: String)
     data class AgentTool(val name: String, val desc: String)
+    data class AgentResult(val ok: Boolean, val result: String, val steps: List<String>, val error: String)
+    data class ProviderStatus(val activeLlm: String, val bestLlm: String, val activeImage: String)
+    data class TunnelResult(val ok: Boolean, val url: String, val error: String)
+    data class Skill(val pattern: String, val tools: List<String>, val success: Int,
+                     val fail: Int, val rate: Int, val level: String)
 }

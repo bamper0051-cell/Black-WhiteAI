@@ -4,10 +4,12 @@ import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.blackbugsai.app.services.ServerApiService
 import com.blackbugsai.app.services.TelegramBotService
 import com.blackbugsai.app.ui.screens.AgentStatus
 import com.blackbugsai.app.ui.screens.projectAgents
@@ -17,6 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 // DataStore extension on Application context
 val android.content.Context.dataStore: DataStore<Preferences>
@@ -27,10 +33,21 @@ object PrefKeys {
     val BOT_TOKEN     = stringPreferencesKey("bot_token")
     val SERVER_URL    = stringPreferencesKey("server_url")
     val ADMIN_TOKEN   = stringPreferencesKey("admin_token")
+    val ADMIN_CHAT_ID = longPreferencesKey("admin_chat_id")
 }
 
 /** Tracks known user chat IDs for broadcast, kept in-memory per session. */
 val knownChatIds = mutableSetOf<Long>()
+
+/** Per-agent chat message model */
+data class AgentChatMsg(
+    val id: String = UUID.randomUUID().toString(),
+    val sender: String,            // "user" | "agent" | "system"
+    val agentId: String,
+    val text: String,
+    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+    val isLoading: Boolean = false
+)
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -49,6 +66,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _adminToken = MutableStateFlow("")
     val adminToken: StateFlow<String> = _adminToken
 
+    private val _adminChatId = MutableStateFlow(0L)
+    val adminChatId: StateFlow<Long> = _adminChatId
+
     private val _botService = MutableStateFlow<TelegramBotService?>(null)
     val botService: StateFlow<TelegramBotService?> = _botService
 
@@ -60,28 +80,53 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _polling = MutableStateFlow(false)
     val polling: StateFlow<Boolean> = _polling
 
+    /** Per-agent chat history, max 100 messages per agent */
+    private val _agentMessages = MutableStateFlow<Map<String, List<AgentChatMsg>>>(emptyMap())
+    val agentMessages: StateFlow<Map<String, List<AgentChatMsg>>> = _agentMessages
+
+    // Lazy ServerApiService — created when serverUrl + adminToken are set
+    private var _serverApi: ServerApiService? = null
+    val serverApi: ServerApiService?
+        get() {
+            val url   = _serverUrl.value
+            val token = _adminToken.value
+            return if (url.isNotBlank() && token.isNotBlank()) {
+                _serverApi ?: ServerApiService(url, token).also { _serverApi = it }
+            } else null
+        }
+
     private var pollingJob: Job? = null
     private var lastOffset: Int = 0
 
     // ── Init: load config from DataStore ─────────────────────────────────────
     init {
         viewModelScope.launch {
-            val prefs = dataStore.data.first()
-            val mode  = prefs[PrefKeys.APP_MODE]  ?: ""
-            val token = prefs[PrefKeys.BOT_TOKEN]  ?: ""
-            val url   = prefs[PrefKeys.SERVER_URL]  ?: ""
-            val admin = prefs[PrefKeys.ADMIN_TOKEN] ?: ""
+            val prefs   = dataStore.data.first()
+            val mode    = prefs[PrefKeys.APP_MODE]      ?: ""
+            val token   = prefs[PrefKeys.BOT_TOKEN]     ?: ""
+            val url     = prefs[PrefKeys.SERVER_URL]    ?: ""
+            val admin   = prefs[PrefKeys.ADMIN_TOKEN]   ?: ""
+            val chatId  = prefs[PrefKeys.ADMIN_CHAT_ID] ?: 0L
 
-            _botToken.value   = token
-            _serverUrl.value  = url
-            _adminToken.value = admin
-            _appMode.value    = mode
+            _botToken.value    = token
+            _serverUrl.value   = url
+            _adminToken.value  = admin
+            _appMode.value     = mode
+            _adminChatId.value = chatId
 
             if (token.isNotBlank()) {
                 val svc = TelegramBotService(token)
                 _botService.value = svc
                 startPolling(svc)
             }
+        }
+    }
+
+    // ── Save admin chat ID ────────────────────────────────────────────────────
+    fun saveAdminChatId(id: Long) {
+        _adminChatId.value = id
+        viewModelScope.launch {
+            dataStore.edit { prefs -> prefs[PrefKeys.ADMIN_CHAT_ID] = id }
         }
     }
 
@@ -94,6 +139,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
             _botToken.value  = token
             _appMode.value   = "telegram"
+            _serverApi       = null
             val svc = TelegramBotService(token)
             _botService.value = svc
             startPolling(svc)
@@ -114,6 +160,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _adminToken.value = adminToken
             _appMode.value    = "server"
             _botToken.value   = botToken
+            _serverApi        = null  // reset lazy to pick up new url/token
             if (botToken.isNotBlank()) {
                 val svc = TelegramBotService(botToken)
                 _botService.value = svc
@@ -123,6 +170,102 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 _botService.value = null
             }
         }
+    }
+
+    // ── Send task to agent ────────────────────────────────────────────────────
+    /**
+     * In server mode: calls the real API (matrix/run, workflow/execute etc).
+     * In telegram mode: forwards the command to adminChatId via bot.
+     */
+    fun sendAgentTask(agentId: String, task: String) {
+        val userMsg = AgentChatMsg(
+            sender  = "user",
+            agentId = agentId,
+            text    = task
+        )
+        appendAgentMsg(agentId, userMsg)
+
+        val loadingId = UUID.randomUUID().toString()
+        val loadingMsg = AgentChatMsg(
+            id        = loadingId,
+            sender    = "agent",
+            agentId   = agentId,
+            text      = "Выполняю задачу...",
+            isLoading = true
+        )
+        appendAgentMsg(agentId, loadingMsg)
+
+        viewModelScope.launch {
+            if (_appMode.value == "server") {
+                val api = serverApi
+                if (api == null) {
+                    replaceLoadingMsg(agentId, loadingId, "Ошибка: сервер не настроен")
+                    return@launch
+                }
+                val result = try {
+                    api.runAgentTask(agentId, task)
+                } catch (e: Exception) {
+                    null
+                }
+                val text = when {
+                    result == null -> "Ошибка соединения с сервером"
+                    !result.ok    -> "Ошибка: ${result.error ?: "неизвестная ошибка"}"
+                    else          -> result.result ?: result.steps.joinToString("\n") ?: "Выполнено"
+                }
+                replaceLoadingMsg(agentId, loadingId, text)
+            } else {
+                // Telegram mode: send to adminChatId
+                val svc    = _botService.value
+                val chatId = _adminChatId.value
+                if (svc == null || chatId == 0L) {
+                    replaceLoadingMsg(
+                        agentId, loadingId,
+                        "Для отправки задач агентам укажите Admin Chat ID в настройках"
+                    )
+                    return@launch
+                }
+                val cmdPrefix = when (agentId) {
+                    "neo"       -> "/neo"
+                    "matrix"    -> "/matrix"
+                    "smith"     -> "/smith"
+                    "coder3"    -> "/code3"
+                    "assistant" -> ""
+                    else        -> "/$agentId"
+                }
+                val fullCmd = if (cmdPrefix.isNotBlank()) "$cmdPrefix $task" else task
+                val ok = try { svc.sendMessage(chatId, fullCmd) } catch (_: Exception) { false }
+                replaceLoadingMsg(
+                    agentId, loadingId,
+                    if (ok) "Команда отправлена боту: $fullCmd"
+                    else "Ошибка отправки сообщения боту"
+                )
+            }
+        }
+    }
+
+    fun clearAgentChat(agentId: String) {
+        val current = _agentMessages.value.toMutableMap()
+        current.remove(agentId)
+        _agentMessages.value = current
+    }
+
+    private fun appendAgentMsg(agentId: String, msg: AgentChatMsg) {
+        val current = _agentMessages.value.toMutableMap()
+        val list    = (current[agentId] ?: emptyList()) + msg
+        current[agentId] = list.takeLast(100)
+        _agentMessages.value = current
+    }
+
+    private fun replaceLoadingMsg(agentId: String, loadingId: String, text: String) {
+        val current = _agentMessages.value.toMutableMap()
+        val list    = current[agentId] ?: return
+        val updated = list.map { msg ->
+            if (msg.id == loadingId)
+                msg.copy(text = text, isLoading = false)
+            else msg
+        }
+        current[agentId] = updated
+        _agentMessages.value = current
     }
 
     // ── Centralized polling ───────────────────────────────────────────────────
@@ -227,15 +370,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         pollingJob?.cancel()
         pollingJob = null
         _polling.value = false
+        _serverApi     = null
         viewModelScope.launch {
             dataStore.edit { it.clear() }
-            _appMode.value    = ""
-            _botToken.value   = ""
-            _serverUrl.value  = ""
-            _adminToken.value = ""
-            _botService.value = null
-            _updates.value    = emptyList()
-            lastOffset        = 0
+            _appMode.value       = ""
+            _botToken.value      = ""
+            _serverUrl.value     = ""
+            _adminToken.value    = ""
+            _adminChatId.value   = 0L
+            _botService.value    = null
+            _updates.value       = emptyList()
+            _agentMessages.value = emptyMap()
+            lastOffset           = 0
             knownChatIds.clear()
         }
     }

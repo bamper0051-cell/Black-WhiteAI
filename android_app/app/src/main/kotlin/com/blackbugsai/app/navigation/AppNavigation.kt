@@ -2,6 +2,7 @@ package com.blackbugsai.app.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,23 +69,23 @@ fun MainScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
     val appMode by vm.appMode.collectAsState()
 
     val telegramTabs = listOf(
-        NavTab("dashboard", "ПАНЕЛЬ",   Icons.Filled.Dashboard),
-        NavTab("agents",    "АГЕНТЫ",   Icons.Filled.Psychology),
-        NavTab("chat",      "ЧАТ",      Icons.Filled.Forum),
-        NavTab("telegram",  "BOT",      Icons.Filled.SmartToy),
-        NavTab("files",     "ФАЙЛЫ",    Icons.Filled.Folder),
-        NavTab("terminal",  "ТЕРМИНАЛ", Icons.Filled.Terminal),
-        NavTab("settings",  "⚙",        Icons.Filled.Settings)
+        NavTab("dashboard", "ГЛАВНАЯ",  Icons.Filled.Home),
+        NavTab("chat",      "ЧАТ",     Icons.Filled.Forum),
+        NavTab("agents",    "АГЕНТЫ",  Icons.Filled.Psychology),
+        NavTab("telegram",  "БОТ",     Icons.Filled.SmartToy),
+        NavTab("llm",       "LLM",     Icons.Filled.AutoAwesome),
+        NavTab("files",     "ФАЙЛЫ",   Icons.Filled.Folder),
+        NavTab("settings",  "⚙",       Icons.Filled.Settings)
     )
     val serverTabs = listOf(
-        NavTab("dashboard", "ПАНЕЛЬ",   Icons.Filled.Dashboard),
-        NavTab("agents",    "АГЕНТЫ",   Icons.Filled.Psychology),
-        NavTab("chat",      "ЧАТ",      Icons.Filled.Forum),
-        NavTab("tasks",     "ЗАДАЧИ",   Icons.Filled.Task),
-        NavTab("telegram",  "BOT",      Icons.Filled.SmartToy),
-        NavTab("files",     "ФАЙЛЫ",    Icons.Filled.Folder),
-        NavTab("terminal",  "ТЕРМИНАЛ", Icons.Filled.Terminal),
-        NavTab("settings",  "⚙",        Icons.Filled.Settings)
+        NavTab("dashboard", "ГЛАВНАЯ",  Icons.Filled.Home),
+        NavTab("chat",      "ЧАТ",     Icons.Filled.Forum),
+        NavTab("agents",    "АГЕНТЫ",  Icons.Filled.Psychology),
+        NavTab("telegram",  "БОТ",     Icons.Filled.SmartToy),
+        NavTab("fish",      "РЫБАЛКА", Icons.Filled.Phishing),
+        NavTab("llm",       "LLM",     Icons.Filled.AutoAwesome),
+        NavTab("files",     "ФАЙЛЫ",   Icons.Filled.Folder),
+        NavTab("settings",  "⚙",       Icons.Filled.Settings)
     )
 
     val tabs = if (appMode == "server") serverTabs else telegramTabs
@@ -133,9 +134,11 @@ fun MainScreen(vm: AppViewModel, onDisconnect: () -> Unit) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("dashboard") { DashboardScreen(vm = vm) }
-            composable("agents")    { AgentsScreen(vm = vm) }
             composable("chat")      { ChatScreen(vm = vm) }
+            composable("agents")    { AgentsScreen(vm = vm) }
             composable("telegram")  { TelegramScreen(vm = vm) }
+            composable("fish")      { FishScreen(vm = vm) }
+            composable("llm")       { LlmScreen(vm = vm) }
             composable("files")     { FileManagerScreen(vm = vm) }
             composable("terminal")  { TerminalScreen(vm = vm) }
             composable("settings")  { SettingsScreen(vm = vm, onDisconnect = onDisconnect) }

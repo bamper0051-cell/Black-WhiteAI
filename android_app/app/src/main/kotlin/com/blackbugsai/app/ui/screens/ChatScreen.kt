@@ -1,17 +1,22 @@
 package com.blackbugsai.app.ui.screens
 
-import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,19 +24,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blackbugsai.app.AgentChatMsg
 import com.blackbugsai.app.AppViewModel
 import com.blackbugsai.app.ui.theme.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-// ── Message model ─────────────────────────────────────────────────────────────
+// ── Legacy chat message model (kept for backward compat) ──────────────────────
 enum class ChatSender { USER, AGENT, SYSTEM }
 
 data class ChatMessage(
@@ -42,316 +48,642 @@ data class ChatMessage(
     val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
 )
 
-// ── Agent personas ────────────────────────────────────────────────────────────
+// ── Agent persona model ───────────────────────────────────────────────────────
 data class AgentPersona(
     val id: String,
     val name: String,
     val color: Color,
-    val replies: Map<String, String>   // keyword → reply
+    val icon: ImageVector,
+    val cmdPrefix: String,
+    val description: String
 )
 
 val agentPersonas = listOf(
-    AgentPersona("neo", "NEO", NeonCyan, mapOf(
-        "привет"   to "Приветствую. Я Agent NEO — главный оркестратор. Чем могу помочь?",
-        "статус"   to "Все системы работают штатно. 3 агента активны. Очередь задач: 0.",
-        "задача"   to "Принято. Создаю задачу, передаю планировщику...",
-        "помощь"   to "Команды: /status /task <описание> /agents /memory /clear",
-        "агенты"   to "Активные: CODER3, PLANNER, EXEC, SESSION, LLM Router. Offline: ROLES, AutoFix.",
-        "default"  to "Обрабатываю запрос... Передаю в очередь задач."
-    )),
-    AgentPersona("coder3", "CODER3", NeonGreen, mapOf(
-        "привет"   to "Coder3 онлайн. Готов к написанию и исправлению кода.",
-        "код"      to "Напишите задачу — сгенерирую код на Python/Kotlin/JS.",
-        "ошибка"   to "Запускаю autofix... анализирую трейсбэк...",
-        "помощь"   to "Я пишу код, исправляю баги, делаю рефакторинг.",
-        "default"  to "Анализирую задачу... Генерирую решение."
-    )),
-    AgentPersona("planner", "PLANNER", NeonPurple, mapOf(
-        "привет"   to "Planner активен. Разбиваю сложные задачи на шаги.",
-        "план"     to "Опишите цель — создам пошаговый план выполнения.",
-        "задача"   to "Декомпозирую: 1) Анализ → 2) Реализация → 3) Тест → 4) Деплой",
-        "помощь"   to "Я планирую и координирую многошаговые задачи.",
-        "default"  to "Составляю план действий..."
-    )),
-    AgentPersona("llm", "LLM Router", NeonYellow, mapOf(
-        "привет"   to "LLM Router online. Маршрутизирую запросы к моделям AI.",
-        "модель"   to "Доступные модели: Claude Sonnet, Claude Haiku, GPT-4o, Gemini Pro.",
-        "помощь"   to "Выбери модель в Настройках и я направлю запрос к ней.",
-        "default"  to "Маршрутизирую запрос к активной LLM модели..."
-    )),
+    AgentPersona("neo",       "Agent NEO",    NeonCyan,   Icons.Filled.Psychology,  "/neo",    "Автономный планировщик задач"),
+    AgentPersona("matrix",    "MATRIX",       NeonPurple, Icons.Filled.AutoAwesome, "/matrix", "Универсальный агент-оркестратор"),
+    AgentPersona("smith",     "AGENT_SMITH",  NeonYellow, Icons.Filled.Code,        "/smith",  "Автономный кодер и аналитик"),
+    AgentPersona("coder3",    "CODER3",       NeonGreen,  Icons.Filled.Terminal,    "/code3",  "Специалист по написанию кода"),
+    AgentPersona("assistant", "Ассистент",    NeonPink,   Icons.Filled.SmartToy,   "",        "Умный помощник"),
 )
 
+// ── Exposed global state for backward compat ──────────────────────────────────
+val selectedLlmModel = mutableStateOf("Claude Sonnet")
+
+// ── Quick command chips ───────────────────────────────────────────────────────
+private val quickCommands = listOf("/status", "/agents", "/help")
+
+// ── Main ChatScreen composable ────────────────────────────────────────────────
 @Composable
 fun ChatScreen(vm: AppViewModel) {
-    val scope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
+    val scope       = rememberCoroutineScope()
+    val listState   = rememberLazyListState()
+    val appMode     by vm.appMode.collectAsState()
+    val allMessages by vm.agentMessages.collectAsState()
+    val updates     by vm.updates.collectAsState()
+    val polling     by vm.polling.collectAsState()
 
     var selectedPersona by remember { mutableStateOf(agentPersonas[0]) }
-    var messages by remember {
-        mutableStateOf(listOf(
-            ChatMessage(sender = ChatSender.SYSTEM, text = "Выберите агента и начните диалог"),
-            ChatMessage(sender = ChatSender.AGENT, agentName = selectedPersona.name,
-                text = "Привет! Я ${selectedPersona.name}. Чем могу помочь?")
-        ))
+    var inputText       by remember { mutableStateOf("") }
+
+    val isServerMode = appMode == "server"
+    val messages     = allMessages[selectedPersona.id] ?: emptyList()
+
+    // Scroll to bottom whenever messages change for current agent
+    LaunchedEffect(messages.size, selectedPersona.id) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
     }
-    var inputText by remember { mutableStateOf("") }
-    var isTyping  by remember { mutableStateOf(false) }
-    var showPersonaMenu by remember { mutableStateOf(false) }
 
     fun sendMessage() {
         val text = inputText.trim()
         if (text.isEmpty()) return
         inputText = ""
-
-        val userMsg = ChatMessage(sender = ChatSender.USER, text = text)
-        messages = messages + userMsg
-
         scope.launch {
-            isTyping = true
-            delay(600 + (200..800).random().toLong())
-
-            val lowerText = text.lowercase()
-            val reply = selectedPersona.replies.entries
-                .firstOrNull { lowerText.contains(it.key) }?.value
-                ?: selectedPersona.replies["default"]
-                ?: "Обрабатываю..."
-
-            // Handle /commands
-            val finalReply = when {
-                text.startsWith("/status")  -> "✅ Все агенты: ${projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }} online."
-                text.startsWith("/agents")  -> projectAgents.joinToString("\n") { "• ${it.name}: ${it.status.name}" }
-                text.startsWith("/clear")   -> { messages = listOf(ChatMessage(sender = ChatSender.SYSTEM, text = "Чат очищен")); isTyping = false; return@launch }
-                text.startsWith("/task ")   -> "📋 Задача принята: \"${text.removePrefix("/task ")}\"\nПередаю PLANNER → EXEC..."
-                text.startsWith("/memory")  -> "🧠 Память: ${knownChatIdsChatMemory.size} записей. Последние: ${knownChatIdsChatMemory.takeLast(3).joinToString(", ")}"
-                text.startsWith("/help")    -> "/status /agents /task <текст> /memory /clear /models"
-                text.startsWith("/models")  -> "Активная модель: ${selectedLlmModel.value}\nДоступно: Claude Sonnet, Claude Haiku, GPT-4o, Gemini Pro"
-                else -> reply
-            }
-            knownChatIdsChatMemory.add(text)
-
-            val agentMsg = ChatMessage(sender = ChatSender.AGENT, agentName = selectedPersona.name, text = finalReply)
-            messages = messages + agentMsg
-            isTyping = false
-
-            listState.animateScrollToItem(messages.size - 1)
+            vm.sendAgentTask(selectedPersona.id, text)
         }
-
-        scope.launch { delay(100); listState.animateScrollToItem(messages.size - 1) }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(BgDeep)
+    ) {
 
         // ── Top bar ───────────────────────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth().background(BgDark).padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgDark)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Agent avatar
-            Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape)
-                    .background(selectedPersona.color.copy(alpha = 0.2f))
-                    .border(1.5.dp, selectedPersona.color, CircleShape),
-                contentAlignment = Alignment.Center
+            // Title
+            Text(
+                text       = "АГЕНТ-ЧАТ",
+                color      = NeonCyan,
+                fontSize   = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                modifier   = Modifier.weight(1f)
+            )
+
+            // Connection status indicator
+            val (dotColor, statusLabel) = when {
+                isServerMode -> Pair(NeonGreen, "СЕРВЕР")
+                polling      -> Pair(NeonCyan,  "TELEGRAM")
+                else         -> Pair(Color.Gray, "ОФЛАЙН")
+            }
+            Row(
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                Text(selectedPersona.name[0].toString(), color = selectedPersona.color,
-                    fontWeight = FontWeight.Bold, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(dotColor)
+                )
+                Text(
+                    text       = statusLabel,
+                    color      = dotColor,
+                    fontSize   = 10.sp,
+                    fontFamily = FontFamily.Monospace
+                )
             }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(selectedPersona.name, color = selectedPersona.color,
-                    fontWeight = FontWeight.Bold, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
-                Text("Агент • онлайн", color = NeonGreen, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Clear current agent chat
+            IconButton(
+                onClick  = { vm.clearAgentChat(selectedPersona.id) },
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector        = Icons.Filled.DeleteSweep,
+                    contentDescription = "Очистить чат",
+                    tint               = TextSecondary,
+                    modifier           = Modifier.size(18.dp)
+                )
             }
-            // Switch agent button
-            Box {
-                IconButton(onClick = { showPersonaMenu = true }) {
-                    Icon(Icons.Filled.SwapHoriz, contentDescription = "Сменить агента", tint = NeonCyan)
-                }
-                DropdownMenu(
-                    expanded = showPersonaMenu,
-                    onDismissRequest = { showPersonaMenu = false },
-                    modifier = Modifier.background(BgCard)
+        }
+
+        // ── Agent selector chips ──────────────────────────────────────────────
+        LazyRow(
+            modifier              = Modifier
+                .fillMaxWidth()
+                .background(BgDark)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding        = PaddingValues(horizontal = 2.dp)
+        ) {
+            items(agentPersonas) { persona ->
+                val isSelected = persona.id == selectedPersona.id
+                Surface(
+                    onClick = { selectedPersona = persona },
+                    shape   = RoundedCornerShape(20.dp),
+                    color   = if (isSelected) persona.color.copy(alpha = 0.22f) else BgCard,
+                    border  = BorderStroke(
+                        width = if (isSelected) 1.5.dp else 1.dp,
+                        color = if (isSelected) persona.color else persona.color.copy(alpha = 0.35f)
+                    )
                 ) {
-                    agentPersonas.forEach { persona ->
-                        DropdownMenuItem(
-                            text = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(persona.color))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(persona.name, color = if (persona == selectedPersona) persona.color else TextPrimary,
-                                        fontFamily = FontFamily.Monospace)
-                                }
-                            },
-                            onClick = {
-                                selectedPersona = persona
-                                showPersonaMenu = false
-                                messages = messages + ChatMessage(
-                                    sender = ChatSender.SYSTEM,
-                                    text = "Переключено на ${persona.name}"
-                                )
-                            }
+                    Row(
+                        modifier              = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Icon(
+                            imageVector        = persona.icon,
+                            contentDescription = null,
+                            tint               = if (isSelected) persona.color else persona.color.copy(alpha = 0.55f),
+                            modifier           = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text       = persona.name,
+                            color      = if (isSelected) persona.color else persona.color.copy(alpha = 0.7f),
+                            fontSize   = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 }
             }
-            // Clear chat
-            IconButton(onClick = {
-                messages = listOf(ChatMessage(sender = ChatSender.SYSTEM, text = "Чат очищен"))
-            }) {
-                Icon(Icons.Filled.DeleteSweep, contentDescription = "Очистить", tint = TextSecondary)
+        }
+
+        // ── Telegram mode banner ──────────────────────────────────────────────
+        if (!isServerMode) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(NeonYellow.copy(alpha = 0.08f))
+                    .border(
+                        width = 1.dp,
+                        color = NeonYellow.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(0.dp)
+                    )
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector        = Icons.Filled.Info,
+                    contentDescription = null,
+                    tint               = NeonYellow,
+                    modifier           = Modifier.size(15.dp)
+                )
+                Text(
+                    text       = "Для общения с агентами нужен сервер",
+                    color      = NeonYellow,
+                    fontSize   = 11.sp,
+                    fontFamily = FontFamily.Monospace
+                )
             }
         }
 
-        // ── Messages ──────────────────────────────────────────────────────────
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            items(messages, key = { it.id }) { msg ->
-                ChatBubble(msg = msg, accentColor = selectedPersona.color)
-            }
-            if (isTyping) {
-                item {
-                    TypingIndicator(agentName = selectedPersona.name, color = selectedPersona.color)
+        // ── Message list ──────────────────────────────────────────────────────
+        Box(modifier = Modifier.weight(1f)) {
+            if (isServerMode) {
+                // Server mode: real agent messages
+                if (messages.isEmpty()) {
+                    // Empty state
+                    Box(
+                        modifier         = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Icon(
+                                imageVector        = selectedPersona.icon,
+                                contentDescription = null,
+                                tint               = selectedPersona.color.copy(alpha = 0.38f),
+                                modifier           = Modifier.size(56.dp)
+                            )
+                            Text(
+                                text       = "Введите задачу для агента",
+                                color      = TextSecondary,
+                                fontSize   = 14.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                text       = selectedPersona.description,
+                                color      = selectedPersona.color.copy(alpha = 0.6f),
+                                fontSize   = 11.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        state               = listState,
+                        modifier            = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
+                        contentPadding      = PaddingValues(vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(messages, key = { it.id }) { msg ->
+                            AgentChatBubble(msg = msg, persona = selectedPersona)
+                        }
+                        item { Spacer(modifier = Modifier.height(4.dp)) }
+                    }
+                }
+            } else {
+                // Telegram mode: read-only last 10 updates
+                val recentUpdates = updates.takeLast(10)
+                if (recentUpdates.isEmpty()) {
+                    Box(
+                        modifier         = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector        = Icons.Filled.Forum,
+                                contentDescription = null,
+                                tint               = NeonCyan.copy(alpha = 0.35f),
+                                modifier           = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text       = "Нет сообщений от пользователей",
+                                color      = TextSecondary,
+                                fontSize   = 13.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier            = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
+                        contentPadding      = PaddingValues(vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        item {
+                            Text(
+                                text       = "Входящие сообщения бота (последние ${recentUpdates.size})",
+                                color      = TextSecondary,
+                                fontSize   = 10.sp,
+                                fontFamily = FontFamily.Monospace,
+                                modifier   = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                        items(recentUpdates, key = { it.updateId }) { update ->
+                            TelegramUpdateBubble(update = update)
+                        }
+                    }
                 }
             }
         }
 
-        // ── Quick commands ────────────────────────────────────────────────────
+        // ── Quick command chips ───────────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth().background(BgDark).padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgDark)
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 10.dp, vertical = 5.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            listOf("/status", "/agents", "/help", "/task").forEach { cmd ->
-                QuickCmdChip(cmd) { inputText = cmd + (if (cmd == "/task") " " else ""); if (cmd != "/task") sendMessage() }
+            quickCommands.forEach { cmd ->
+                Surface(
+                    onClick = {
+                        inputText = cmd
+                        sendMessage()
+                    },
+                    shape  = RoundedCornerShape(6.dp),
+                    color  = NeonCyan.copy(alpha = 0.07f),
+                    border = BorderStroke(1.dp, NeonCyan.copy(alpha = 0.35f))
+                ) {
+                    Text(
+                        text       = cmd,
+                        modifier   = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        color      = NeonCyan,
+                        fontSize   = 10.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
             }
         }
 
-        // ── Input ─────────────────────────────────────────────────────────────
+        // ── Input row ─────────────────────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth().background(BgDark).padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgDark)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
-                value = inputText,
+                value         = inputText,
                 onValueChange = { inputText = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Сообщение агенту...", color = TextSecondary, fontSize = 13.sp, fontFamily = FontFamily.Monospace) },
+                modifier      = Modifier.weight(1f),
+                placeholder   = {
+                    Text(
+                        text       = "Сообщение для ${selectedPersona.name}...",
+                        color      = TextSecondary,
+                        fontSize   = 12.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = selectedPersona.color,
-                    unfocusedBorderColor = selectedPersona.color.copy(alpha = 0.3f),
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = selectedPersona.color
+                    focusedBorderColor      = selectedPersona.color,
+                    unfocusedBorderColor    = selectedPersona.color.copy(alpha = 0.3f),
+                    focusedTextColor        = TextPrimary,
+                    unfocusedTextColor      = TextPrimary,
+                    cursorColor             = selectedPersona.color,
+                    focusedContainerColor   = BgCard,
+                    unfocusedContainerColor = BgCard
                 ),
-                shape = RoundedCornerShape(12.dp),
-                maxLines = 3,
+                shape           = RoundedCornerShape(12.dp),
+                maxLines        = 3,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { sendMessage() }),
-                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
+                textStyle       = LocalTextStyle.current.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize   = 13.sp
+                )
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = { sendMessage() },
-                modifier = Modifier.size(48.dp).background(selectedPersona.color, CircleShape)
+
+            NeonButton(
+                onClick     = { sendMessage() },
+                modifier    = Modifier.size(48.dp),
+                borderColor = selectedPersona.color,
+                enabled     = inputText.isNotBlank()
             ) {
-                Icon(Icons.Filled.Send, contentDescription = "Отправить", tint = BgDeep)
+                Icon(
+                    imageVector        = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Отправить",
+                    tint               = selectedPersona.color,
+                    modifier           = Modifier.size(20.dp)
+                )
             }
         }
     }
 }
 
-// ── Chat bubble ───────────────────────────────────────────────────────────────
+// ── Agent chat bubble (server mode) ──────────────────────────────────────────
 @Composable
-private fun ChatBubble(msg: ChatMessage, accentColor: Color) {
+private fun AgentChatBubble(msg: AgentChatMsg, persona: AgentPersona) {
     when (msg.sender) {
-        ChatSender.SYSTEM -> {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(msg.text, color = TextSecondary, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+        "system" -> {
+            Box(
+                modifier         = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = msg.text,
+                    color      = TextSecondary,
+                    fontSize   = 10.sp,
+                    fontFamily = FontFamily.Monospace
+                )
             }
         }
-        ChatSender.USER -> {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.widthIn(max = 280.dp)) {
+
+        "user" -> {
+            // Right-aligned, NeonCyan background
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier            = Modifier.widthIn(max = 310.dp)
+                ) {
                     Box(
                         modifier = Modifier
-                            .background(NeonCyan.copy(alpha = 0.15f), RoundedCornerShape(12.dp, 2.dp, 12.dp, 12.dp))
-                            .border(1.dp, NeonCyan.copy(alpha = 0.4f), RoundedCornerShape(12.dp, 2.dp, 12.dp, 12.dp))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .background(
+                                NeonCyan.copy(alpha = 0.15f),
+                                RoundedCornerShape(12.dp, 2.dp, 12.dp, 12.dp)
+                            )
+                            .border(
+                                1.dp,
+                                NeonCyan.copy(alpha = 0.45f),
+                                RoundedCornerShape(12.dp, 2.dp, 12.dp, 12.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 9.dp)
                     ) {
-                        Text(msg.text, color = TextPrimary, fontSize = 13.sp, fontFamily = FontFamily.Monospace, lineHeight = 18.sp)
+                        Text(
+                            text       = msg.text,
+                            color      = TextPrimary,
+                            fontSize   = 13.sp,
+                            fontFamily = FontFamily.Monospace,
+                            lineHeight = 18.sp
+                        )
                     }
-                    Text(msg.time, color = TextSecondary, fontSize = 9.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 2.dp))
+                    Text(
+                        text       = msg.time,
+                        color      = TextSecondary,
+                        fontSize   = 9.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier   = Modifier.padding(top = 3.dp, end = 2.dp)
+                    )
                 }
             }
         }
-        ChatSender.AGENT -> {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+
+        else -> {
+            // Left-aligned agent message with agent color border and dark background
+            val agentColor = agentPersonas.firstOrNull { it.id == msg.agentId }?.color ?: persona.color
+            val agentIcon  = agentPersonas.firstOrNull { it.id == msg.agentId }?.icon  ?: Icons.Filled.SmartToy
+            val agentName  = agentPersonas.firstOrNull { it.id == msg.agentId }?.name  ?: msg.agentId
+
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment     = Alignment.Top
+            ) {
+                // Agent avatar
                 Box(
-                    modifier = Modifier.size(28.dp).clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.15f))
-                        .border(1.dp, accentColor, CircleShape),
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(agentColor.copy(alpha = 0.14f))
+                        .border(1.dp, agentColor, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(msg.agentName[0].toString(), color = accentColor, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Icon(
+                        imageVector        = agentIcon,
+                        contentDescription = null,
+                        tint               = agentColor,
+                        modifier           = Modifier.size(15.dp)
+                    )
                 }
-                Spacer(modifier = Modifier.width(6.dp))
-                Column(modifier = Modifier.widthIn(max = 280.dp)) {
-                    Text(msg.agentName, color = accentColor, fontSize = 9.sp, fontFamily = FontFamily.Monospace, letterSpacing = 1.sp)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(accentColor.copy(alpha = 0.08f), RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp))
-                            .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp))
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Text(msg.text, color = TextPrimary, fontSize = 13.sp, fontFamily = FontFamily.Monospace, lineHeight = 18.sp)
+
+                Spacer(modifier = Modifier.width(7.dp))
+
+                Column(modifier = Modifier.widthIn(max = 300.dp)) {
+                    // Agent name header
+                    Text(
+                        text          = agentName.uppercase(),
+                        color         = agentColor,
+                        fontSize      = 9.sp,
+                        fontFamily    = FontFamily.Monospace,
+                        letterSpacing = 1.sp,
+                        fontWeight    = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    if (msg.isLoading) {
+                        LoadingBubble(color = agentColor)
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    BgCard,
+                                    RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    agentColor.copy(alpha = 0.4f),
+                                    RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 9.dp)
+                        ) {
+                            Text(
+                                text       = msg.text,
+                                color      = TextPrimary,
+                                fontSize   = 13.sp,
+                                fontFamily = FontFamily.Monospace,
+                                lineHeight = 18.sp
+                            )
+                        }
                     }
-                    Text(msg.time, color = TextSecondary, fontSize = 9.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 2.dp))
+
+                    Text(
+                        text       = msg.time,
+                        color      = TextSecondary,
+                        fontSize   = 9.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier   = Modifier.padding(top = 3.dp)
+                    )
                 }
             }
         }
     }
 }
 
+// ── Telegram update bubble (read-only) ───────────────────────────────────────
 @Composable
-private fun TypingIndicator(agentName: String, color: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier.size(28.dp).clip(CircleShape)
-                .background(color.copy(alpha = 0.15f))
-                .border(1.dp, color, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(agentName[0].toString(), color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-        }
-        Spacer(modifier = Modifier.width(6.dp))
+private fun TelegramUpdateBubble(update: com.blackbugsai.app.services.TelegramBotService.Update) {
+    val msg      = update.message ?: return
+    val text     = msg.text ?: return
+    val fromName = msg.from?.let { user ->
+        user.firstName.ifBlank { user.username ?: "id:${user.id}" }
+    } ?: "Unknown"
+    val chatId = msg.chat?.id ?: msg.from?.id ?: 0L
+    val time   = SimpleDateFormat("HH:mm", Locale.getDefault())
+        .format(Date(msg.date * 1000L))
+
+    Row(
+        modifier              = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment     = Alignment.Top
+    ) {
         Box(
             modifier = Modifier
-                .background(color.copy(alpha = 0.08f), RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp))
-                .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp))
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(NeonCyan.copy(alpha = 0.12f))
+                .border(1.dp, NeonCyan.copy(alpha = 0.5f), CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            Text("• • •", color = color, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+            Icon(
+                imageVector        = Icons.Filled.Person,
+                contentDescription = null,
+                tint               = NeonCyan,
+                modifier           = Modifier.size(14.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(7.dp))
+        Column(modifier = Modifier.widthIn(max = 300.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Text(
+                    text       = fromName,
+                    color      = NeonCyan,
+                    fontSize   = 9.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text       = "chat:$chatId",
+                    color      = TextSecondary,
+                    fontSize   = 9.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            Spacer(modifier = Modifier.height(3.dp))
+            Box(
+                modifier = Modifier
+                    .background(
+                        NeonCyan.copy(alpha = 0.07f),
+                        RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+                    )
+                    .border(
+                        1.dp,
+                        NeonCyan.copy(alpha = 0.25f),
+                        RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text       = text,
+                    color      = TextPrimary,
+                    fontSize   = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                    lineHeight = 17.sp
+                )
+            }
+            Text(
+                text       = time,
+                color      = TextSecondary,
+                fontSize   = 9.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier   = Modifier.padding(top = 3.dp)
+            )
         }
     }
 }
 
+// ── Animated loading bubble ───────────────────────────────────────────────────
 @Composable
-private fun QuickCmdChip(label: String, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(6.dp),
-        color = NeonCyan.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.4f))
+private fun LoadingBubble(color: Color) {
+    val infiniteTransition = rememberInfiniteTransition(label = "loading_dots")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue  = 0.25f,
+        targetValue   = 1f,
+        animationSpec = infiniteRepeatable(
+            animation  = tween(550, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot_alpha"
+    )
+    Box(
+        modifier = Modifier
+            .background(
+                color.copy(alpha = 0.08f),
+                RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+            )
+            .border(
+                1.dp,
+                color.copy(alpha = 0.3f),
+                RoundedCornerShape(2.dp, 12.dp, 12.dp, 12.dp)
+            )
+            .padding(horizontal = 18.dp, vertical = 12.dp)
     ) {
-        Text(label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            color = NeonCyan, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+        Text(
+            text       = "• • •",
+            color      = color.copy(alpha = alpha),
+            fontSize   = 15.sp,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
-
-// Memory for chat (simple in-memory list per session)
-val knownChatIdsChatMemory = mutableListOf<String>()
-val selectedLlmModel = mutableStateOf("Claude Sonnet")

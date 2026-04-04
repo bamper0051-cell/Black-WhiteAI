@@ -290,7 +290,7 @@ fun TerminalScreen(vm: AppViewModel) {
                 addLine("  Model    : ${selectedLlmModel.value}", LineType.OUTPUT)
                 addLine("  Agents   : ${projectAgents.size} total, ${projectAgents.count { it.status == AgentStatus.ONLINE || it.status == AgentStatus.RUNNING }} online", LineType.OUTPUT)
                 addLine("  Chats    : ${knownChatIds.size} known", LineType.OUTPUT)
-                addLine("  Memory   : ${knownChatIdsChatMemory.size} entries", LineType.OUTPUT)
+                addLine("  Memory   : ${knownChatIds.size} chats tracked", LineType.OUTPUT)
                 addLine("  Android  : ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})", LineType.OUTPUT)
                 addLine("  Device   : ${android.os.Build.MODEL}", LineType.OUTPUT)
             }

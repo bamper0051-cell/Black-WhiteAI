@@ -8,6 +8,7 @@ import bcrypt
 import config
 
 DB_PATH = os.path.join(config.BASE_DIR, 'auth.db')
+os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
 
 MAX_ATTEMPTS   = 5
 CAPTCHA_TTL    = 300   # 5 минут
