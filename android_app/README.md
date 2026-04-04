@@ -82,12 +82,8 @@ lib/
     └── task_status_bar.dart
 ```
 
-## Анимации
+## CI/CD
 
-- **Boot sequence** — матричный экран загрузки с логом системы
-- **Scan line** — бегущая неоновая линия на splash
-- **Pulse glow** — пульсация онлайн-индикаторов агентов
-- **Neon spinner** — кастомный индикатор загрузки
-- **Typewriter** — посимвольное появление текста
-- **Page transitions** — slide + scan line + fade при переходах
-- **Agent network** — анимированная визуализация сети агентов
+APK автоматически собирается при изменениях в `android_app/` через GitHub Actions.
+Артефакт доступен на вкладке Actions → Build Android APK → Artifacts.
+
