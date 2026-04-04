@@ -1,5 +1,7 @@
 #!/bin/sh
 # Gradle Wrapper – downloads Gradle 8.12 if not already cached
+set -e
+
 GRADLE_VERSION=8.12
 GRADLE_USER_HOME="${GRADLE_USER_HOME:-${HOME}/.gradle}"
 GRADLE_DIST_DIR="${GRADLE_USER_HOME}/wrapper/dists/gradle-${GRADLE_VERSION}-bin"
@@ -9,9 +11,9 @@ if [ ! -f "${GRADLE_BIN}" ]; then
     echo "Downloading Gradle ${GRADLE_VERSION}..."
     mkdir -p "${GRADLE_DIST_DIR}"
     TMPFILE=$(mktemp)
+    trap 'rm -f "${TMPFILE}"' EXIT
     curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o "${TMPFILE}"
     unzip -q "${TMPFILE}" -d "${GRADLE_DIST_DIR}"
-    rm "${TMPFILE}"
 fi
 
 exec "${GRADLE_BIN}" "$@"
