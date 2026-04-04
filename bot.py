@@ -8697,9 +8697,53 @@ def _validate_startup_config():
         print(f"  ⚠️ Нет API ключа для {provider}! /menu → 🧠 LLM → {provider} → 🔑", flush=True)
 
 
+def _ensure_bot_token():
+    """Checks for Telegram bot token; prompts interactively if missing."""
+    token = config.TELEGRAM_BOT_TOKEN
+    if token:
+        return token
+    # Check if running in interactive terminal
+    if sys.stdin.isatty():
+        print("\n⚠️  Telegram Bot Token не найден в .env", flush=True)
+        print("   Получить токен: @BotFather → /newbot", flush=True)
+        try:
+            token = input("🤖 Введи Telegram Bot Token: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            token = ''
+        if token:
+            _update_env('TELEGRAM_BOT_TOKEN', token)
+            _update_env('BOT_TOKEN', token)
+            config.reload()
+            print("  ✅ Token сохранён в .env", flush=True)
+            return token
+    print("  ❌ TELEGRAM_BOT_TOKEN не задан — бот не запустится.", flush=True)
+    print("     Добавь в .env: TELEGRAM_BOT_TOKEN=<токен от @BotFather>", flush=True)
+    return ''
+
+
+def _ensure_data_dirs():
+    """Auto-creates all required data directories."""
+    dirs = [
+        config.DATA_DIR,
+        os.path.join(config.BASE_DIR, 'agent_projects'),
+        os.path.join(config.BASE_DIR, 'artifacts'),
+        os.path.join(config.BASE_DIR, 'created_bots'),
+        os.path.join(config.BASE_DIR, 'logs'),
+    ]
+    for d in dirs:
+        os.makedirs(d, exist_ok=True)
+
+
 def main():
     print(config.startup_banner(), flush=True)
     print(f"📁 Директория: {config.BASE_DIR}", flush=True)
+
+    # ── Auto-create required directories ──────────────────────────────────
+    _ensure_data_dirs()
+
+    # ── Ensure Telegram Bot Token is set ──────────────────────────────────
+    _ensure_bot_token()
+
     _validate_startup_config()
     print("🧠 LLM: {} / {}".format(config.LLM_PROVIDER, config.LLM_MODEL), flush=True)
     print("🎙  TTS: {} / {}".format(config.TTS_PROVIDER, config.TTS_VOICE), flush=True)

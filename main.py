@@ -1,14 +1,7 @@
-import telebot
-from app.parsers.telegram_parser import TelegramParser
-
-API_TOKEN = 'YOUR_BOT_TOKEN'
-
-bot = telebot.TeleBot(API_TOKEN)
-parser = TelegramParser()
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.reply_to(message, "Telegram Parser Bot Started!")
+import os
+import config
 
 if __name__ == "__main__":
-    bot.polling()
+    # Redirect to the full bot entry point
+    import runpy
+    runpy.run_path(os.path.join(config.BASE_DIR, 'bot.py'), run_name='__main__')
