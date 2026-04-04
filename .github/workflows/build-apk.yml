@@ -62,14 +62,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ github.run_number }}" BlackBugsAI-admin.apk \
-            --title "BlackBugsAI Admin v${{ github.run_number }}" \
-            --notes "## BlackBugsAI Android APK
+          cat <<'EOF' > /tmp/release_notes.md
+          ## BlackBugsAI Android APK
 
-          Автосборка из коммита \`${{ github.sha }}\`
+          Автосборка из коммита `${{ github.sha }}`
 
           ### Как установить:
-          1. Скачайте \`BlackBugsAI-admin.apk\`
+          1. Скачайте `BlackBugsAI-admin.apk`
           2. Разрешите установку из неизвестных источников
           3. Установите APK
-          4. Войдите через токен Telegram бота"
+          4. Войдите через токен Telegram бота
+          EOF
+          gh release create "v${{ github.run_number }}" BlackBugsAI-admin.apk \
+            --title "BlackBugsAI Admin v${{ github.run_number }}" \
+            --notes-file /tmp/release_notes.md
