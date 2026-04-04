@@ -86,3 +86,4 @@ lib/
 
 APK автоматически собирается при изменениях в `android_app/` через GitHub Actions.
 Артефакт доступен на вкладке Actions → Build Android APK → Artifacts.
+
