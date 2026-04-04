@@ -8699,12 +8699,11 @@ def _validate_startup_config():
 
 def _ensure_bot_token():
     """Checks for Telegram bot token; prompts interactively if missing."""
-    import sys as _sys
     token = config.TELEGRAM_BOT_TOKEN
     if token:
         return token
     # Check if running in interactive terminal
-    if _sys.stdin.isatty():
+    if sys.stdin.isatty():
         print("\n⚠️  Telegram Bot Token не найден в .env", flush=True)
         print("   Получить токен: @BotFather → /newbot", flush=True)
         try:
