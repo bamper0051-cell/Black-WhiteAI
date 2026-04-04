@@ -2,15 +2,22 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, claude/project-setup-android-app-wyDHh ]
+    branches:
+      - main
+      - claude/project-setup-android-app-wyDHh
+      - copilot/build-apk-one-more-time
     paths:
       - 'android_app/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
     inputs:
       release_tag:
         description: 'Release tag (e.g. v1.0.0)'
         required: false
         default: 'latest'
+
+permissions:
+  contents: write
 
 jobs:
   build-apk:
@@ -36,8 +43,11 @@ jobs:
 
       - name: Generate local.properties
         run: |
-          echo "flutter.sdk=$(which flutter | sed 's|/bin/flutter||')" \
-            > android_app/android/local.properties
+          FLUTTER_SDK_PATH="$(which flutter | sed 's|/bin/flutter||')"
+          {
+            echo "flutter.sdk=${FLUTTER_SDK_PATH}"
+            echo "sdk.dir=${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          } > android_app/android/local.properties
 
       - name: Install dependencies
         working-directory: android_app
