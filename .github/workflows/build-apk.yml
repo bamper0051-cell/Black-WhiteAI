@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main, master, claude/* ]
+    branches: [ main, master, claude/*, copilot/* ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -13,16 +13,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.2.0
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
 
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses || true
@@ -54,7 +51,7 @@ jobs:
           cp "$APK_PATH" BlackBugsAI-admin.apk
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: BlackBugsAI-admin-apk
           path: BlackBugsAI-admin.apk
@@ -62,22 +59,17 @@ jobs:
 
       - name: Create Release (on push to main/master)
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: BlackBugsAI Admin v${{ github.run_number }}
-          body: |
-            ## BlackBugsAI Android APK
-
-            Автосборка из коммита `${{ github.sha }}`
-
-            ### Как установить:
-            1. Скачайте `BlackBugsAI-admin.apk`
-            2. Разрешите установку из неизвестных источников
-            3. Установите APK
-            4. Войдите через токен Telegram бота
-          files: BlackBugsAI-admin.apk
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ github.run_number }}" BlackBugsAI-admin.apk \
+            --title "BlackBugsAI Admin v${{ github.run_number }}" \
+            --notes "## BlackBugsAI Android APK
+
+          Автосборка из коммита \`${{ github.sha }}\`
+
+          ### Как установить:
+          1. Скачайте \`BlackBugsAI-admin.apk\`
+          2. Разрешите установку из неизвестных источников
+          3. Установите APK
+          4. Войдите через токен Telegram бота"
