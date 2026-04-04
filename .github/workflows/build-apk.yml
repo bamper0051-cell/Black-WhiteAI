@@ -16,19 +16,21 @@ jobs:
   build-apk:
     name: Build Release APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Setup Java 17
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Flutter 3.24.5
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2  # v2.23.0
         with:
           flutter-version: '3.24.5'
           channel: 'stable'
@@ -75,7 +77,7 @@ jobs:
           ls -lh release-apks/
 
       - name: Upload APK artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
         with:
           name: BlackBugsAI-APKs
           path: release-apks/
@@ -83,31 +85,30 @@ jobs:
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
-        with:
-          tag_name: ${{ github.event.inputs.release_tag || 'latest' }}
-          name: BlackBugsAI Android App ${{ github.event.inputs.release_tag || 'latest' }}
-          body: |
-            ## BlackBugsAI Android App
-
-            Neon-styled management app for BlackBugsAI multi-agent platform.
-
-            ### Download
-            - **BlackBugsAI-arm64.apk** — для большинства современных Android (рекомендуется)
-            - **BlackBugsAI-arm32.apk** — для старых устройств
-            - **BlackBugsAI-universal.apk** — универсальный (больше размер)
-
-            ### Установка
-            1. Скачай APK под свою архитектуру
-            2. Включи "Установка из неизвестных источников" в настройках Android
-            3. Открой APK и установи
-
-            ### Подключение
-            1. Запусти `docker-compose up -d` на сервере
-            2. Введи URL: `http://<IP>:8080`
-            3. Введи `ADMIN_TOKEN` из `.env`
-          files: release-apks/*
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.inputs.release_tag || 'latest' }}"
+          printf '%s\n' \
+            "## BlackBugsAI Android App" \
+            "" \
+            "Neon-styled management app for BlackBugsAI multi-agent platform." \
+            "" \
+            "### Download" \
+            "- **BlackBugsAI-arm64.apk** — для большинства современных Android (рекомендуется)" \
+            "- **BlackBugsAI-arm32.apk** — для старых устройств" \
+            "- **BlackBugsAI-universal.apk** — универсальный (больше размер)" \
+            "" \
+            "### Установка" \
+            "1. Скачай APK под свою архитектуру" \
+            '2. Включи "Установка из неизвестных источников" в настройках Android' \
+            "3. Открой APK и установи" \
+            "" \
+            "### Подключение" \
+            '1. Запусти `docker-compose up -d` на сервере' \
+            '2. Введи URL: `http://<IP>:8080`' \
+            '3. Введи `ADMIN_TOKEN` из `.env`' \
+            > /tmp/release-notes.md
+          gh release create "${TAG}" release-apks/* \
+            --title "BlackBugsAI Android App ${TAG}" \
+            --notes-file /tmp/release-notes.md
