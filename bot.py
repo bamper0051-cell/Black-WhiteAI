@@ -6,6 +6,11 @@ import sys
 import time
 import random
 import shutil
+import os
+import threading
+import schedule
+import subprocess
+import re
 from auth_module import (
     is_authenticated,
     auth_state_get,
@@ -30,7 +35,6 @@ try:
         log_admin_cmd, get_system_info, list_processes,
         kill_process, exec_shell, get_recent_logs,
         format_users_list, ban_user, unban_user, delete_user,
-        format_users_list,
     )
     ADMIN_ENABLED = True
 except ImportError as _ae:
@@ -374,7 +378,6 @@ def print_banner():
 
 if __name__ == "__main__":
     print_banner()
-import time, threading, schedule, os, subprocess, re, shutil
 try:
     from database import init_db, get_stats, get_today_count
 except ImportError:
