@@ -123,7 +123,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 16),
 
-            // App info
+            // GCP Server Connection
+            NeonCard(
+              glowColor: NeonColors.cyan,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NeonText(
+                    '> GCP SERVER CONNECTION',
+                    color: NeonColors.cyan,
+                    fontSize: 11,
+                    fontFamily: 'Orbitron',
+                    glowRadius: 4,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Переконфигурировать подключение к GCP Docker-серверу',
+                    style: TextStyle(
+                      color: NeonColors.textSecondary,
+                      fontFamily: 'JetBrainsMono',
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          NeonPageRoute(child: const SetupScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.cloud_outlined, size: 16),
+                      label: const Text('ПЕРЕПОДКЛЮЧИТЬ / ПЕРЕНАСТРОИТЬ'),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 50.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
             NeonCard(
               glowColor: NeonColors.purple,
               child: Column(
