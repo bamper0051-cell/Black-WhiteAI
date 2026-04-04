@@ -80,6 +80,25 @@ class ServerApiService(val baseUrl: String, val token: String) {
         }.getOrElse { false }
     }
 
+    /**
+     * Returns HTTP status code from GET /api/status with auth header.
+     * -1 = network error / unreachable
+     * 200 = OK
+     * 401 = wrong token
+     * other = unexpected server response
+     */
+    suspend fun testConnection(): Int = withContext(Dispatchers.IO) {
+        runCatching {
+            val conn = (URL("${cleanBase()}/api/status").openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                setRequestProperty("X-Admin-Token", token)
+                connectTimeout = 8_000; readTimeout = 8_000
+                connect()
+            }
+            conn.responseCode
+        }.getOrElse { -1 }
+    }
+
     // ── Status / sysinfo ─────────────────────────────────────────────────────
 
     suspend fun getStatus(): ServerStatus? = withContext(Dispatchers.IO) {

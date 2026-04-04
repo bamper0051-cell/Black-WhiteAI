@@ -205,19 +205,77 @@ fun SetupScreen(vm: AppViewModel, onConnected: () -> Unit) {
                         )
 
                         AnimatedVisibility(srvError.isNotEmpty()) {
-                            Text(srvError, color = NeonPink, fontSize = 13.sp)
+                            Text(
+                                srvError,
+                                color    = if (srvError.startsWith("✅")) NeonCyan else NeonPink,
+                                fontSize = 13.sp
+                            )
                         }
 
                         NeonButton(
                             onClick = {
-                                if (serverUrl.isBlank() || adminToken.isBlank()) {
-                                    srvError = "Please fill in all fields"
-                                    return@NeonButton
+                                scope.launch {
+                                    srvLoading = true
+                                    srvError   = ""
+
+                                    val url = serverUrl.trim()
+                                    val tkn = adminToken.trim()
+
+                                    if (url.isBlank() || tkn.isBlank()) {
+                                        srvError   = "Заполните Server URL и Admin Token"
+                                        srvLoading = false
+                                        return@launch
+                                    }
+
+                                    // Warn about localhost — points to the phone, not a remote server
+                                    if (url.contains("localhost", ignoreCase = true) ||
+                                        url.contains("127.0.0.1")) {
+                                        srvError   = "⚠️ localhost — это ваш телефон, не сервер!\nУкажите внешний IP или домен (например http://34.x.x.x:8080)"
+                                        srvLoading = false
+                                        return@launch
+                                    }
+
+                                    val testSvc = com.blackbugsai.app.services.ServerApiService(url, tkn)
+
+                                    // Step 1: check reachability + auth in one request
+                                    srvError = "Проверяю подключение…"
+                                    val code = try { testSvc.testConnection() } catch (_: Exception) { -1 }
+
+                                    when {
+                                        code == -1 -> {
+                                            srvError = "❌ Сервер недоступен: $url\n" +
+                                                "• Проверьте IP/домен и порт\n" +
+                                                "• GCP: добавьте правило Firewall → allow TCP"
+                                        }
+                                        code == 401 -> {
+                                            srvError = "❌ Авторизация отказана (401)\n" +
+                                                "• Неверный Admin Token\n" +
+                                                "• Токен передаётся в заголовке X-Admin-Token"
+                                        }
+                                        code == 403 -> {
+                                            srvError = "❌ Доступ запрещён (403)\n" +
+                                                "• Проверьте Admin Token и права доступа"
+                                        }
+                                        code == 404 -> {
+                                            srvError = "❌ Эндпоинт не найден (404)\n" +
+                                                "• Убедитесь что запущен BlackBugsAI server\n" +
+                                                "• Проверьте URL (нет лишних слешей/путей)"
+                                        }
+                                        code !in 200..299 -> {
+                                            srvError = "❌ Ошибка сервера (HTTP $code)\n" +
+                                                "• Проверьте, что сервер запущен (python3 admin_web.py)"
+                                        }
+                                        else -> {
+                                            // code 200 — all good
+                                            srvError = "✅ Подключено успешно!"
+                                            vm.saveServerConfig(url, tkn, srvBotToken.trim())
+                                            srvLoading = false
+                                            onConnected()
+                                            return@launch
+                                        }
+                                    }
+                                    srvLoading = false
                                 }
-                                srvLoading = true
-                                vm.saveServerConfig(serverUrl.trim(), adminToken.trim(), srvBotToken.trim())
-                                srvLoading = false
-                                onConnected()
                             },
                             modifier    = Modifier.fillMaxWidth().height(48.dp),
                             borderColor = NeonPurple,
