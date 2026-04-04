@@ -1,0 +1,12 @@
+name: Minimal Test
+
+on:
+  push:
+    branches: [ copilot/build-apk-please-work ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo
+        run: echo "Hello from minimal workflow"
