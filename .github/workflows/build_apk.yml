@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: 📥 Клонирование репозитория
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2ea7a48a5a8a7f97d93de1c8b7139aa9bc  # v6.0.2
 
       - name: 🐍 Настройка Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with:
           python-version: '3.11'
 
@@ -31,7 +31,7 @@ jobs:
         run: flet build apk
 
       - name: 📤 Загрузка готового APK файла
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2dd50e854b2e4b0483cb1fc2ac9aaf80f05  # v7
         with:
           name: Black-WhiteAI-App
           # Flet сохраняет готовый файл по этому пути
