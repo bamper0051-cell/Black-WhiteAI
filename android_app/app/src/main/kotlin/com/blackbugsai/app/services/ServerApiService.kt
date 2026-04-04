@@ -254,7 +254,7 @@ class ServerApiService(val baseUrl: String, val token: String) {
     }
 
     suspend fun deleteNeoTool(toolName: String): Boolean = withContext(Dispatchers.IO) {
-        post("/api/neo/tools/$toolName/delete") != null
+        post("/api/neo/tool/delete", mapOf("name" to toolName)) != null
     }
 
     // ── Agent task execution ──────────────────────────────────────────────────
