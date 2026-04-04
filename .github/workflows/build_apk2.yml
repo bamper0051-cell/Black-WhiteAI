@@ -1,1 +1,39 @@
+name: Build Android APK
+
+# Запускать сборку при каждом обновлении кода или по кнопке вручную
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: 🐍 Настройка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Установка библиотек
+        run: |
+          python -m pip install --upgrade pip
+          # Устанавливаем flet и другие нужные твоему приложению пакеты
+          pip install flet requests
+
+      - name: 🛠️ Сборка Android приложения (Flet)
+        # Flet сам скачает Android SDK и нужные инструменты
+        run: flet build apk
+
+      - name: 📤 Загрузка готового APK файла
+        uses: actions/upload-artifact@v4
+        with:
+          name: Black-WhiteAI-App
+          # Flet сохраняет готовый файл по этому пути
+          path: build/apk/**/*.apk 
 
