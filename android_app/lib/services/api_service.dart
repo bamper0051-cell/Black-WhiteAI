@@ -32,7 +32,7 @@ class ApiService {
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $adminToken',
+        'X-Admin-Token': adminToken,
       };
 
   Future<dynamic> _get(String path) async {
@@ -67,7 +67,7 @@ class ApiService {
 
   Future<bool> ping() async {
     try {
-      final data = await _get('/api/health');
+      final data = await _get('/health');
       return data['status'] == 'ok';
     } catch (_) {
       return false;
@@ -75,7 +75,7 @@ class ApiService {
   }
 
   Future<SystemStats> getStats() async {
-    final data = await _get('/api/stats');
+    final data = await _get('/api/status');
     return SystemStats.fromJson(data);
   }
 
@@ -171,8 +171,23 @@ class ApiService {
 
   Future<List<LlmProvider>> getProviders() async {
     try {
-      final data = await _get('/api/providers') as List;
-      return data.map((j) => LlmProvider.fromJson(j)).toList();
+      final data = await _get('/api/providers/status') as Map<String, dynamic>;
+      // Backend returns active/best provider info, not a list
+      // Return a synthetic list from the status response
+      final providers = <LlmProvider>[];
+      final activeLlm = data['active_llm'] as String?;
+      final bestLlm = data['best_llm'] as String?;
+      if (activeLlm != null) {
+        providers.add(LlmProvider(
+          id: activeLlm,
+          name: activeLlm,
+          enabled: true,
+          isDefault: true,
+          models: [activeLlm],
+          currentModel: bestLlm,
+        ));
+      }
+      return providers;
     } catch (_) {
       return [];
     }
@@ -186,7 +201,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getSystemInfo() async {
-    return await _get('/api/system') as Map<String, dynamic>;
+    return await _get('/api/sysinfo') as Map<String, dynamic>;
   }
 
   // ─── Logs ─────────────────────────────────────────────────────────────────
@@ -202,15 +217,28 @@ class ApiService {
 
   // ─── Docker Control ───────────────────────────────────────────────────────
 
-  /// Получает статус Docker-контейнера (GET /api/docker/status)
+  /// Получает статус Docker-контейнеров (GET /api/rc/docker)
   Future<DockerContainerStatus> getDockerStatus() async {
-    final data = await _get('/api/docker/status') as Map<String, dynamic>;
-    return DockerContainerStatus.fromJson(data);
+    final data = await _get('/api/rc/docker') as Map<String, dynamic>;
+    // Backend returns {ok, containers: [...]}
+    final containers = data['containers'] as List?;
+    if (containers != null && containers.isNotEmpty) {
+      return DockerContainerStatus.fromJson(containers.first as Map<String, dynamic>);
+    }
+    return const DockerContainerStatus(
+      id: '',
+      name: 'unknown',
+      status: 'unknown',
+      image: '',
+      uptime: '-',
+      cpuPercent: 0,
+      memoryMb: 0,
+    );
   }
 
-  /// Выполняет команду в Docker-контейнере (POST /api/docker/exec)
+  /// Выполняет shell-команду на сервере (POST /api/rc/shell)
   Future<String> runDockerCommand(String cmd) async {
-    final data = await _post('/api/docker/exec', {'cmd': cmd});
+    final data = await _post('/api/rc/shell', {'cmd': cmd});
     return data['output'] ?? data['result'] ?? '';
   }
 
