@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, claude/project-setup-android-app-wyDHh ]
+    branches: [ main, claude/project-setup-android-app-wyDHh, claude/fix-android-dependency-issues ]
     paths:
       - 'android_app/**'
   workflow_dispatch:
