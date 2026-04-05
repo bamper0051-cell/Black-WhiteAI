@@ -80,14 +80,25 @@ class DockerContainerStatus {
   bool get isStopped => status == 'stopped' || status == 'exited';
   bool get isRestarting => status == 'restarting';
 
-  factory DockerContainerStatus.fromJson(Map<String, dynamic> j) =>
-      DockerContainerStatus(
-        id: j['id'] ?? '',
-        name: j['name'] ?? '',
-        status: j['status'] ?? 'unknown',
-        image: j['image'] ?? '',
-        uptime: j['uptime'] ?? '-',
-        cpuPercent: (j['cpu_percent'] as num?)?.toDouble() ?? 0.0,
-        memoryMb: (j['memory_mb'] as num?)?.toDouble() ?? 0.0,
-      );
+  factory DockerContainerStatus.fromJson(Map<String, dynamic> j) {
+    // Normalize status: "Up X days" → "running", "Exited..." → "stopped"
+    final rawStatus = j['status'] as String? ?? 'unknown';
+    String normalizedStatus;
+    if (j['running'] == true || rawStatus.toLowerCase().startsWith('up')) {
+      normalizedStatus = 'running';
+    } else if (rawStatus.toLowerCase().startsWith('restarting')) {
+      normalizedStatus = 'restarting';
+    } else {
+      normalizedStatus = 'stopped';
+    }
+    return DockerContainerStatus(
+      id: j['id'] ?? '',
+      name: j['name'] ?? '',
+      status: normalizedStatus,
+      image: j['image'] ?? '',
+      uptime: rawStatus,
+      cpuPercent: (j['cpu_percent'] as num?)?.toDouble() ?? 0.0,
+      memoryMb: (j['memory_mb'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
 }
