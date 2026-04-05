@@ -2,7 +2,10 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/models.dart';
+import '../models/gcp_models.dart';
 
 class ApiException implements Exception {
   final int statusCode;
@@ -18,6 +21,14 @@ class ApiService {
   final String adminToken;
 
   ApiService({required this.baseUrl, required this.adminToken});
+
+  /// Создаёт экземпляр ApiService из сохранённых настроек SharedPreferences
+  static Future<ApiService> fromSavedConfig() async {
+    final prefs = await SharedPreferences.getInstance();
+    final baseUrl = prefs.getString('base_url') ?? '';
+    final token = prefs.getString('admin_token') ?? '';
+    return ApiService(baseUrl: baseUrl, adminToken: token);
+  }
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
@@ -187,5 +198,34 @@ class ApiService {
     } catch (_) {
       return [];
     }
+  }
+
+  // ─── Docker Control ───────────────────────────────────────────────────────
+
+  /// Получает статус Docker-контейнера (GET /api/docker/status)
+  Future<DockerContainerStatus> getDockerStatus() async {
+    final data = await _get('/api/docker/status') as Map<String, dynamic>;
+    return DockerContainerStatus.fromJson(data);
+  }
+
+  /// Выполняет команду в Docker-контейнере (POST /api/docker/exec)
+  Future<String> runDockerCommand(String cmd) async {
+    final data = await _post('/api/docker/exec', {'cmd': cmd});
+    return data['output'] ?? data['result'] ?? '';
+  }
+
+  // ─── WebSocket Logs ───────────────────────────────────────────────────────
+
+  /// Подписывается на поток логов через WebSocket (ws://host:port/ws/logs)
+  Stream<String> subscribeToLogs() {
+    final wsUrl = baseUrl
+        .replaceFirst('https://', 'wss://')
+        .replaceFirst('http://', 'ws://');
+    final channel = WebSocketChannel.connect(
+      Uri.parse('$wsUrl/ws/logs'),
+    );
+    return channel.stream
+        .map((event) => event.toString())
+        .handleError((_) {});
   }
 }

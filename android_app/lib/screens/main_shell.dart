@@ -10,6 +10,7 @@ import 'tasks_screen.dart';
 import 'agents_screen.dart';
 import 'terminal_screen.dart';
 import 'settings_screen.dart';
+import 'docker_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -29,6 +30,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     TasksScreen(),
     AgentsScreen(),
     TerminalScreen(),
+    DockerScreen(),
     SettingsScreen(),
   ];
 
@@ -37,6 +39,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     _NavItem(icon: Icons.list_outlined, activeIcon: Icons.list, label: 'TASKS'),
     _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy, label: 'AGENTS'),
     _NavItem(icon: Icons.terminal_outlined, activeIcon: Icons.terminal, label: 'SHELL'),
+    _NavItem(icon: Icons.cloud_queue_outlined, activeIcon: Icons.cloud_queue, label: 'DOCKER'),
     _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'CONFIG'),
   ];
 

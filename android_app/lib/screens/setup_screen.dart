@@ -1,11 +1,11 @@
-// setup_screen.dart — Initial setup: connect to BlackBugsAI server
+// setup_screen.dart — Начальная настройка: подключение к серверу BlackBugsAI
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
+import '../services/ssh_tunnel_service.dart';
 import '../widgets/neon_text_field.dart';
 import 'main_shell.dart';
 
@@ -17,17 +17,66 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> {
-  final _urlCtrl = TextEditingController(text: 'http://');
+  final _hostCtrl = TextEditingController();
+  final _sshPortCtrl = TextEditingController(text: '22');
+  final _usernameCtrl = TextEditingController(text: 'ubuntu');
+  final _dockerPortCtrl = TextEditingController(text: '8080');
   final _tokenCtrl = TextEditingController();
+  bool _useHttps = false;
   bool _loading = false;
+  bool _testing = false;
   String? _error;
+  String? _testResult;
   bool _obscureToken = true;
 
-  Future<void> _connect() async {
-    final url = _urlCtrl.text.trim().replaceAll(RegExp(r'/$'), '');
+  @override
+  void dispose() {
+    _hostCtrl.dispose();
+    _sshPortCtrl.dispose();
+    _usernameCtrl.dispose();
+    _dockerPortCtrl.dispose();
+    _tokenCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _testConnection() async {
+    final host = _hostCtrl.text.trim();
     final token = _tokenCtrl.text.trim();
 
-    if (url.isEmpty || token.isEmpty) {
+    if (host.isEmpty || token.isEmpty) {
+      setState(() => _error = 'Введи IP сервера и токен');
+      return;
+    }
+
+    setState(() {
+      _testing = true;
+      _error = null;
+      _testResult = null;
+    });
+
+    try {
+      final dockerPort = int.tryParse(_dockerPortCtrl.text.trim()) ?? 8080;
+      final scheme = _useHttps ? 'https' : 'http';
+      final baseUrl = '$scheme://$host:$dockerPort';
+      final api = ApiService(baseUrl: baseUrl, adminToken: token);
+      final ok = await api.ping();
+      setState(() {
+        _testResult = ok ? '✅ Сервер доступен' : '❌ Сервер не отвечает';
+        _testing = false;
+      });
+    } catch (e) {
+      setState(() {
+        _testResult = '❌ Ошибка: $e';
+        _testing = false;
+      });
+    }
+  }
+
+  Future<void> _connect() async {
+    final host = _hostCtrl.text.trim();
+    final token = _tokenCtrl.text.trim();
+
+    if (host.isEmpty || token.isEmpty) {
       setState(() => _error = 'Заполни все поля');
       return;
     }
@@ -38,20 +87,34 @@ class _SetupScreenState extends State<SetupScreen> {
     });
 
     try {
-      final api = ApiService(baseUrl: url, adminToken: token);
+      final sshPort = int.tryParse(_sshPortCtrl.text.trim()) ?? 22;
+      final dockerPort = int.tryParse(_dockerPortCtrl.text.trim()) ?? 8080;
+
+      final cfg = SshConnectionConfig(
+        host: host,
+        port: sshPort,
+        username: _usernameCtrl.text.trim().isEmpty
+            ? 'ubuntu'
+            : _usernameCtrl.text.trim(),
+        remotePort: dockerPort,
+        useHttps: _useHttps,
+        adminToken: token,
+      );
+
+      await SshTunnelService.saveConfig(cfg);
+
+      final scheme = _useHttps ? 'https' : 'http';
+      final baseUrl = '$scheme://$host:$dockerPort';
+      final api = ApiService(baseUrl: baseUrl, adminToken: token);
       final ok = await api.ping();
 
       if (!ok) {
         setState(() {
-          _error = 'Сервер не отвечает. Проверь URL и токен.';
+          _error = 'Сервер не отвечает. Проверь IP и токен.';
           _loading = false;
         });
         return;
       }
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('base_url', url);
-      await prefs.setString('admin_token', token);
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -71,12 +134,10 @@ class _SetupScreenState extends State<SetupScreen> {
       backgroundColor: NeonColors.bgDeep,
       body: Stack(
         children: [
-          // Background grid
           CustomPaint(
             painter: _SetupBgPainter(),
             size: MediaQuery.of(context).size,
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -84,7 +145,6 @@ class _SetupScreenState extends State<SetupScreen> {
                 children: [
                   const SizedBox(height: 40),
 
-                  // Logo
                   NeonText(
                     'BLACKBUGS AI',
                     color: NeonColors.cyan,
@@ -96,7 +156,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 8),
                   NeonText(
-                    'CONNECT TO SERVER',
+                    'GCP DOCKER CONNECT',
                     color: NeonColors.purple,
                     fontSize: 11,
                     fontFamily: 'Orbitron',
@@ -105,7 +165,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Connection card
+                  // Карточка настроек GCP
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: neonCardDecoration(glowColor: NeonColors.cyan),
@@ -113,7 +173,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         NeonText(
-                          '> SERVER CONFIG',
+                          '> GCP SERVER CONFIG',
                           color: NeonColors.cyan,
                           fontSize: 12,
                           fontFamily: 'Orbitron',
@@ -122,13 +182,46 @@ class _SetupScreenState extends State<SetupScreen> {
                         const SizedBox(height: 20),
 
                         NeonTextField(
-                          controller: _urlCtrl,
-                          label: 'SERVER URL',
-                          hint: 'http://192.168.1.1:8080',
-                          prefixIcon: Icons.dns_outlined,
-                          keyboardType: TextInputType.url,
+                          controller: _hostCtrl,
+                          label: 'GCP SERVER IP / HOSTNAME',
+                          hint: '34.xx.xx.xx',
+                          prefixIcon: Icons.cloud_outlined,
+                          keyboardType: TextInputType.text,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: NeonTextField(
+                                controller: _sshPortCtrl,
+                                label: 'SSH PORT',
+                                hint: '22',
+                                prefixIcon: Icons.lock_outline,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: NeonTextField(
+                                controller: _dockerPortCtrl,
+                                label: 'DOCKER PORT',
+                                hint: '8080',
+                                prefixIcon: Icons.dock_outlined,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        NeonTextField(
+                          controller: _usernameCtrl,
+                          label: 'SSH USERNAME',
+                          hint: 'ubuntu',
+                          prefixIcon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 12),
 
                         NeonTextField(
                           controller: _tokenCtrl,
@@ -148,6 +241,85 @@ class _SetupScreenState extends State<SetupScreen> {
                                 setState(() => _obscureToken = !_obscureToken),
                           ),
                         ),
+                        const SizedBox(height: 12),
+
+                        // Переключатель HTTPS
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _useHttps = !_useHttps),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: NeonColors.bgSurface,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: NeonColors.cyanGlow),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _useHttps
+                                      ? Icons.https_outlined
+                                      : Icons.http_outlined,
+                                  color: _useHttps
+                                      ? NeonColors.green
+                                      : NeonColors.textSecondary,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'USE HTTPS',
+                                  style: TextStyle(
+                                    color: _useHttps
+                                        ? NeonColors.green
+                                        : NeonColors.textSecondary,
+                                    fontFamily: 'Orbitron',
+                                    fontSize: 11,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Switch(
+                                  value: _useHttps,
+                                  onChanged: (v) =>
+                                      setState(() => _useHttps = v),
+                                  activeColor: NeonColors.green,
+                                  inactiveThumbColor:
+                                      NeonColors.textSecondary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        if (_testResult != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: _testResult!.startsWith('✅')
+                                  ? NeonColors.green.withOpacity(0.1)
+                                  : NeonColors.pink.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _testResult!.startsWith('✅')
+                                    ? NeonColors.green.withOpacity(0.5)
+                                    : NeonColors.pink.withOpacity(0.5),
+                              ),
+                            ),
+                            child: Text(
+                              _testResult!,
+                              style: TextStyle(
+                                color: _testResult!.startsWith('✅')
+                                    ? NeonColors.green
+                                    : NeonColors.pink,
+                                fontSize: 11,
+                                fontFamily: 'JetBrainsMono',
+                              ),
+                            ),
+                          ),
+                        ],
 
                         if (_error != null) ...[
                           const SizedBox(height: 12),
@@ -179,23 +351,42 @@ class _SetupScreenState extends State<SetupScreen> {
                           ),
                         ],
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
-                        SizedBox(
-                          width: double.infinity,
-                          child: _loading
-                              ? const Center(
-                                  child: NeonLoadingIndicator(
-                                    label: 'CONNECTING...',
-                                    size: 40,
-                                  ),
-                                )
-                              : _NeonButton(
-                                  label: 'CONNECT',
-                                  icon: Icons.link,
-                                  color: NeonColors.cyan,
-                                  onTap: _connect,
-                                ),
+                        // Кнопки
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _testing
+                                  ? const Center(
+                                      child: NeonLoadingIndicator(
+                                          size: 32,
+                                          label: 'TEST...'))
+                                  : _NeonButton(
+                                      label: 'ТЕСТ',
+                                      icon: Icons.network_ping,
+                                      color: NeonColors.purple,
+                                      onTap: _testConnection,
+                                    ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: _loading
+                                  ? const Center(
+                                      child: NeonLoadingIndicator(
+                                        label: 'CONNECTING...',
+                                        size: 40,
+                                      ),
+                                    )
+                                  : _NeonButton(
+                                      label: 'СОХРАНИТЬ И ПОДКЛЮЧИТЬСЯ',
+                                      icon: Icons.link,
+                                      color: NeonColors.cyan,
+                                      onTap: _connect,
+                                    ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -203,7 +394,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Hints
+                  // Подсказки
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -218,9 +409,10 @@ class _SetupScreenState extends State<SetupScreen> {
                         NeonText('> QUICK START', color: NeonColors.purple,
                             fontSize: 10, fontFamily: 'Orbitron'),
                         const SizedBox(height: 10),
-                        _hintRow('1', 'Запусти docker-compose up -d'),
-                        _hintRow('2', 'URL: http://<ip>:8080'),
-                        _hintRow('3', 'Токен: ADMIN_TOKEN из .env'),
+                        _hintRow('1', 'На GCP VM: docker-compose up -d'),
+                        _hintRow('2', 'IP: публичный IP GCP VM'),
+                        _hintRow('3', 'Порт Docker: 8080 (по умолчанию)'),
+                        _hintRow('4', 'Токен: ADMIN_TOKEN из .env'),
                       ],
                     ),
                   ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
@@ -257,12 +449,14 @@ class _SetupScreenState extends State<SetupScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              color: NeonColors.textSecondary,
-              fontSize: 11,
-              fontFamily: 'JetBrainsMono',
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: NeonColors.textSecondary,
+                fontSize: 11,
+                fontFamily: 'JetBrainsMono',
+              ),
             ),
           ),
         ],
@@ -341,14 +535,17 @@ class _NeonButtonState extends State<_NeonButton> {
           children: [
             Icon(widget.icon, color: widget.color, size: 18),
             const SizedBox(width: 8),
-            Text(
-              widget.label,
-              style: TextStyle(
-                color: widget.color,
-                fontFamily: 'Orbitron',
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
+            Flexible(
+              child: Text(
+                widget.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: widget.color,
+                  fontFamily: 'Orbitron',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
               ),
             ),
           ],
@@ -357,3 +554,4 @@ class _NeonButtonState extends State<_NeonButton> {
     );
   }
 }
+
