@@ -178,13 +178,17 @@ class ApiService {
       final activeLlm = data['active_llm'] as String?;
       final bestLlm = data['best_llm'] as String?;
       if (activeLlm != null) {
+        final modelsList = <String>[activeLlm];
+        if (bestLlm != null && bestLlm != activeLlm) {
+          modelsList.add(bestLlm);
+        }
         providers.add(LlmProvider(
           id: activeLlm,
           name: activeLlm,
           enabled: true,
           isDefault: true,
-          models: [activeLlm],
-          currentModel: bestLlm,
+          models: modelsList,
+          currentModel: bestLlm ?? activeLlm,
         ));
       }
       return providers;
@@ -237,10 +241,13 @@ class ApiService {
   }
 
   /// Выполняет shell-команду на сервере (POST /api/rc/shell)
-  Future<String> runDockerCommand(String cmd) async {
+  Future<String> runShellCommand(String cmd) async {
     final data = await _post('/api/rc/shell', {'cmd': cmd});
     return data['output'] ?? data['result'] ?? '';
   }
+
+  /// Alias kept for backward compatibility with docker_screen
+  Future<String> runDockerCommand(String cmd) => runShellCommand(cmd);
 
   // ─── WebSocket Logs ───────────────────────────────────────────────────────
 
