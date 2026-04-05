@@ -11,6 +11,7 @@ import 'agents_screen.dart';
 import 'terminal_screen.dart';
 import 'settings_screen.dart';
 import 'docker_screen.dart';
+import 'pro_panel_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -31,6 +32,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     AgentsScreen(),
     TerminalScreen(),
     DockerScreen(),
+    ProPanelScreen(),
     SettingsScreen(),
   ];
 
@@ -40,6 +42,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy, label: 'AGENTS'),
     _NavItem(icon: Icons.terminal_outlined, activeIcon: Icons.terminal, label: 'SHELL'),
     _NavItem(icon: Icons.cloud_queue_outlined, activeIcon: Icons.cloud_queue, label: 'DOCKER'),
+    _NavItem(icon: Icons.workspace_premium_outlined, activeIcon: Icons.workspace_premium, label: 'PRO'),
     _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'CONFIG'),
   ];
 
@@ -236,4 +239,3 @@ class _NeonBottomNav extends StatelessWidget {
     );
   }
 }
-

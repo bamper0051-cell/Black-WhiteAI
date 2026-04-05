@@ -99,6 +99,22 @@ class Task {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'user_id': userId,
+        'type': type,
+        'title': title,
+        'status': status,
+        'result': result,
+        'error': error,
+        'artifacts': artifacts.map((a) => a.toJson()).toList(),
+        'retry_count': retryCount,
+        'max_retries': maxRetries,
+        'created_at': createdAt.toIso8601String(),
+        'started_at': startedAt?.toIso8601String(),
+        'finished_at': finishedAt?.toIso8601String(),
+      };
+
   bool get isDone => status == 'done';
   bool get isFailed => status == 'failed';
   bool get isRunning => status == 'running';
@@ -160,6 +176,16 @@ class Artifact {
       name.endsWith('.dart') ||
       name.endsWith('.txt');
   bool get isZip => name.endsWith('.zip');
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'task_id': taskId,
+        'name': name,
+        'path': path,
+        'mime_type': mimeType,
+        'size_bytes': sizeBytes,
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 class SystemStats {
