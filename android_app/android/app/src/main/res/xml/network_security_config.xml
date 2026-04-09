@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration for BlackBugsAI
+  - Production: HTTPS required for all domains
+  - Development / local servers: cleartext HTTP allowed for private IP ranges
+    (192.168.x.x, 10.x.x.x, 172.16-31.x.x) and localhost
+  Reference: https://developer.android.com/training/articles/security-config
+-->
+<network-security-config>
+
+    <!-- Default: require HTTPS for all public domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system CAs (for public HTTPS servers) -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Allow cleartext HTTP only for local/private network addresses -->
+    <!-- This is needed when connecting to a self-hosted server on LAN -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- localhost -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">[::1]</domain>
+
+        <!-- Private IPv4 ranges (RFC 1918) — home/office LAN, Docker, VPN -->
+        <!-- 192.168.0.0/16 -->
+        <domain includeSubdomains="true">192.168.0.1</domain>
+        <domain includeSubdomains="true">192.168.1.1</domain>
+        <!-- 10.0.0.0/8 -->
+        <domain includeSubdomains="true">10.0.0.1</domain>
+        <!-- 172.16.0.0/12 (Docker default bridge: 172.17.0.0/16) -->
+        <domain includeSubdomains="true">172.17.0.1</domain>
+        <domain includeSubdomains="true">172.18.0.1</domain>
+
+        <!-- GCP internal / VM -->
+        <domain includeSubdomains="true">10.128.0.1</domain>
+    </domain-config>
+
+</network-security-config>

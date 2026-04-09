@@ -90,7 +90,7 @@ docker-compose logs -f
 pip install -r requirements.txt
 
 # Запуск
-python main.py
+python bot.py
 ```
 
 ### Linux/Mac инициализация
@@ -240,43 +240,57 @@ autofix.py:    при failed → анализ → патч → retry (до max_r
 
 ## Структура проекта
 
+> Все модули находятся в **корне репозитория**. Точка входа — `bot.py`
+> (он же запускает `admin_web.py` в daemon-потоке на порту 8080).
+
 ```
 Black-WhiteAI/
-├── main.py                  # Точка входа
-├── bot.py                   # Ядро Telegram-бота (9K+ строк)
-├── bot_main.py              # Инициализация бота
+├── bot.py                   # ★ Точка входа (Telegram-бот + запуск admin_web)
+├── entrypoint.sh            # Docker entrypoint → exec python bot.py
 ├── config.py                # Конфигурация и env-переменные
 ├── requirements.txt         # Зависимости Python
 ├── Dockerfile               # Docker-образ
 ├── docker-compose.yml       # Оркестрация сервисов
 ├── .env.example             # Пример конфигурации
 │
-├── agents/                  # Агентная система
-│   ├── agent_neo.py         # AGENT NEO
-│   ├── agent_matrix.py      # AGENT MATRIX
-│   ├── chat_agent.py        # Chat Agent
-│   ├── agent_coder3.py      # Coder 3
-│   ├── agent_planner.py     # Планировщик задач
-│   ├── agent_memory.py      # Память агентов
-│   └── agent_executor.py    # Исполнитель инструментов
+├── ── Агентная система (в корне) ──
+├── agent_neo.py             # AGENT NEO — автономный агент
+├── agent_matrix.py          # AGENT MATRIX — многошаговый агент
+├── chat_agent.py            # Chat Agent — диалоговый агент
+├── agent_coder3.py          # Coder 3 — агент-программист
+├── agent_planner.py         # Планировщик задач (Plan→Execute→Fix)
+├── agent_memory.py          # Память агентов (SQLite)
+├── agent_executor.py        # Исполнитель инструментов
+├── agent_core.py            # Ядро агентов
+├── agent_tools_registry.py  # Реестр инструментов
 │
-├── admin_web.py             # REST API + веб-панель
+├── ── Веб-панель ──
+├── admin_web.py             # REST API + веб-панель (порт 8080)
 ├── admin_panel.html         # Дашборд (HTML)
+├── admin_panel_login.html   # Страница входа
 │
-├── task_queue.py            # Очередь задач
+├── ── Core Services ──
+├── task_queue.py            # Очередь задач (pending→running→done/failed)
+├── plan_execute_cycle.py    # Цикл Plan→Execute→Observe→Fix
 ├── autofix.py               # Авто-исправление ошибок
-├── llm_router.py            # Роутер LLM-провайдеров
-├── auth_module.py           # Аутентификация
+├── llm_router.py            # Роутер LLM-провайдеров (30+)
+├── auth_module.py           # Аутентификация пользователей
 ├── billing.py               # Биллинг
+├── database.py              # Работа с SQLite (tasks, users, sessions)
+│
+├── ── Туннели (Cloudflare/bore) ──
+├── cloudflare_qr_bot.py     # QR-код через Cloudflare (/qr команда)
+├── cloudflared_qr_bot.py    # Cloudflared tunnel URL+QR
+├── cloudflared_bot.py       # Cloudflared управление
+│
+├── ── Тесты (в корне) ──
+├── test_agents.py           # Тесты агентов
+├── test_admin_web.py        # Тесты API
 │
 ├── android_app/             # Flutter Android-приложение
-│   ├── lib/                 # Dart-код
+│   ├── lib/                 # Dart-код (screens, services, theme)
 │   ├── pubspec.yaml         # Зависимости Flutter
-│   └── README.md            # Документация приложения
-│
-├── tests/                   # Тесты
-│   ├── test_agents.py
-│   └── test_admin_web.py
+│   └── android/             # Android-специфичный код
 │
 └── docs/
     ├── AGENTS.md            # Документация агентов
@@ -288,14 +302,14 @@ Black-WhiteAI/
 ## Запуск тестов
 
 ```bash
-# Все тесты
-python -m pytest tests/ -v
+# Все тесты (файлы в корне проекта)
+python -m pytest test_agents.py test_admin_web.py -v
 
 # Тесты агентов
-python -m pytest tests/test_agents.py -v
+python -m pytest test_agents.py -v
 
 # Тесты API
-python -m pytest tests/test_admin_web.py -v
+python -m pytest test_admin_web.py -v
 ```
 
 ---

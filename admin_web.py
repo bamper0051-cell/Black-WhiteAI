@@ -147,11 +147,11 @@ def ping():
     return jsonify({'ok': True, 'pong': True, 'port': ADMIN_WEB_PORT}), 200
 
 @app.route('/health')
+@app.route('/healthz')
 def health():
     try:
         uptime = int(time.time() - _start_time)
         h, r = divmod(uptime, 3600); m, s = divmod(r, 60)
-        # Проверяем БД
         import sqlite3
         db_ok = True
         try:
@@ -166,6 +166,17 @@ def health():
         }), 200 if db_ok else 503
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 503
+
+@app.route('/readyz')
+def readyz():
+    """Kubernetes readiness probe — passes once DB is reachable."""
+    import sqlite3
+    try:
+        with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
+            c.execute('SELECT 1')
+        return jsonify({'ready': True}), 200
+    except Exception as e:
+        return jsonify({'ready': False, 'error': str(e)}), 503
 
 # ── Status ────────────────────────────────────────────────────────────────────
 @app.route('/api/status')
