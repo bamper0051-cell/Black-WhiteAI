@@ -15,8 +15,8 @@ from aiogram.client.default import DefaultBotProperties
 # =========================
 # CONFIG
 # =========================
-BOT_TOKEN = "8542269896:AAHvZIlxZ9pVDj-yb1yhLmjVp_pJM2fW7p4"
-CHAT_ID = 5722838040  # если хочешь запускать игру только в одном чате - поставь chat_id, иначе None
+BOT_TOKEN = ""
+CHAT_ID =   # если хочешь запускать игру только в одном чате - поставь chat_id, иначе None
 
 GAME_INTERVAL_SECONDS = 600   # 10 минут
 BET_OPEN_BEFORE_SECONDS = 60  # за 1 минуту до старта

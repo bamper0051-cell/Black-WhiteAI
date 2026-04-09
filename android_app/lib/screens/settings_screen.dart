@@ -25,6 +25,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _role;
   String? _baseUrl;
   String? _authMode;    // 'login' | 'token'
+  final _tokenCtrl = TextEditingController();
+  bool _saving = false;
+  bool _obscureToken = true;
+  bool _demoMode = false;
 
   @override
   void initState() {
@@ -46,6 +50,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _baseUrl  = session['base_url'];
       _authMode = session['auth_mode'];
       _urlCtrl.text = session['base_url'] ?? '';
+      _urlCtrl.text = prefs.getString('base_url') ?? '';
+      _tokenCtrl.text = prefs.getString('admin_token') ?? '';
+      _demoMode = prefs.getBool('demo_mode') ?? false;
     });
   }
 
@@ -109,6 +116,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Full reset: clears everything
+  Future<void> _setDemoMode(bool value) async {
+    await ApiService.setDemoMode(value);
+    if (!mounted) return;
+    setState(() => _demoMode = value);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(value
+            ? 'Demo mode enabled — offline data'
+            : 'Demo mode disabled'),
+      ),
+    );
+  }
+
   Future<void> _disconnect() async {
     await AuthService.clearAll();
     if (!mounted) return;
@@ -321,6 +341,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 14),
 
                   _savingUrl
+                  const SizedBox(height: 12),
+                  NeonTextField(
+                    controller: _tokenCtrl,
+                    label: 'ADMIN TOKEN',
+                    hint: '••••••••',
+                    prefixIcon: Icons.key_outlined,
+                    obscureText: _obscureToken,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureToken
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: NeonColors.textSecondary,
+                        size: 18,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscureToken = !_obscureToken),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const NeonText(
+                        'DEMO MODE',
+                        color: NeonColors.green,
+                        fontSize: 11,
+                        fontFamily: 'Orbitron',
+                        glowRadius: 4,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Работа без сервера',
+                        style: TextStyle(
+                          color: NeonColors.textSecondary,
+                          fontSize: 10,
+                          fontFamily: 'JetBrainsMono',
+                        ),
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: _demoMode,
+                        onChanged: _setDemoMode,
+                        activeColor: NeonColors.green,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _saving
                       ? const Center(
                           child: NeonLoadingIndicator(
                               size: 30, label: 'ПРОВЕРЯЕМ...'))
@@ -339,6 +407,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 14),
 
             // ── App info ─────────────────────────────────────────────────────
+            // GCP Server Connection
+            NeonCard(
+              glowColor: NeonColors.cyan,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NeonText(
+                    '> GCP SERVER CONNECTION',
+                    color: NeonColors.cyan,
+                    fontSize: 11,
+                    fontFamily: 'Orbitron',
+                    glowRadius: 4,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Переконфигурировать подключение к GCP Docker-серверу',
+                    style: TextStyle(
+                      color: NeonColors.textSecondary,
+                      fontFamily: 'JetBrainsMono',
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          NeonPageRoute(child: const SetupScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.cloud_outlined, size: 16),
+                      label: const Text('ПЕРЕПОДКЛЮЧИТЬ / ПЕРЕНАСТРОИТЬ'),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 50.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
             NeonCard(
               glowColor: NeonColors.green,
               child: Column(

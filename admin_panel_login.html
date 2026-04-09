@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { width: 300px; margin: 0 auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        input { width: 100%; padding: 10px; margin: 5px 0; }
+        button { width: 100%; padding: 10px; background: #5cb85c; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #4cae4c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form action="/login" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <h2>Register</h2>
+        <form action="/register" method="POST">
+            <input type="text" name="new_username" placeholder="Username" required>
+            <input type="password" name="new_password" placeholder="Password" required>
+            <button type="submit">Register</button>
+        </form>
+        <h2>Configuration Management</h2>
+        <form action="/config" method="POST">
+            <input type="text" name="config_name" placeholder="Configuration Name" required>
+            <input type="text" name="config_value" placeholder="Configuration Value" required>
+            <button type="submit">Update Config</button>
+        </form>
+    </div>
+</body>
+</html>

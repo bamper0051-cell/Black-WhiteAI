@@ -363,10 +363,37 @@ docker exec -it automuvie bash
 - Дашборд с мониторингом агентов в реальном времени
 - Управление задачами (создание, отмена, повтор)
 - Просмотр артефактов и результатов
-- Нeon-дизайн с анимациями
+- Neon-дизайн с анимациями
 - WebSocket для live-обновлений
 
 Подробнее: [android_app/README.md](android_app/README.md)
+
+### Подключение Android App к GCP серверу
+
+1. **На GCP VM запустите проверку сервера**:
+   ```bash
+   cd ~/Black-WhiteAI
+   ./verify_server.sh
+   ```
+   Скрипт покажет внешний IP, порт и токен для подключения.
+
+2. **Настройте firewall на GCP**:
+   ```bash
+   gcloud compute firewall-rules create allow-admin-panel \
+     --allow tcp:8080 \
+     --source-ranges 0.0.0.0/0 \
+     --description "Allow BlackBugsAI Admin Panel"
+   ```
+
+3. **В Android app введите**:
+   - **GCP SERVER IP**: ваш внешний IP (например, `34.XX.XX.XX`)
+   - **DOCKER PORT**: `8080`
+   - **ADMIN TOKEN**: значение `ADMIN_WEB_TOKEN` из `.env`
+   - **USE HTTPS**: выключено (OFF)
+
+4. **Нажмите "ТЕСТ"** для проверки соединения
+
+**Не работает?** См. полное руководство: [TROUBLESHOOTING_ANDROID_CONNECTION.md](TROUBLESHOOTING_ANDROID_CONNECTION.md)
 
 ---
 

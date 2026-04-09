@@ -31,6 +31,18 @@ class SplashScreen extends StatelessWidget {
 
         // No server configured
         if (baseUrl == null || baseUrl.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        final baseUrl = prefs.getString('base_url');
+        final token = prefs.getString('admin_token');
+        final demoMode = prefs.getBool('demo_mode') ?? false;
+
+        if (!context.mounted) return;
+
+        if (demoMode) {
+          Navigator.of(context).pushReplacement(
+            NeonPageRoute(child: const MainShell()),
+          );
+        } else if (baseUrl == null || token == null) {
           Navigator.of(context).pushReplacement(
             NeonPageRoute(child: const SetupScreen()),
           );
