@@ -1,10 +1,10 @@
 // main_shell.dart — Main navigation shell with bottom nav bar
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'dashboard_screen.dart';
 import 'tasks_screen.dart';
 import 'agents_screen.dart';
@@ -57,10 +57,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   }
 
   Future<void> _init() async {
-    final prefs = await SharedPreferences.getInstance();
-    final baseUrl = prefs.getString('base_url') ?? '';
-    final token = prefs.getString('admin_token') ?? '';
-    _api = ApiService(baseUrl: baseUrl, adminToken: token);
+    final session = await AuthService.loadSession();
+    _api = ApiService(
+      baseUrl: session['base_url'] ?? '',
+      adminToken: session['token'] ?? '',
+    );
     setState(() => _initialized = true);
   }
 
