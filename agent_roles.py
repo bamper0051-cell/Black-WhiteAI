@@ -167,7 +167,7 @@ except Exception:
 
 # ─── Совместимость с новой системой ролей ────────────────────────────────────
 try:
-    from roles import (has_perm, get_role_perms, can_manage,
+    from roles import (get_role_perms, can_manage,
                        role_icon, role_label, perm_denied_msg,
                        ROLE_ICONS, ROLE_LABELS, ROLE_PERMS as _NEW_ROLE_PERMS,
                        ROLES, PERMS)

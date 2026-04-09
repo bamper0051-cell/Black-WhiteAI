@@ -559,7 +559,7 @@ def btn_model(label, provider, model):
 def menu_keyboard(chat_id=None):
     """Главное меню — адаптивное по роли, красивый дизайн."""
     try:
-        from roles import has_perm as _hp
+        from agent_roles import has_perm as _hp
         from admin_module import get_role as _gr
         role = _gr(chat_id) if chat_id else 'user'
         hp = lambda p: _hp(role, p)
@@ -3221,7 +3221,7 @@ def _route_callback(action, arg, cb_id, chat_id, msg_id):
 
     # ── Ролевой контроль ─────────────────────────────────────────
     try:
-        from roles import has_perm as _hp, perm_denied_msg
+        from agent_roles import has_perm as _hp, perm_denied_msg
         from admin_module import get_role as _gr
         _role = _gr(chat_id)
         def _need(perm: str) -> bool:
