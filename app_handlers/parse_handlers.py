@@ -70,3 +70,25 @@ def handle_run_action(
             send_message(f"❌ Ошибка цикла: {e}", chat_id)
 
     run_in_thread(_do_run)
+
+
+def handle_task_command(
+    *,
+    cmd,
+    chat_id,
+    guard_lock,
+    run_in_thread,
+    task_run,
+    task_parse,
+    task_process,
+):
+    task_map = {
+        '/run': task_run,
+        '/parse': task_parse,
+        '/process': task_process,
+    }
+    task_fn = task_map.get(cmd)
+    if task_fn is None:
+        return False
+    guard_lock(chat_id) or run_in_thread(task_fn, chat_id)
+    return True

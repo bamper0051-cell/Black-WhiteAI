@@ -28,6 +28,7 @@ from app_handlers.parse_handlers import (
     task_run as _task_run_handler,
     handle_parse_action as _handle_parse_action,
     handle_run_action as _handle_run_action,
+    handle_task_command as _handle_task_command,
 )
 try:
     from admin_module import (
@@ -1761,12 +1762,16 @@ def handle_text(text, chat_id, username=None, first_name=None):
                          chat_id, reply_markup=kb([btn("◀️ Меню","menu")]))
         else:
             send_message("❌ Реестр инструментов не загружен.", chat_id)
-    elif cmd == '/run':
-        _guard_lock(chat_id) or _run_in_thread(task_run, chat_id)
-    elif cmd == '/parse':
-        _guard_lock(chat_id) or _run_in_thread(task_parse, chat_id)
-    elif cmd == '/process':
-        _guard_lock(chat_id) or _run_in_thread(task_process, chat_id)
+    elif cmd in ('/run', '/parse', '/process'):
+        _handle_task_command(
+            cmd=cmd,
+            chat_id=chat_id,
+            guard_lock=_guard_lock,
+            run_in_thread=_run_in_thread,
+            task_run=task_run,
+            task_parse=task_parse,
+            task_process=task_process,
+        )
     elif cmd == '/test':
         _run_in_thread(task_test, chat_id)
     elif cmd == '/voices':
