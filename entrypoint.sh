@@ -8,4 +8,8 @@ for db in auth.db automuvie.db sessions.db tasks.db; do
     [ -f "/app/$db" ] || touch "/app/$db"
 done
 echo "✅ Ready"
-exec python bot.py
+if [ $# -gt 0 ]; then
+    exec "$@"
+else
+    exec python bot.py
+fi

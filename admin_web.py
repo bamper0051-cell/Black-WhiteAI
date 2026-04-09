@@ -1566,3 +1566,13 @@ def start_admin_web():
     t = threading.Thread(target=_run, daemon=True, name='admin-web')
     t.start()
     return t
+
+
+if __name__ == '__main__':
+    import logging
+    logging.getLogger('werkzeug').setLevel(logging.WARNING)
+    port = int(os.environ.get('ADMIN_WEB_PORT', 8080))
+    print(f"  🌐 Admin Panel (standalone): http://0.0.0.0:{port}/panel", flush=True)
+    print(f"  🔑 Token: {ADMIN_WEB_TOKEN[:8]}...", flush=True)
+    install_log_capture()
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True, use_reloader=False)

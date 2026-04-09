@@ -7,12 +7,12 @@ services:
     stop_grace_period: 15s
     ports:
       - "5000:5000"
-      - "8080:8080"
+      # Port 8080 is handled by admin_web service below
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
       - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
-      - ADMIN_WEB_PORT=8080
+      - ADMIN_WEB_PORT=8081  # internal only, not exposed
       - AUTO_TUNNEL=${AUTO_TUNNEL:-0}  # установи 1 для авто-запуска cloudflared
     volumes:
       # ── Конфиг и базы данных ──────────────────────────────────────────────
@@ -84,8 +84,52 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
       timeout: 10s
       start_period: 30s
+      retries: 3
+
+  admin_web:
+    build: .
+    container_name: admin-web
+    restart: unless-stopped
+    stop_grace_period: 10s
+    ports:
+      - "8080:8080"
+    entrypoint: ["python", "admin_web.py"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
+      - ADMIN_WEB_PORT=8080
+    volumes:
+      - ./.env:/app/.env
+      - ./auth.db:/app/auth.db
+      - ./automuvie.db:/app/automuvie.db
+      - ./sessions.db:/app/sessions.db
+      - ./agent_projects:/app/agent_projects
+      - ./artifacts:/app/artifacts
+      # Admin files
+      - ./admin_web.py:/app/admin_web.py
+      - ./admin_module.py:/app/admin_module.py
+      - ./admin_panel.html:/app/admin_panel.html
+      - ./config.py:/app/config.py
+      - ./database.py:/app/database.py
+      - ./structured_logger.py:/app/structured_logger.py
+      - ./billing.py:/app/billing.py
+      - ./bot.py:/app/bot.py
+      - ./roles.py:/app/roles.py
+      - ./auth_module.py:/app/auth_module.py
+      - ./task_queue.py:/app/task_queue.py
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
       retries: 3

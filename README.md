@@ -191,7 +191,7 @@ autofix.py:    при failed → анализ → патч → retry (до max_r
 
 ## Веб-панель администратора
 
-Доступна на `http://localhost:8080` после запуска.
+Доступна на `http://<IP>:8080/panel` после запуска.
 
 Возможности:
 - Мониторинг задач в реальном времени
@@ -201,7 +201,30 @@ autofix.py:    при failed → анализ → патч → retry (до max_r
 - Логи и статистика системы
 - Выполнение shell-команд (только admin)
 
-Авторизация: Bearer-токен (`ADMIN_TOKEN` из `.env`)
+Авторизация: Bearer-токен (`ADMIN_WEB_TOKEN` из `.env`) или логин/пароль через мобильное приложение.
+
+### Подключение Android-приложения к серверу на GCP
+
+1. **Открой порт 8080 в GCP Firewall:**
+   ```
+   gcloud compute firewall-rules create allow-admin-web \
+     --allow tcp:8080 \
+     --source-ranges 0.0.0.0/0 \
+     --target-tags http-server \
+     --description "BlackBugsAI admin panel"
+   ```
+   Или в GCP Console → VPC Network → Firewall → Create Rule → TCP port 8080.
+
+2. **Запусти сервер:**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **В мобильном приложении введи URL:** `http://34.7.163.0:8080` (без https — у сервера нет SSL-сертификата).
+
+4. **Выбери режим подключения:**
+   - **Token** — используй значение `ADMIN_WEB_TOKEN` из `.env`
+   - **Login** — зарегистрируйся через приложение
 
 ---
 
