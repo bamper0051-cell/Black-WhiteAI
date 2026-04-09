@@ -53,11 +53,17 @@ class _SetupScreenState extends State<SetupScreen>
     super.dispose();
   }
 
-  String get _cleanUrl =>
-      _urlCtrl.text.trim().replaceAll(RegExp(r'/$'), '');
+  String get _cleanUrl {
+    var url = _urlCtrl.text.trim().replaceAll(RegExp(r'/$'), '');
+    // Auto-fix: if user typed IP:port without scheme, add http://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://$url';
+    }
+    return url;
+  }
 
   Future<void> _pingAndNext() async {
-    final url = _cleanUrl;
+    var url = _cleanUrl;
     if (url.isEmpty || url == 'http://' || url == 'https://') {
       setState(() => _error = 'Введи URL сервера');
       return;
@@ -68,8 +74,17 @@ class _SetupScreenState extends State<SetupScreen>
       _error = null;
     });
 
-    final ok = await AuthService(baseUrl: url).ping();
+    // Try http first if https fails (server may not have SSL)
+    bool ok = await AuthService(baseUrl: url).ping();
+    if (!ok && url.startsWith('https://')) {
+      final httpUrl = url.replaceFirst('https://', 'http://');
+      ok = await AuthService(baseUrl: httpUrl).ping();
+      if (ok) url = httpUrl; // fallback to http
+    }
     if (!mounted) return;
+
+    // Update field to show the working URL
+    if (ok) _urlCtrl.text = url;
 
     if (!ok) {
       setState(() {
