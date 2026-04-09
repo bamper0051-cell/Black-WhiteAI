@@ -67,8 +67,15 @@ class ApiService {
 
   Future<bool> ping() async {
     try {
-      final data = await _get('/health');
-      return data['status'] == 'ok';
+      // Try /ping first (simpler endpoint, no auth required)
+      final data = await http
+          .get(Uri.parse('$baseUrl/ping'))
+          .timeout(const Duration(seconds: 10));
+      if (data.statusCode == 200) {
+        final json = jsonDecode(data.body);
+        return json['ok'] == true || json['pong'] == true;
+      }
+      return false;
     } catch (_) {
       return false;
     }
