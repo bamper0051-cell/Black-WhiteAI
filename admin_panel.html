@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BlackBugsAI Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#08080f;--bg2:#0d0d18;--bg3:#131320;--bg4:#1a1a2a;
+  --acc:#7c6fff;--acc2:#a78bfa;--acc3:#c4b5fd;
+  --g:#22c55e;--r:#ef4444;--y:#f59e0b;--b:#3b82f6;--cy:#22d3ee;--pk:#ec4899;
+  --tx:#e8e8f8;--m:#5a5a7a;--brd:rgba(124,111,255,.13);
+  --god:#fbbf24;--adm:#7c6fff;--vip:#22d3ee;--user:#6b7280;--noob:#a3e635;--ban:#ef4444;
+  --rad:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font:13px/1.5 'Inter',sans-serif;display:flex;overflow:hidden}
+
+/* ═ Sidebar ═ */
+#sb{width:224px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--brd);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sb-logo{padding:16px 16px 12px;border-bottom:1px solid var(--brd)}
+.sb-logo .name{font:600 15px/1 'JetBrains Mono',monospace;color:var(--acc);letter-spacing:-.3px}
+.sb-logo .name em{color:var(--tx);font-style:normal}
+.sb-online{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--m)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0}
+.dot.off{background:var(--r)}.dot.warn{background:var(--y)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dot{animation:pulse 2s infinite}
+.sb-sec{padding:10px 14px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.1em}
+.sb-nav{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;color:var(--m);font-size:12px;transition:.1s;border-left:2px solid transparent;white-space:nowrap}
+.sb-nav:hover{color:var(--tx);background:rgba(124,111,255,.06)}
+.sb-nav.on{color:var(--acc);background:rgba(124,111,255,.09);border-left-color:var(--acc)}
+.sb-nav .ic{font-size:14px;width:18px;flex-shrink:0}
+.sb-nav .badge{margin-left:auto;background:var(--acc);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;min-width:18px;text-align:center}
+.sb-bot{margin-top:auto;padding:10px 14px;border-top:1px solid var(--brd);font-size:11px;color:var(--m)}
+
+/* ═ Main ═ */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;padding:0 18px;background:var(--bg2);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px}
+.tb-left{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;min-width:0}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:18px}
+.page{display:none}.page.active{display:block}
+
+/* ═ Cards ═ */
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden;margin-bottom:14px}
+.ch{padding:11px 15px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:500;gap:8px}
+.cb{padding:14px 15px}
+
+/* ═ Stats ═ */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px;margin-bottom:16px}
+.sc{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--rad);padding:14px;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:-10px;right:-10px;width:60px;height:60px;background:radial-gradient(var(--acc),transparent 70%);opacity:.08}
+.sl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.sv{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1.1}
+.ss{font-size:11px;color:var(--m);margin-top:3px}
+
+/* ═ Btns ═ */
+.btn{padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:.1s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--acc);color:#fff}.bp:hover{filter:brightness(1.1)}
+.bo{background:transparent;border:1px solid var(--brd);color:var(--tx)}.bo:hover{border-color:var(--acc);color:var(--acc)}
+.bd{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--r)}.bd:hover{background:rgba(239,68,68,.18)}
+.bg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--g)}
+.by{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--y)}
+.bs{padding:4px 9px;font-size:11px}
+.bxs{padding:2px 7px;font-size:10px}
+
+/* ═ Table ═ */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--m);background:var(--bg3);border-bottom:1px solid var(--brd);text-align:left;font-weight:500}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(124,111,255,.05);vertical-align:middle;font-size:12px}
+.tbl tr:hover td{background:rgba(124,111,255,.035)}
+.tbl tr:last-child td{border:none}
+
+/* ═ Role badges ═ */
+.rb{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:10px;font-weight:600;letter-spacing:.03em}
+.rb-god{background:rgba(251,191,36,.15);color:var(--god);border:1px solid rgba(251,191,36,.2)}
+.rb-adm{background:rgba(124,111,255,.15);color:var(--adm);border:1px solid rgba(124,111,255,.2)}
+.rb-vip{background:rgba(34,211,238,.12);color:var(--vip);border:1px solid rgba(34,211,238,.2)}
+.rb-user{background:rgba(107,114,128,.12);color:#9ca3af;border:1px solid rgba(107,114,128,.15)}
+.rb-noob{background:rgba(163,230,53,.1);color:var(--noob);border:1px solid rgba(163,230,53,.15)}
+.rb-ban{background:rgba(239,68,68,.12);color:var(--r);border:1px solid rgba(239,68,68,.2)}
+
+/* ═ Log ═ */
+.logbox{background:var(--bg);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;font:11px/1.8 'JetBrains Mono',monospace;overflow-y:auto}
+.logbox .le{color:var(--r)}.logbox .lw{color:var(--y)}.logbox .lo{color:var(--g)}.logbox .li{color:var(--m)}
+
+/* ═ Form ═ */
+input,select,textarea{background:var(--bg3);border:1px solid var(--brd);border-radius:7px;color:var(--tx);padding:7px 10px;font:12px/1.5 'Inter',sans-serif;outline:none;width:100%;transition:.1s}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,111,255,.1)}
+label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
+
+/* ═ Grid layouts ═ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ═ Progress ═ */
+.pb{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin:4px 0}
+.pbf{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;transition:.4s}
+
+/* ═ Shell ═ */
+.shell-out{background:#000;border:1px solid var(--brd);border-radius:8px;padding:12px;font:11px/1.7 'JetBrains Mono',monospace;height:320px;overflow-y:auto;color:#ccc}
+.shell-prompt{color:var(--acc);font-weight:500}
+
+/* ═ Agent ═ */
+.agent-out{background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:14px;font-size:12px;line-height:1.7;white-space:pre-wrap;min-height:140px;max-height:400px;overflow-y:auto}
+.step-ok{color:var(--g)}.step-err{color:var(--r)}.step-info{color:var(--acc2)}
+
+/* ═ Toast ═ */
+#toast{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.tm{background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:9px 15px;font-size:12px;animation:tin .18s ease;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.tok{border-color:var(--g);color:var(--g)}.ter{border-color:var(--r);color:var(--r)}.twa{border-color:var(--y);color:var(--y)}
+@keyframes tin{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
+
+/* ═ Modal ═ */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.mbg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:22px;width:440px;max-width:96vw;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.modal h3{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.fld{margin-bottom:10px}
+
+/* ═ Status dot ═ */
+.st{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.son{background:var(--g)}.sof{background:var(--r)}.swa{background:var(--y)}
+
+/* ═ Spin ═ */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═ Tags ═ */
+.tag{display:inline-block;padding:1px 6px;border-radius:5px;font-size:10px;background:var(--bg4);border:1px solid var(--brd);color:var(--m);margin:1px}
+
+/* ═ Tunnel badge ═ */
+.tunnel-on{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--g);padding:3px 8px;border-radius:6px;font-size:11px}
+.tunnel-off{color:var(--m);font-size:11px}
+
+/* ═ Scrollbar ═ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--acc)}
+</style>
+</head>
+<body>
+
+<!-- ═════════ SIDEBAR ═════════ -->
+<nav id="sb">
+  <div class="sb-logo">
+    <div class="name">🖤🐛 <em>BlackBugsAI</em></div>
+    <div class="sb-online">
+      <span class="dot off" id="sdot"></span>
+      <span id="stxt">Не подключено</span>
+    </div>
+  </div>
+
+  <div class="sb-sec">Обзор</div>
+  <div class="sb-nav on"  onclick="nav('dash',this)"><span class="ic">📊</span> Дашборд</div>
+  <div class="sb-nav"     onclick="nav('users',this)"><span class="ic">👥</span> Пользователи<span class="badge" id="bg-u">0</span></div>
+  <div class="sb-nav"     onclick="nav('msgs',this)"><span class="ic">📨</span> Сообщения</div>
+
+  <div class="sb-sec">Агент</div>
+  <div class="sb-nav"     onclick="nav('smith',this)"><span class="ic">🕵️</span> АГЕНТ_СМИТ</div>
+  <div class="sb-nav"     onclick="nav('neo',this)"><span class="ic">🟢</span> AGENT NEO</div>
+  <div class="sb-nav"     onclick="nav('matrix',this)"><span class="ic">🟥</span> AGENT MATRIX</div>
+  <div class="sb-nav"     onclick="nav('tools',this)"><span class="ic">🔧</span> Инструменты</div>
+  <div class="sb-nav"     onclick="nav('tasks',this)"><span class="ic">📋</span> Задачи<span class="badge" id="bg-t">0</span></div>
+
+  <div class="sb-sec">Система</div>
+  <div class="sb-nav"     onclick="nav('procs',this)"><span class="ic">⚙️</span> Процессы</div>
+  <div class="sb-nav"     onclick="nav('logs',this)"><span class="ic">📋</span> Логи</div>
+  <div class="sb-nav"     onclick="nav('shell',this)"><span class="ic">💻</span> Shell</div>
+  <div class="sb-nav"     onclick="nav('sys',this)"><span class="ic">🖥</span> Система</div>
+
+  <div class="sb-sec">Настройки</div>
+  <div class="sb-nav"     onclick="nav('cfg',this)"><span class="ic">⚙️</span> Конфиг</div>
+  <div class="sb-nav"     onclick="nav('media',this)"><span class="ic">🎨</span> Медиа</div>
+  <div class="sb-nav"     onclick="nav('files',this)"><span class="ic">📁</span> Файлы</div>
+  <div class="sb-nav"     onclick="nav('access',this)"><span class="ic">🌐</span> Доступ / Тоннель</div>
+
+  <div class="sb-bot" id="sbot">—</div>
+</nav>
+
+<!-- ═════════ MAIN ═════════ -->
+<div id="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <span id="ptitle">Дашборд</span>
+      <span id="tunnel-badge"></span>
+    </div>
+    <div class="tb-right">
+      <input id="ui-url" placeholder="http://localhost:8080" style="width:185px">
+      <input id="ui-tok" type="password" placeholder="Token" style="width:115px">
+      <button class="btn bp bs" onclick="connect()">Подключить</button>
+      <button class="btn bo bs" onclick="doRefresh()">🔄</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ── DASH ── -->
+  <div class="page active" id="pg-dash">
+    <div class="sg" id="sg">
+      <div class="sc"><div class="sl">Пользователи</div><div class="sv" id="sv-u">—</div><div class="ss" id="ss-u">—</div></div>
+      <div class="sc"><div class="sl">Аптайм</div><div class="sv" id="sv-up">—</div><div class="ss" id="ss-up">LLM: <span id="ss-llm">—</span></div></div>
+      <div class="sc"><div class="sl">Задачи</div><div class="sv" id="sv-t">—</div><div class="ss" id="ss-t">—</div></div>
+      <div class="sc"><div class="sl">Сессии</div><div class="sv" id="sv-s">—</div><div class="ss">активных чатов</div></div>
+    </div>
+    <div class="g2">
+      <div>
+        <div class="card">
+          <div class="ch">👥 Последние пользователи <button class="btn bo bxs" onclick="nav('users',navEl('users'))">Все →</button></div>
+          <div id="d-users"><div style="padding:20px;text-align:center;color:var(--m)"><span class="spin"></span></div></div>
+        </div>
+        <div class="card">
+          <div class="ch">⚡ Роли</div>
+          <div id="d-roles" class="cb" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="ch">⚡ Быстрые действия</div>
+          <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <button class="btn bo" onclick="nav('smith',navEl('smith'))">🕵️ СМИТ</button>
+            <button class="btn bo" onclick="nav('msgs',navEl('msgs'))">📣 Рассылка</button>
+            <button class="btn bo" onclick="nav('shell',navEl('shell'))">💻 Shell</button>
+            <button class="btn bo" onclick="nav('logs',navEl('logs'))">📋 Логи</button>
+            <button class="btn bo" onclick="nav('procs',navEl('procs'))">⚙️ Процессы</button>
+            <button class="btn bo" onclick="nav('sys',navEl('sys'))">🖥 Система</button>
+            <button class="btn bo" onclick="nav('tasks',navEl('tasks'))">📋 Задачи</button>
+            <button class="btn by" onclick="restartBot()">🔄 Рестарт</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">🔑 API ключи</div>
+          <div id="d-keys" class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">📋 Последние логи <button class="btn bo bxs" onclick="loadLogs()">🔄</button></div>
+      <div class="logbox" id="d-log" style="max-height:180px"></div>
+    </div>
+  </div>
+
+  <!-- ── USERS ── -->
+  <div class="page" id="pg-users">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <h2 style="font-size:15px;font-weight:600">👥 Пользователи</h2>
+      <input id="us-q" placeholder="Поиск..." style="width:180px" oninput="filterU()">
+      <select id="us-r" style="width:120px" onchange="filterU()">
+        <option value="">Все роли</option>
+        <option value="god">⚡ GOD</option>
+        <option value="adm">🔑 ADM</option>
+        <option value="vip">💎 VIP</option>
+        <option value="user">👤 USER</option>
+        <option value="noob">🔰 NOOB</option>
+        <option value="ban">🚫 BAN</option>
+      </select>
+      <select id="us-s" style="width:120px" onchange="filterU()">
+        <option value="">Все статусы</option>
+        <option value="active">🟢 Active</option>
+        <option value="banned">🔴 Banned</option>
+      </select>
+      <button class="btn bo bs" onclick="loadUsers()">🔄</button>
+      <span id="us-count" style="font-size:11px;color:var(--m);margin-left:auto"></span>
+    </div>
+    <div class="card">
+      <div id="utbl"><div style="padding:30px;text-align:center;color:var(--m)"><span class="spin"></span> Загрузка...</div></div>
+    </div>
+  </div>
+
+  <!-- ── MESSAGES ── -->
+  <div class="page" id="pg-msgs">
+    <div class="g2">
+      <div class="card">
+        <div class="ch">📩 Личное сообщение</div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:8px">
+          <div class="fld"><label>Chat ID</label><input id="m-uid" placeholder="123456789"></div>
+          <div class="fld"><label>Текст</label><textarea id="m-txt" rows="5" placeholder="Текст..."></textarea></div>
+          <button class="btn bp" onclick="sendMsg()">📤 Отправить</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch">📣 Рассылка</div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:8px">
+          <div class="fld"><label>Целевая роль</label>
+            <select id="bc-r">
+              <option value="">Всем (кроме BAN)</option>
+              <option value="god">GOD</option>
+              <option value="adm">ADM</option>
+              <option value="vip">VIP</option>
+              <option value="user">USER</option>
+            </select>
+          </div>
+          <div class="fld"><label>Текст</label><textarea id="bc-t" rows="5" placeholder="Текст рассылки..."></textarea></div>
+          <button class="btn bp" onclick="sendBC()">📣 Разослать</button>
+          <div id="bc-res" style="font-size:11px;color:var(--m)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SMITH ── -->
+  <div class="page" id="pg-smith">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:14px">
+      <div>
+        <div class="card">
+          <div class="ch">🕵️ АГЕНТ_СМИТ — задача</div>
+          <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+            <textarea id="sm-task" rows="6" placeholder="Опиши задачу...&#10;• Создай Telegram бота на aiogram&#10;• Напиши FastAPI сервис с CRUD&#10;• Собери видео из фотографий через moviepy&#10;• Обработай изображение: resize + watermark (Pillow)"></textarea>
+            <div style="display:flex;gap:8px">
+              <select id="sm-mode" style="flex:1">
+                <option value="auto">🤖 Авто</option>
+                <option value="code">💻 Код</option>
+                <option value="scaffold">🧩 Scaffold</option>
+                <option value="patch">🔧 Patch</option>
+                <option value="plan_first">📋 Plan First</option>
+                <option value="tg_bot">🤖 TG Bot</option>
+                <option value="fastapi">⚡ FastAPI</option>
+                <option value="scraper">🕷 Парсер</option>
+                <option value="docker">🐳 Docker</option>
+              </select>
+              <button class="btn bp" onclick="runSmith()" id="sm-btn">▶ Запустить</button>
+              <button class="btn bo" onclick="clearSmith()">✕</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            Вывод
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="sm-timer" style="font-size:11px;color:var(--m)"></span>
+              <span id="sm-status" style="font-size:11px"></span>
+            </div>
+          </div>
+          <div class="agent-out" id="sm-out">Жду задачи...</div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="ch">📋 Шаблоны</div>
+          <div style="display:flex;flex-direction:column;gap:2px;padding:8px" id="sm-templates"></div>
+        </div>
+        <div class="card">
+          <div class="ch">📦 Артефакты</div>
+          <div id="sm-arts" style="padding:12px;font-size:11px;color:var(--m)">—</div>
+        </div>
+        <div class="card">
+          <div class="ch">🔧 Шаги выполнения</div>
+          <div id="sm-steps" style="padding:12px;font-size:11px;max-height:200px;overflow-y:auto">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOOLS ── -->
+  <div class="page" id="pg-tools">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h2 style="font-size:15px;font-weight:600">🔧 Инструменты</h2>
+      <input id="tl-q" placeholder="Поиск..." style="width:180px" oninput="filterTools()">
+      <button class="btn bo bs" onclick="loadTools()">🔄</button>
+      <span id="tl-cnt" style="font-size:11px;color:var(--m);margin-left:auto"></span>
+    </div>
+    <div id="tl-cats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+    <div class="card">
+      <div id="tl-list"><div style="padding:30px;text-align:center;color:var(--m)"><span class="spin"></span></div></div>
+    </div>
+  </div>
+
+  <!-- ── TASKS ── -->
+  <div class="page" id="pg-tasks">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h2 style="font-size:15px;font-weight:600">📋 Очередь задач</h2>
+      <button class="btn bo bs" onclick="loadTasks()">🔄</button>
+    </div>
+    <div class="sg" id="task-sg" style="margin-bottom:14px"></div>
+    <div class="card">
+      <div id="task-tbl"><div style="padding:30px;text-align:center;color:var(--m)"><span class="spin"></span></div></div>
+    </div>
+  </div>
+
+  <!-- ── PROCS ── -->
+  <div class="page" id="pg-procs">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h2 style="font-size:15px;font-weight:600">⚙️ Процессы</h2>
+      <button class="btn bo bs" onclick="loadProcs()">🔄</button>
+    </div>
+    <div class="card">
+      <div id="proc-tbl"><div style="padding:20px;text-align:center;color:var(--m)"><span class="spin"></span></div></div>
+    </div>
+  </div>
+
+  <!-- ── LOGS ── -->
+  <div class="page" id="pg-logs">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <h2 style="font-size:15px;font-weight:600">📋 Логи</h2>
+      <select id="log-f" style="width:120px" onchange="loadLogs()">
+        <option value="">Все</option>
+        <option value="ERROR">Ошибки</option>
+        <option value="WARN">Предупреждения</option>
+        <option value="INFO">Инфо</option>
+      </select>
+      <input id="log-q" placeholder="Фильтр..." style="width:160px" oninput="filterLogs()">
+      <button class="btn bo bs" onclick="loadLogs()">🔄</button>
+      <button class="btn bo bs" onclick="document.getElementById('log-box').innerHTML=''">Очистить</button>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+        <input type="checkbox" id="log-live" onchange="toggleLive()"> Авто
+      </label>
+    </div>
+    <div class="logbox" id="log-box" style="max-height:580px"></div>
+  </div>
+
+  <!-- ── SHELL ── -->
+  <div class="page" id="pg-shell">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:14px">💻 Shell</h2>
+    <div class="card">
+      <div class="cb">
+        <div class="shell-out" id="sh-out"><span class="shell-prompt">BlackBugsAI Shell v2.0</span><br>$ </div>
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <input id="sh-in" placeholder="команда..." onkeydown="if(event.key==='Enter')runShell()" style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <button class="btn bp bs" onclick="runShell()">▶ Run</button>
+          <button class="btn bo bs" onclick="document.getElementById('sh-out').innerHTML='<span class=shell-prompt>BlackBugsAI Shell</span><br>$ '">✕</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px" id="sh-cmds"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SYSTEM ── -->
+  <div class="page" id="pg-sys">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:14px">🖥 Система</h2>
+    <div class="sg" id="sys-sg"><div style="padding:20px;color:var(--m);grid-column:1/-1"><span class="spin"></span></div></div>
+    <div class="g2">
+      <div class="card"><div class="ch">💾 CPU / RAM</div><div class="cb" id="sys-mem">—</div></div>
+      <div class="card"><div class="ch">💽 Диск</div><div class="cb" id="sys-disk">—</div></div>
+    </div>
+    <div class="card"><div class="ch">🔑 API ключи <button class="btn bo bxs" onclick="loadSys()">🔄</button></div><div id="sys-keys" class="cb" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;font-size:11px"></div></div>
+  </div>
+
+  <!-- ── CONFIG ── -->
+  <div class="page" id="pg-cfg">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h2 style="font-size:15px;font-weight:600">⚙️ Конфиг</h2>
+      <button class="btn bp bs" onclick="saveCfg()">💾 Сохранить</button>
+      <button class="btn bo bs" onclick="loadCfg()">🔄 Сбросить</button>
+      <button class="btn bd bs" onclick="restartBot()">🔄 Рестарт</button>
+    </div>
+    <div class="g2" id="cfg-grid"><div style="padding:20px;color:var(--m);grid-column:1/-1"><span class="spin"></span></div></div>
+  </div>
+
+  <!-- ── MEDIA ── -->
+  <div class="page" id="pg-media">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:14px">🎨 Медиа / MoviePy</h2>
+    <div class="g2">
+      <div class="card">
+        <div class="ch">🎬 MoviePy</div>
+        <div class="cb">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px" id="mp-tabs">
+            <button class="btn bp bs" onclick="mpTab('slideshow',this)">🖼 Слайд-шоу</button>
+            <button class="btn bo bs" onclick="mpTab('cut',this)">✂️ Нарезка</button>
+            <button class="btn bo bs" onclick="mpTab('concat',this)">🔗 Склейка</button>
+            <button class="btn bo bs" onclick="mpTab('add_audio',this)">🎵 Аудио</button>
+            <button class="btn bo bs" onclick="mpTab('speed',this)">⚡ Скорость</button>
+            <button class="btn bo bs" onclick="mpTab('info',this)">📊 Инфо</button>
+          </div>
+          <div id="mp-slideshow">
+            <div class="fld"><label>Изображения (через запятую)</label><input id="mp-si"></div>
+            <div class="fld"><label>Аудио (опционально)</label><input id="mp-sa"></div>
+            <div class="fld"><label>Выход</label><input id="mp-so" value="output.mp4"></div>
+          </div>
+          <div id="mp-cut" style="display:none">
+            <div class="fld"><label>Видеофайл</label><input id="mp-ci"></div>
+            <div class="g2"><div class="fld"><label>Старт (сек)</label><input id="mp-cs"></div><div class="fld"><label>Конец (сек)</label><input id="mp-ce"></div></div>
+          </div>
+          <div id="mp-concat" style="display:none">
+            <div class="fld"><label>Файлы (через запятую)</label><input id="mp-cai"></div>
+          </div>
+          <div id="mp-add_audio" style="display:none">
+            <div class="fld"><label>Видео</label><input id="mp-av"></div>
+            <div class="fld"><label>Аудио</label><input id="mp-aa"></div>
+          </div>
+          <div id="mp-speed" style="display:none">
+            <div class="fld"><label>Видеофайл</label><input id="mp-spi"></div>
+            <div class="fld"><label>Коэффициент (2.0 = 2x)</label><input id="mp-spf" value="2.0"></div>
+          </div>
+          <div id="mp-info" style="display:none">
+            <div class="fld"><label>Файл</label><input id="mp-ii"></div>
+          </div>
+          <button class="btn bp" onclick="runMp()">▶ Выполнить</button>
+          <div class="logbox" id="mp-out" style="margin-top:10px;max-height:120px">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch">🖼 Pillow</div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:8px">
+          <div class="fld"><label>Action</label>
+            <select id="pil-act">
+              <option value="info">📊 Info</option>
+              <option value="resize">↔️ Resize</option>
+              <option value="thumbnail">🔲 Thumbnail</option>
+              <option value="grayscale">⚫ Grayscale</option>
+              <option value="blur">🌫 Blur</option>
+              <option value="sharpen">🔪 Sharpen</option>
+              <option value="rotate">🔄 Rotate</option>
+              <option value="watermark">💧 Watermark</option>
+              <option value="convert">🔁 Convert</option>
+              <option value="create">✨ Create</option>
+            </select>
+          </div>
+          <div class="fld"><label>Входной файл</label><input id="pil-in"></div>
+          <textarea id="pil-args" rows="3" placeholder='{"width":1280,"height":720}' style="font-family:monospace;font-size:11px"></textarea>
+          <button class="btn bp" onclick="runPillow()">▶ Выполнить</button>
+          <div class="logbox" id="pil-out" style="max-height:100px">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FILES ── -->
+  <div class="page" id="pg-files">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <h2 style="font-size:15px;font-weight:600">📁 Файловый менеджер</h2>
+      <button class="btn bo bs" onclick="loadFiles()">🔄</button>
+    </div>
+
+    <!-- Загрузка -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch">📤 Загрузить файл на сервер</div>
+      <div class="cb" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="file-input" multiple style="flex:1;min-width:200px;
+          background:var(--bg3);border:1px dashed var(--brd);border-radius:7px;
+          padding:10px;cursor:pointer;color:var(--tx)"
+          onchange="uploadFiles(this.files)">
+        <div id="upload-status" style="font-size:11px;color:var(--m)"></div>
+      </div>
+      <div id="upload-progress" style="padding:0 15px 10px"></div>
+    </div>
+
+    <!-- Список файлов -->
+    <div class="card">
+      <div class="ch">
+        📂 Файлы агента
+        <div style="display:flex;gap:6px">
+          <input id="files-q" placeholder="Поиск..." style="width:150px" oninput="filterFiles()">
+          <select id="files-ext" style="width:100px" onchange="filterFiles()">
+            <option value="">Все</option>
+            <option value="py">Python</option>
+            <option value="zip">ZIP</option>
+            <option value="png">PNG/JPG</option>
+            <option value="mp3">Аудио</option>
+            <option value="mp4">Видео</option>
+            <option value="txt">Text</option>
+          </select>
+        </div>
+      </div>
+      <div id="files-list"><div style="padding:30px;text-align:center;color:var(--m)"><span class="spin"></span> Загрузка...</div></div>
+    </div>
+  </div>
+
+  <!-- ── AGENT NEO ── -->
+  <!-- ══ AGENT NEO ══ -->
+  <div class="page" id="pg-neo">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🟢 AGENT NEO</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Автономный агент · Генерирует инструменты · OSINT · GitHub</div>
+
+    <!-- Задача -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача</div>
+      <div class="cb">
+        <textarea id="neo-task" rows="3" placeholder="Найди @username / установи https://github.com/... / нарисуй GIF матрица / создай парсер hh.ru"></textarea>
+        <!-- Прикрепить файл -->
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <label style="font-size:11px;color:var(--m);cursor:pointer;display:flex;align-items:center;gap:4px">
+            <input type="file" id="neo-file" style="display:none" onchange="neoFileChanged()">
+            <span class="btn bo bs" onclick="document.getElementById('neo-file').click()">📎 Файл</span>
+          </label>
+          <span id="neo-file-name" style="font-size:10px;color:var(--acc)"></span>
+          <button class="btn bp" onclick="runNeo()" style="margin-left:auto">🟢 Запустить</button>
+          <button class="btn bo bs" onclick="clearNeoFile()" id="neo-file-clear" style="display:none">✕</button>
+        </div>
+        <!-- Быстрые шаблоны -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          <button class="btn bo bs" onclick="setNeo('Нарисуй анимацию GIF ')">🎨 GIF</button>
+          <button class="btn bo bs" onclick="setNeo('OSINT username ')">🔍 OSINT</button>
+          <button class="btn bo bs" onclick="setNeo('Установи https://github.com/')">📦 GitHub</button>
+          <button class="btn bo bs" onclick="setNeo('Создай парсер сайта ')">🕷 Парсер</button>
+          <button class="btn bo bs" onclick="setNeo('Напиши Python скрипт: ')">💻 Код</button>
+          <button class="btn bo bs" onclick="runNeo('Покажи список всех инструментов')">📋 Инструменты</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вывод -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод</span>
+        <span id="neo-status-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="neo-out" style="padding:12px;min-height:80px;max-height:300px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--g)">Готов к работе...</pre>
+      <div id="neo-files-out" style="display:none;padding:8px 12px;border-top:1px solid var(--bdr);font-size:11px"></div>
+    </div>
+
+    <!-- Управление инструментами -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🔧 Инструменты NEO</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn bo bs" onclick="loadAgentTools('neo')">↻ Обновить</button>
+          <button class="btn bp bs" onclick="showCreateTool('neo')">+ Создать</button>
+          <button class="btn bo bs" onclick="showGithubInstall('neo')">📦 GitHub</button>
+        </div>
+      </div>
+      <div id="neo-tools-list" class="cb"></div>
+    </div>
+  </div>
+
+  <!-- ══ AGENT MATRIX ══ -->
+  <div class="page" id="pg-matrix">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🟥 AGENT MATRIX</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Кодер · Тестер · OSINT · Security Analyst · Self-tool generation</div>
+
+    <!-- Задача -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача</div>
+      <div class="cb">
+        <textarea id="mx-task" rows="3" placeholder="Проверь SSL github.com / OSINT username / порты 127.0.0.1 / установи https://github.com/..."></textarea>
+        <!-- Прикрепить файл -->
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <label style="font-size:11px;color:var(--m);cursor:pointer">
+            <input type="file" id="mx-file" style="display:none" onchange="mxFileChanged()">
+            <span class="btn bo bs" onclick="document.getElementById('mx-file').click()">📎 Файл</span>
+          </label>
+          <span id="mx-file-name" style="font-size:10px;color:var(--r)"></span>
+          <button class="btn" style="background:var(--r);margin-left:auto" onclick="runMatrix()">🟥 Запустить</button>
+          <button class="btn bo bs" onclick="clearMxFile()" id="mx-file-clear" style="display:none">✕</button>
+        </div>
+        <!-- Быстрые шаблоны -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          <button class="btn bo bxs" onclick="setMx('OSINT username ')">🔍 OSINT</button>
+          <button class="btn bo bxs" onclick="setMx('Проверь SSL ')">🔒 SSL</button>
+          <button class="btn bo bxs" onclick="setMx('Сканируй порты 127.0.0.1')">🔌 Порты</button>
+          <button class="btn bo bxs" onclick="setMx('Проверь CVE зависимости')">🛡 CVE</button>
+          <button class="btn bo bxs" onclick="setMx('Установи https://github.com/')">📦 GitHub</button>
+          <button class="btn bo bxs" onclick="setMx('Напиши и протестируй ')">💻 Код+тест</button>
+          <button class="btn bo bxs" onclick="runMatrix('Покажи все инструменты MATRIX')">📋 Инструменты</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вывод -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод</span>
+        <span id="mx-status-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="mx-out" style="padding:12px;min-height:80px;max-height:300px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--r)">Готов к работе...</pre>
+      <div id="mx-files-out" style="display:none;padding:8px 12px;border-top:1px solid var(--bdr);font-size:11px"></div>
+    </div>
+
+    <!-- Управление инструментами -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🔧 Инструменты MATRIX</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn bo bs" onclick="loadAgentTools('matrix')">↻ Обновить</button>
+          <button class="btn" style="background:var(--r);font-size:11px;padding:4px 10px" onclick="showCreateTool('matrix')">+ Создать</button>
+          <button class="btn bo bs" onclick="showGithubInstall('matrix')">📦 GitHub</button>
+        </div>
+      </div>
+      <div id="mx-tools-list" class="cb"></div>
+    </div>
+  </div>
+
+  <!-- ══ Модал: Создать инструмент ══ -->
+  <div class="mbg" id="create-tool-modal" style="display:none">
+    <div class="modal" style="max-width:480px">
+      <h3>🔧 Создать инструмент</h3>
+      <input type="hidden" id="ct-agent">
+      <div class="fld"><label>Название (snake_case)</label>
+        <input id="ct-name" placeholder="my_tool_name"></div>
+      <div class="fld"><label>Описание (что делает)</label>
+        <input id="ct-desc" placeholder="Скачивает файл по URL и анализирует содержимое"></div>
+      <div class="fld"><label>GitHub URL (необязательно)</label>
+        <input id="ct-github" placeholder="https://github.com/user/repo"></div>
+      <div class="fld"><label>Пример inputs (JSON)</label>
+        <textarea id="ct-example" rows="2" placeholder='{"url": "https://example.com"}'>{}</textarea></div>
+      <div id="ct-log" style="background:var(--bg3);border-radius:6px;padding:8px;font-size:11px;min-height:40px;max-height:150px;overflow-y:auto;display:none;margin-bottom:10px;white-space:pre-wrap"></div>
+      <div class="mact">
+        <button class="btn bp" onclick="doCreateTool()">⚙️ Создать</button>
+        <button class="btn bo bs" onclick="closeModal('create-tool-modal')">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Модал: GitHub Install ══ -->
+  <div class="mbg" id="github-install-modal" style="display:none">
+    <div class="modal" style="max-width:480px">
+      <h3>📦 Установить с GitHub</h3>
+      <input type="hidden" id="gi-agent">
+      <div class="fld"><label>GitHub URL</label>
+        <input id="gi-url" placeholder="https://github.com/user/repo"></div>
+      <div class="fld"><label>Название инструмента (необязательно)</label>
+        <input id="gi-name" placeholder="auto (по имени репо)"></div>
+      <div class="fld"><label>Описание (необязательно)</label>
+        <input id="gi-desc" placeholder="Инструмент для..."></div>
+      <div id="gi-log" style="background:var(--bg3);border-radius:6px;padding:8px;font-size:11px;min-height:40px;max-height:200px;overflow-y:auto;display:none;margin-bottom:10px;white-space:pre-wrap"></div>
+      <div class="mact">
+        <button class="btn bp" onclick="doGithubInstall()">📥 Установить</button>
+        <button class="btn bo bs" onclick="closeModal('github-install-modal')">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Модал: Код инструмента ══ -->
+  <div class="mbg" id="tool-code-modal" style="display:none">
+    <div class="modal" style="max-width:600px">
+      <h3>📄 Код инструмента: <span id="tc-name"></span></h3>
+      <pre id="tc-code" style="background:var(--bg3);border-radius:6px;padding:12px;font-size:11px;max-height:400px;overflow-y:auto;white-space:pre-wrap"></pre>
+      <div class="mact">
+        <button class="btn bo bs" onclick="closeModal('tool-code-modal')">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ДОСТУП / ТОННЕЛЬ ══ -->
+  <div class="page" id="pg-access">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🌐 Удалённый доступ</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Cloudflare Tunnel · Bore · ngrok · Google Cloud</div>
+
+    <!-- Статус тоннелей -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Активные тоннели</span>
+        <button class="btn bo bs" onclick="loadTunnelStatus()">↻ Обновить</button>
+      </div>
+      <div id="tunnel-status" class="cb" style="font-size:11px">
+        <div style="color:var(--m)">Нажми Обновить...</div>
+      </div>
+    </div>
+
+    <!-- Управление тоннелями -->
+    <div class="g2" style="margin-bottom:10px">
+      <div class="card">
+        <div class="ch">☁️ Cloudflare Tunnel</div>
+        <div class="cb">
+          <div style="font-size:11px;color:var(--m);margin-bottom:8px">Бесплатный HTTPS, без порта, работает везде</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn bp bs" onclick="startTunnel('cloudflared')">▶ Запустить</button>
+            <button class="btn bd bs" onclick="stopTunnel('cloudflared')">■ Стоп</button>
+          </div>
+          <div id="cf-url" style="margin-top:8px;font-size:11px;word-break:break-all"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch">🔗 Bore Tunnel</div>
+        <div class="cb">
+          <div style="font-size:11px;color:var(--m);margin-bottom:8px">Быстрый TCP тоннель</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn bp bs" onclick="startTunnel('bore')">▶ Запустить</button>
+            <button class="btn bd bs" onclick="stopTunnel('bore')">■ Стоп</button>
+          </div>
+          <div id="bore-url" style="margin-top:8px;font-size:11px;word-break:break-all"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Cloud GCE -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">☁️ Google Cloud Engine — инструкция запуска</div>
+      <div class="cb">
+        <div style="font-size:11px;line-height:1.9;color:var(--tx)">
+          <b>1. Создай VM (бесплатный tier e2-micro):</b><br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;display:block;margin:4px 0">gcloud compute instances create blackbugsai \
+  --machine-type=e2-medium --zone=us-central1-a \
+  --image-family=ubuntu-2204-lts --image-project=ubuntu-os-cloud \
+  --boot-disk-size=30GB --tags=http-server,https-server</code>
+
+          <b>2. Открой порты (firewall):</b><br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;display:block;margin:4px 0">gcloud compute firewall-rules create allow-blackbugs \
+  --allow tcp:8080,tcp:5000 --source-ranges=0.0.0.0/0</code>
+
+          <b>3. SSH → установи Docker:</b><br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;display:block;margin:4px 0">curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER && newgrp docker</code>
+
+          <b>4. Загрузи проект и запусти:</b><br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;display:block;margin:4px 0">git clone https://github.com/YOUR/repo /app/BlackBugsAI
+cd /app/BlackBugsAI && cp .env.example .env
+nano .env  # заполни BOT_TOKEN, ADMIN_WEB_TOKEN и др.
+docker compose up -d</code>
+
+          <b>5. Открой панель:</b><br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;display:block;margin:4px 0">http://EXTERNAL_IP:8080</code>
+          <div style="color:var(--acc);margin-top:4px">⚠️ Для HTTPS — используй Cloudflare Tunnel (бесплатно) или nginx + certbot</div>
+        </div>
+        <button class="btn bo bs" style="margin-top:8px" onclick="copyGcloudSetup()">📋 Скопировать всё</button>
+      </div>
+    </div>
+
+    <!-- Текущий IP -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📡 Сетевая информация</span>
+        <button class="btn bo bs" onclick="loadNetInfo()">↻</button>
+      </div>
+      <div id="net-info" class="cb" style="font-size:11px;color:var(--m)">Нажми ↻</div>
+    </div>
+
+    <!-- Безопасность -->
+    <div class="card">
+      <div class="ch">🔒 Безопасность доступа</div>
+      <div class="cb" style="font-size:11px;line-height:1.8">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <b>Токен админки:</b><br>
+            <div id="token-display" style="background:var(--bg3);padding:4px 8px;border-radius:4px;font-family:monospace;word-break:break-all">
+              <span style="filter:blur(4px)" id="token-blur">••••••••••••••••</span>
+              <button class="btn bo bs" style="font-size:9px;margin-left:6px" onclick="toggleToken()">👁</button>
+            </div>
+          </div>
+          <div>
+            <b>Новый токен:</b><br>
+            <div style="display:flex;gap:4px">
+              <input id="new-token" placeholder="новый токен..." style="flex:1;font-size:11px">
+              <button class="btn bp bs" onclick="changeToken()">✓</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:10px;color:var(--m)">
+          💡 Для доступа из любой точки: запусти Cloudflare Tunnel → открой панель по HTTPS URL
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═ User Modal ═ -->
+<div class="mbg" id="umodal">
+  <div class="modal">
+    <h3>👤 Управление пользователем</h3>
+    <div id="m-info" style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.8"></div>
+    <div class="fld"><label>Роль</label>
+      <select id="m-role">
+        <option value="god">⚡ GOD — Всё</option>
+        <option value="adm">🔑 ADM — Администратор</option>
+        <option value="vip">💎 VIP — Все функции</option>
+        <option value="user">👤 USER — Базовый</option>
+        <option value="noob">🔰 NOOB — Только профиль</option>
+        <option value="ban">🚫 BAN — Заблокирован</option>
+      </select>
+    </div>
+    <div class="fld"><label>Сообщение</label><input id="m-msg" placeholder="Написать пользователю..."></div>
+    <div class="mact">
+      <button class="btn bo bs" onclick="m_msg()">📩 Написать</button>
+      <button class="btn bp bs" onclick="m_role()">✅ Назначить роль</button>
+      <button class="btn bd bs" onclick="m_kick()">🥾 Кик</button>
+      <button class="btn bd bs" onclick="m_ban()">🚫 Бан</button>
+      <button class="btn bo bs" onclick="cM()">✕</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+// ── State ────────────────────────────────────────────────────────────────────
+let B = localStorage.getItem('bb_url')||'http://localhost:8080';
+let T = localStorage.getItem('bb_tok')||'';
+let _U = [], _Tools = [], _liveInt = null, _mUid = null, _smT = null, _mpTab = 'slideshow';
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+addEventListener('load', () => {
+  document.getElementById('ui-url').value = B;
+  document.getElementById('ui-tok').value = T;
+  buildShellCmds();
+  buildSmithTemplates();
+  const pg = localStorage.getItem('bb_pg')||'dash';
+  nav(pg, navEl(pg));
+  connect();
+});
+
+const navEl = pg => document.querySelector(`.sb-nav[onclick*="'${pg}'"]`);
+
+function nav(pg, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-nav').forEach(n => n.classList.remove('on'));
+  const p = document.getElementById('pg-'+pg);
+  if (p) p.classList.add('active');
+  if (el) el.classList.add('on');
+  document.getElementById('ptitle').textContent = el ? el.textContent.trim().replace(/\s+\d+$/,'') : pg;
+  localStorage.setItem('bb_pg', pg);
+  ({dash:loadDash, users:loadUsers, tools:loadTools, tasks:loadTasks,
+    procs:loadProcs, logs:loadLogs, sys:loadSys, cfg:loadCfg,
+    files:loadFiles,
+    neo:    () => { loadNeoTools(); },
+    matrix: () => { loadMatrixTools(); },
+  })[pg]?.();
+}
+
+function doRefresh() { nav(localStorage.getItem('bb_pg')||'dash', null); }
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  try {
+    const r = await fetch(B+path, {
+      method, headers:{'Content-Type':'application/json','X-Admin-Token':T},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!r.ok) { const t = await r.text(); return {ok:false, error:`HTTP ${r.status}: ${t.slice(0,100)}`}; }
+    return await r.json();
+  } catch(e) { return {ok:false, error:String(e)}; }
+}
+
+async function connect() {
+  B = document.getElementById('ui-url').value.replace(/\/$/,'');
+  T = document.getElementById('ui-tok').value;
+  localStorage.setItem('bb_url', B);
+  localStorage.setItem('bb_tok', T);
+  upd_dot('warn', 'Подключение...');
+  const d = await api('GET', '/api/status');
+  if (d.ok) {
+    upd_dot('ok', d.version||'Online');
+    document.getElementById('sbot').textContent = `${d.llm_provider||'—'} / ${(d.llm_model||'—').slice(0,14)}`;
+    const tb = document.getElementById('tunnel-badge');
+    tb.innerHTML = d.tunnel_url
+      ? `<span class="tunnel-on">🌐 ${d.tunnel_url.replace('https://','').slice(0,30)}</span>`
+      : `<span class="tunnel-off">🔴 Тоннель выключен</span>`;
+    toast('✅ Подключено','ok');
+    loadDash();
+  } else {
+    upd_dot('off', 'Ошибка');
+    toast('❌ '+(d.error||'Нет соединения'),'er');
+  }
+}
+
+function upd_dot(state, txt) {
+  const d = document.getElementById('sdot');
+  d.className = `dot ${state==='ok'?'':''}${state==='off'?'off':''}${state==='warn'?'warn':''}`;
+  document.getElementById('stxt').textContent = txt;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const el = document.createElement('div');
+  el.className = `tm t${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+async function loadDash() {
+  const [st, us, si] = await Promise.all([
+    api('GET','/api/status'), api('GET','/api/users'), api('GET','/api/sysinfo')
+  ]);
+  if (st.ok) {
+    sv('sv-u', st.users_total||0); ss('ss-u', `активных: ${st.users_active||0}`);
+    sv('sv-up', st.uptime_str||'—'); ss2('ss-llm', (st.llm_provider||'—').toUpperCase());
+    const q = st.queue||{}; sv('sv-t', q.total||0); ss('ss-t', `run:${q.running||0} wait:${q.pending||0}`);
+    sv('sv-s', st.active_sessions||0);
+  }
+  if (us.ok) {
+    _U = us.users||[];
+    document.getElementById('bg-u').textContent = _U.length;
+    // Last 5
+    const rec = _U.slice(0,5);
+    document.getElementById('d-users').innerHTML = rec.length
+      ? `<table class="tbl"><tr><th>Ник</th><th>Роль</th><th>ID</th></tr>`+
+        rec.map(u=>`<tr><td>${esc(u.username||u.first_name||'—')}</td><td>${rb(u.privilege||'user')}</td><td><code style="font-size:10px">${u.telegram_id}</code></td></tr>`).join('')+'</table>'
+      : '<div style="padding:16px;text-align:center;color:var(--m)">Нет пользователей</div>';
+    // Роли
+    const byRole = {};
+    _U.forEach(u => { const r=u.privilege||'user'; byRole[r]=(byRole[r]||0)+1; });
+    document.getElementById('d-roles').innerHTML = Object.entries(byRole)
+      .map(([r,n])=>`<div>${rb(r)} <b style="font-size:13px">${n}</b></div>`).join('');
+  }
+  if (si.ok) {
+    const keys = si.api_keys||{};
+    document.getElementById('d-keys').innerHTML = Object.entries(keys)
+      .map(([k,v])=>`<div style="display:flex;align-items:center;gap:5px"><span class="st ${v?'son':'sof'}"></span><span style="color:${v?'var(--g)':'var(--m)'}">${k.replace('_API_KEY','')}</span></div>`)
+      .join('');
+  }
+  loadLogs();
+}
+
+const sv = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+const ss = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+const ss2 = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const d = await api('GET','/api/users');
+  if (!d.ok) { toast('❌ '+d.error,'er'); return; }
+  _U = d.users||[];
+  renderUsers(_U);
+}
+
+function filterU() {
+  const q = document.getElementById('us-q').value.toLowerCase();
+  const r = document.getElementById('us-r').value;
+  const s = document.getElementById('us-s').value;
+  renderUsers(_U.filter(u => {
+    const nm = (u.username||u.first_name||u.login||'').toLowerCase();
+    const id = String(u.telegram_id);
+    return (!q || nm.includes(q)||id.includes(q))
+        && (!r || (u.privilege||'user')===r)
+        && (!s || u.status===s);
+  }));
+}
+
+function renderUsers(users) {
+  document.getElementById('us-count').textContent = `${users.length} из ${_U.length}`;
+  if (!users.length) {
+    document.getElementById('utbl').innerHTML='<div style="padding:30px;text-align:center;color:var(--m)">Нет пользователей</div>';
+    return;
+  }
+  document.getElementById('utbl').innerHTML =
+    `<table class="tbl"><tr><th>Ник / ID</th><th>Роль</th><th>Статус</th><th>Рейтинг</th><th>PIN</th><th>Действия</th></tr>`+
+    users.map(u => {
+      const nm = esc(u.username||u.first_name||u.login||'—');
+      const st = u.status==='active'?`<span class="st son"></span>Active`:`<span class="st sof"></span>${u.status||'—'}`;
+      return `<tr>
+        <td><b>${nm}</b><br><code style="font-size:10px;color:var(--m)">${u.telegram_id}</code></td>
+        <td>${rb(u.privilege||'user')}</td>
+        <td style="font-size:11px">${st}</td>
+        <td>⭐${u.rating||0}</td>
+        <td style="font-size:13px">${u.pin_hash?'🔐':'🔓'}</td>
+        <td><button class="btn bo bxs" onclick="oModal(${u.telegram_id})">⚙️ Управление</button></td>
+      </tr>`;
+    }).join('')+'</table>';
+}
+
+function rb(role) {
+  const icons = {god:'⚡',adm:'🔑',vip:'💎',user:'👤',noob:'🔰',ban:'🚫',owner:'⚡',admin:'🔑',banned:'🚫'};
+  const labels = {god:'GOD',adm:'ADM',vip:'VIP',user:'USER',noob:'NOOB',ban:'BAN',owner:'GOD',admin:'ADM',banned:'BAN'};
+  const r = role||'user';
+  return `<span class="rb rb-${r in{god:1,adm:1,vip:1,user:1,noob:1,ban:1}?r:(r==='owner'?'god':r==='admin'?'adm':r==='banned'?'ban':'user')}">${icons[r]||'👤'} ${labels[r]||r.toUpperCase()}</span>`;
+}
+
+// ── User Modal ────────────────────────────────────────────────────────────────
+function oModal(uid) {
+  _mUid = uid;
+  const u = _U.find(x=>x.telegram_id===uid);
+  if (!u) return;
+  document.getElementById('m-info').innerHTML =
+    `<b>${esc(u.username||u.first_name||u.login||'—')}</b><br>
+     ID: <code>${uid}</code> &nbsp;${rb(u.privilege||'user')}<br>
+     Статус: ${u.status} &nbsp; Рейтинг: ⭐${u.rating||0}<br>
+     PIN: ${u.pin_hash?'🔐 Установлен':'🔓 Нет'}`;
+  document.getElementById('m-role').value = u.privilege||'user';
+  document.getElementById('umodal').classList.add('open');
+}
+function cM() { document.getElementById('umodal').classList.remove('open'); _mUid=null; }
+async function m_role() {
+  const p = document.getElementById('m-role').value;
+  const d = await api('POST',`/api/users/${_mUid}/priv`,{privilege:p});
+  d.ok ? (toast('✅ Роль изменена','ok'), cM(), loadUsers()) : toast('❌ '+d.error,'er');
+}
+async function m_msg() {
+  const t = document.getElementById('m-msg').value; if (!t) return;
+  const d = await api('POST','/api/msg/user',{target:String(_mUid),text:t});
+  d.ok ? toast('✅ Отправлено','ok') : toast('❌ '+d.error,'er');
+}
+async function m_kick() {
+  if (!confirm('Кикнуть?')) return;
+  const d = await api('POST',`/api/users/${_mUid}/kick`);
+  d.ok ? (toast('✅ Кикнут','ok'), cM()) : toast('❌ '+d.error,'er');
+}
+async function m_ban() {
+  if (!confirm('Забанить?')) return;
+  const d = await api('POST',`/api/users/${_mUid}/ban`);
+  d.ok ? (toast('✅ Заблокирован','ok'), cM(), loadUsers()) : toast('❌ '+d.error,'er');
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+async function sendMsg() {
+  const t=document.getElementById('m-uid').value, tx=document.getElementById('m-txt').value;
+  if (!t||!tx) return;
+  const d = await api('POST','/api/msg/user',{target:t,text:tx});
+  d.ok ? toast('✅ Отправлено','ok') : toast('❌ '+d.error,'er');
+}
+async function sendBC() {
+  const tx=document.getElementById('bc-t').value, r=document.getElementById('bc-r').value;
+  if (!tx) return;
+  document.getElementById('bc-res').textContent = '⏳ Отправляю...';
+  const d = await api('POST','/api/msg/broadcast',{text:tx, role:r||undefined});
+  const el = document.getElementById('bc-res');
+  d.ok ? el.textContent=`✅ Отправлено: ${d.sent||'?'} чел.` : el.textContent='❌ '+d.error;
+}
+
+// ── Agent Smith ───────────────────────────────────────────────────────────────
+function buildSmithTemplates() {
+  const tpls = [
+    ['🤖 Telegram бот',  'Создай Telegram бота на python-telegram-bot с командами /start /help и inline-кнопками', 'tg_bot'],
+    ['⚡ FastAPI',        'Создай FastAPI REST API с CRUD операциями, SQLite и Swagger документацией', 'fastapi'],
+    ['🕷 Парсер',         'Напиши парсер сайта на requests + BeautifulSoup с сохранением в JSON', 'scraper'],
+    ['⌨️ pynput',        'Создай Python скрипт автоматизации с pynput: горячие клавиши и макросы', 'code'],
+    ['🖼 Pillow',         'Обработай изображения: resize 1280x720, grayscale, watermark с текстом', 'code'],
+    ['📊 Pandas',         'Создай скрипт pandas: загрузка CSV, фильтры, группировка, экспорт в Excel', 'code'],
+    ['🧪 Тесты',          'Напиши pytest тесты с coverage 80%+ для Python функций', 'code'],
+    ['🐳 Docker',         'Создай Dockerfile + docker-compose.yml для Python веб-приложения', 'docker'],
+    ['📱 Aiogram 3',      'Создай Telegram бота на aiogram 3.x с FSM состояниями и inline клавиатурами', 'tg_bot'],
+    ['🔐 Шифрование',     'Создай модуль шифрования: AES-256, хеш паролей bcrypt, JWT токены', 'code'],
+  ];
+  const container = document.getElementById('sm-templates');
+  if (!container) return;
+  container.innerHTML = '';
+  tpls.forEach(([lbl, task, mode]) => {
+    const b = document.createElement('button');
+    b.className = 'btn bo bs';
+    b.style.cssText = 'text-align:left;justify-content:flex-start;margin-bottom:2px';
+    b.textContent = lbl;
+    b.dataset.task = task;
+    b.dataset.mode = mode;
+    b.addEventListener('click', () => {
+      document.getElementById('sm-task').value = b.dataset.task;
+      document.getElementById('sm-mode').value = b.dataset.mode;
+    });
+    container.appendChild(b);
+  });
+}
+
+function setSmith(task, mode) {
+  document.getElementById('sm-task').value = task;
+  document.getElementById('sm-mode').value = mode;
+}
+
+function clearSmith() {
+  document.getElementById('sm-out').textContent = 'Жду задачи...';
+  document.getElementById('sm-arts').textContent = '—';
+  document.getElementById('sm-steps').textContent = '—';
+  document.getElementById('sm-status').textContent = '';
+  if (_smT) { clearInterval(_smT); _smT=null; }
+  document.getElementById('sm-timer').textContent = '';
+}
+
+async function runSmith() {
+  const task = document.getElementById('sm-task').value.trim();
+  const mode = document.getElementById('sm-mode').value;
+  if (!task) { toast('⚠️ Введи задачу','wa'); return; }
+  const btn = document.getElementById('sm-btn');
+  btn.disabled = true; btn.textContent = '⏳ ...';
+  document.getElementById('sm-out').textContent = '⏳ Запускаю АГЕНТ_СМИТ...\n';
+  document.getElementById('sm-status').innerHTML = '<span class="spin"></span>';
+  let secs = 0;
+  if (_smT) clearInterval(_smT);
+  _smT = setInterval(() => { secs++; document.getElementById('sm-timer').textContent = `⏱ ${secs}с`; }, 1000);
+  const d = await api('POST','/api/agent/run',{task, mode});
+  clearInterval(_smT); _smT = null;
+  btn.disabled = false; btn.textContent = '▶ Запустить';
+  if (d.ok) {
+    let out = '';
+    (d.steps||[]).forEach(s => {
+      if (s.type==='status') out += `<span class="step-info">» ${esc(s.text)}</span>\n`;
+      else if (s.ok) out += `<span class="step-ok">✅ ${esc(s.tool)}: ${esc((s.result||'').slice(0,120))}</span>\n`;
+      else out += `<span class="step-err">❌ ${esc(s.tool)}: ${esc((s.result||'').slice(0,120))}</span>\n`;
+    });
+    out += `\n<b>${esc(d.final||'Готово')}</b>`;
+    document.getElementById('sm-out').innerHTML = out;
+    document.getElementById('sm-status').innerHTML = '✅';
+    toast('✅ СМИТ выполнил задачу','ok');
+    const arts = d.artifacts||[];
+    document.getElementById('sm-arts').innerHTML = arts.length
+      ? arts.map(a=>`📎 <code style="font-size:10px">${esc(a)}</code>`).join('<br>') : '—';
+  } else {
+    document.getElementById('sm-out').textContent = '❌ '+d.error;
+    document.getElementById('sm-status').innerHTML = '❌';
+    toast('❌ Ошибка агента','er');
+  }
+}
+
+// ── Tools ─────────────────────────────────────────────────────────────────────
+async function loadTools() {
+  const d = await api('GET','/api/tools');
+  if (!d.ok) { toast('❌ '+d.error,'er'); return; }
+  _Tools = d.tools||[];
+  document.getElementById('tl-cnt').textContent = `${_Tools.length} инструментов`;
+  const cats = [...new Set(_Tools.map(t=>t.category))].sort();
+  document.getElementById('tl-cats').innerHTML =
+    ['<button class="btn bp bs" onclick="filterTools()">Все</button>',
+     ...cats.map(c=>`<button class="btn bo bs" onclick="filterByCat('${c}',this)">${c}</button>`)
+    ].join('');
+  renderTools(_Tools);
+}
+
+let _catFilter = '';
+function filterByCat(c, el) {
+  _catFilter = _catFilter===c ? '' : c;
+  document.querySelectorAll('#tl-cats .btn').forEach(b => {
+    b.className = b.onclick?.toString().includes(`'${c}'`) && _catFilter===c ? 'btn bp bs' : 'btn bo bs';
+  });
+  filterTools();
+}
+function filterTools() {
+  const q = (document.getElementById('tl-q').value||'').toLowerCase();
+  renderTools(_Tools.filter(t => (!_catFilter||t.category===_catFilter) && (!q||t.name.includes(q)||t.desc.toLowerCase().includes(q))));
+}
+function renderTools(tools) {
+  if (!tools.length) { document.getElementById('tl-list').innerHTML='<div style="padding:20px;text-align:center;color:var(--m)">Нет результатов</div>'; return; }
+  const cats = {};
+  tools.forEach(t => (cats[t.category]||(cats[t.category]=[])).push(t));
+  let html = '';
+  for (const [cat, ts] of Object.entries(cats)) {
+    html += `<div style="padding:5px 14px 2px;font-size:10px;color:var(--m);text-transform:uppercase;background:var(--bg3);border-bottom:1px solid var(--brd)">${cat} (${ts.length})</div>`;
+    ts.forEach(t => {
+      const rate = t.success_rate??100;
+      const rc = rate>=90?'var(--g)':rate>=70?'var(--y)':'var(--r)';
+      const tags = (t.tags||[]).slice(0,4).map(tg=>`<span class="tag">${tg}</span>`).join('');
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid rgba(124,111,255,.04)">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;font-size:12px">${esc(t.name)}${t.cost>0?` <span style="font-size:10px;color:var(--y)">💳${t.cost}</span>`:''}</div>
+          <div style="font-size:11px;color:var(--m);margin-top:1px">${esc((t.desc||'').slice(0,90))}</div>
+          <div style="margin-top:3px">${tags}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;font-size:10px;color:var(--m)">
+          ${t.runs>0?`${t.runs}x <span style="color:${rc}">${rate}%</span><br>`:''}
+          <code style="font-size:9px">${t.sandbox}</code>
+          ${t.timeout?`<br>${t.timeout}s`:''}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('tl-list').innerHTML = html;
+}
+
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+async function loadTasks() {
+  const d = await api('GET','/api/tasks');
+  if (!d.ok) { toast('❌ '+d.error,'er'); return; }
+  const tasks = d.tasks||[];
+  document.getElementById('bg-t').textContent = tasks.length;
+  const st = {done:0, running:0, pending:0, failed:0};
+  tasks.forEach(t => st[t.status] = (st[t.status]||0)+1);
+  document.getElementById('task-sg').innerHTML =
+    Object.entries(st).map(([s,n])=>`<div class="sc"><div class="sl">${s}</div><div class="sv" style="font-size:20px">${n}</div></div>`).join('');
+  const icons = {done:'✅',running:'▶️',pending:'⏳',failed:'❌',cancelled:'🚫'};
+  document.getElementById('task-tbl').innerHTML = tasks.length
+    ? `<table class="tbl"><tr><th>ID</th><th>Тип</th><th>Статус</th><th>Пользователь</th><th>Создана</th><th></th></tr>`+
+      tasks.slice(0,60).map(t=>`<tr>
+        <td><code style="font-size:10px">${(t.task_id||t.id||'').slice(0,8)}</code></td>
+        <td style="font-size:11px">${t.task_type||'—'}</td>
+        <td>${icons[t.status]||'?'} ${t.status}</td>
+        <td><code style="font-size:10px">${t.user_id||'—'}</code></td>
+        <td style="font-size:10px;color:var(--m)">${(t.created_at||'').slice(0,16)}</td>
+        <td style="display:flex;gap:4px">
+          ${t.status==='running'?`<button class="btn bd bxs" onclick="cancelTask('${t.task_id||t.id}')">✕</button>`:''}
+          ${t.status==='failed'?`<button class="btn bo bxs" onclick="retryTask('${t.task_id||t.id}')">↺</button>`:''}
+        </td></tr>`).join('')+'</table>'
+    : '<div style="padding:30px;text-align:center;color:var(--m)">Нет задач</div>';
+}
+async function cancelTask(id) { const d=await api('POST',`/api/tasks/${id}/cancel`); d.ok?(toast('✅ Отменено','ok'),loadTasks()):toast('❌ '+d.error,'er'); }
+async function retryTask(id)  { const d=await api('POST',`/api/tasks/${id}/retry`);  d.ok?(toast('✅ Перезапущено','ok'),loadTasks()):toast('❌ '+d.error,'er'); }
+
+// ── Procs ─────────────────────────────────────────────────────────────────────
+async function loadProcs() {
+  const d = await api('GET','/api/processes');
+  if (!d.ok) { toast('❌ '+d.error,'er'); return; }
+  const ps = d.processes||[];
+  document.getElementById('proc-tbl').innerHTML = ps.length
+    ? `<table class="tbl"><tr><th>Имя</th><th>PID</th><th>Статус</th><th></th></tr>`+
+      ps.map(p=>`<tr><td>${esc(p.name)}</td><td><code>${p.pid}</code></td>
+        <td><span class="st ${p.alive?'son':'sof'}"></span>${p.alive?'Running':'Stopped'}</td>
+        <td>${p.alive?`<button class="btn bd bxs" onclick="killProc('${p.pid}')">Kill</button>`:''}</td></tr>`).join('')+'</table>'
+    : '<div style="padding:20px;text-align:center;color:var(--m)">Нет процессов</div>';
+}
+async function killProc(pid) {
+  if (!confirm('Убить '+pid+'?')) return;
+  const d=await api('POST',`/api/processes/${pid}/kill`);
+  d.ok?(toast('✅ Убит','ok'),loadProcs()):toast('❌ '+d.error,'er');
+}
+
+// ── Logs ──────────────────────────────────────────────────────────────────────
+let _rawLogs = [];
+async function loadLogs() {
+  const lf = document.getElementById('log-f')?.value||'';
+  const d = await api('GET',`/api/logs?n=200${lf?'&level='+lf:''}`);
+  if (!d.ok) return;
+  _rawLogs = d.logs||[];
+  renderLogs(_rawLogs);
+}
+function filterLogs() {
+  const q = (document.getElementById('log-q')?.value||'').toLowerCase();
+  renderLogs(q ? _rawLogs.filter(l=>l.toLowerCase().includes(q)) : _rawLogs);
+}
+function renderLogs(logs, target='log-box') {
+  const box = document.getElementById(target)||document.getElementById('d-log');
+  if (!box) return;
+  const slice = logs.slice(-100);
+  box.innerHTML = slice.map(l=>{
+    const cl = l.includes('ERROR')||l.includes('❌')?'le':l.includes('WARN')||l.includes('⚠️')?'lw':l.includes('✅')||l.includes(' OK')?'lo':'li';
+    return `<div class="${cl}">${esc(l)}</div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+  // Dash log — shorter
+  const dl = document.getElementById('d-log');
+  if (dl && target !== 'd-log') {
+    dl.innerHTML = slice.slice(-25).map(l=>{
+      const cl = l.includes('ERROR')?'le':l.includes('WARN')?'lw':l.includes('✅')?'lo':'li';
+      return `<div class="${cl}">${esc(l)}</div>`;
+    }).join('');
+    dl.scrollTop = dl.scrollHeight;
+  }
+}
+function toggleLive() {
+  if (document.getElementById('log-live')?.checked) {
+    _liveInt = setInterval(loadLogs, 5000);
+  } else {
+    clearInterval(_liveInt); _liveInt=null;
+  }
+}
+
+// ── Shell ─────────────────────────────────────────────────────────────────────
+function buildShellCmds() {
+  const cmds = [['ps aux','ps'],['df -h','df'],['free -h','free'],['ls -la','ls'],
+                ['cat .env','env'],['pip list','pip'],['docker ps','docker'],
+                ['python3 --version','python'],['uptime','uptime'],['whoami','whoami']];
+  document.getElementById('sh-cmds').innerHTML = cmds.map(([c,l])=>
+    `<button class="btn bo bxs" onclick="setCmd(${JSON.stringify(c)})">${l}</button>`).join('');
+}
+function setCmd(c) { document.getElementById('sh-in').value=c; }
+async function runShell() {
+  const cmd = document.getElementById('sh-in').value.trim(); if (!cmd) return;
+  const out = document.getElementById('sh-out');
+  out.innerHTML += `\n<span class="shell-prompt">$</span> ${esc(cmd)}\n`;
+  out.scrollTop = out.scrollHeight;
+  document.getElementById('sh-in').value = '';
+  const d = await api('POST','/api/shell',{cmd});
+  out.textContent += (d.output||d.error||'(нет вывода)')+'\n';
+  out.scrollTop = out.scrollHeight;
+}
+
+// ── Sysinfo ───────────────────────────────────────────────────────────────────
+async function loadSys() {
+  const d = await api('GET','/api/sysinfo'); if (!d.ok) return;
+  const s = d;
+  const ram_used = s.ram_total_mb&&s.ram_free_mb ? s.ram_total_mb-s.ram_free_mb : null;
+  const ram_pct  = s.ram_total_mb ? Math.round((ram_used/s.ram_total_mb)*100) : null;
+  const disk_pct = s.disk_total_gb ? Math.round(((s.disk_total_gb-s.disk_free_gb)/s.disk_total_gb)*100) : null;
+  document.getElementById('sys-sg').innerHTML = [
+    ['ОС', s.os||'—'],
+    ['Python', s.python||s.python_version||'—'],
+    ['CPU', s.cpu||s.cpu_count ? (s.cpu||s.cpu_count)+' ядер' : '—'],
+    ['RAM', s.ram_total_mb ? `${s.ram_total_mb} MB` : '—'],
+  ].map(([l,v])=>`<div class="sc"><div class="sl">${l}</div><div class="sv" style="font-size:16px;margin-top:4px">${esc(String(v))}</div></div>`).join('');
+  document.getElementById('sys-mem').innerHTML = ram_pct!=null
+    ? `RAM: <b>${ram_pct}%</b> (${ram_used} / ${s.ram_total_mb} MB)<div class="pb"><div class="pbf" style="width:${ram_pct}%"></div></div>`
+    : '—';
+  document.getElementById('sys-disk').innerHTML = disk_pct!=null
+    ? `Диск: <b>${disk_pct}%</b> (${(s.disk_total_gb-s.disk_free_gb).toFixed(1)} / ${s.disk_total_gb} GB)<div class="pb"><div class="pbf" style="width:${disk_pct}%"></div></div>`
+    : '—';
+  const keys = s.api_keys||{};
+  document.getElementById('sys-keys').innerHTML = Object.entries(keys)
+    .map(([k,v])=>`<div style="display:flex;align-items:center;gap:5px"><span class="st ${v?'son':'sof'}"></span><span style="color:${v?'var(--g)':'var(--m)'};">${k}</span></div>`)
+    .join('');
+}
+
+// ── Config ────────────────────────────────────────────────────────────────────
+async function loadCfg() {
+  const d = await api('GET','/api/config'); if (!d.ok) return;
+  const cfg = d.config||{};
+  const sens = ['TOKEN','KEY','PASS','SECRET'];
+  const grid = document.getElementById('cfg-grid');
+  grid.innerHTML = Object.entries(cfg).map(([k,v])=>{
+    const isSens = sens.some(s=>k.includes(s));
+    return `<div class="card" style="margin:0"><div class="cb">
+      <label>${k}</label>
+      <input id="cfg-${k}" type="${isSens?'password':'text'}" value="${esc(String(v))}">
+    </div></div>`;
+  }).join('');
+}
+async function saveCfg() {
+  const cfg={};
+  document.querySelectorAll('[id^="cfg-"]').forEach(i=>cfg[i.id.replace('cfg-','')]=i.value);
+  const d = await api('POST','/api/config',cfg);
+  d.ok ? toast('✅ Сохранено','ok') : toast('❌ '+d.error,'er');
+}
+async function restartBot() {
+  if (!confirm('Перезапустить бота?')) return;
+  const d = await api('POST','/api/restart');
+  d.ok ? toast('✅ Перезапуск...','ok') : toast('❌ '+d.error,'er');
+}
+
+// ── Media: MoviePy ────────────────────────────────────────────────────────────
+function mpTab(name, el) {
+  _mpTab = name;
+  document.querySelectorAll('[id^="mp-"]:not(#mp-tabs):not(#mp-out)').forEach(e=>e.style.display='none');
+  const p = document.getElementById('mp-'+name); if (p) p.style.display='block';
+  document.querySelectorAll('#mp-tabs .btn').forEach(b=>{b.className=b===el?'btn bp bs':'btn bo bs'});
+}
+async function runMp() {
+  let a = {action:_mpTab};
+  if (_mpTab==='slideshow') { a.images=document.getElementById('mp-si').value.split(',').map(s=>s.trim()); a.audio=document.getElementById('mp-sa').value; a.output=document.getElementById('mp-so').value||'output.mp4'; }
+  else if (_mpTab==='cut')  { a.input=document.getElementById('mp-ci').value; a.start=parseFloat(document.getElementById('mp-cs').value)||0; a.end=parseFloat(document.getElementById('mp-ce').value)||0; }
+  else if (_mpTab==='concat') { a.files=document.getElementById('mp-cai').value.split(',').map(s=>s.trim()); }
+  else if (_mpTab==='add_audio') { a.video=document.getElementById('mp-av').value; a.audio=document.getElementById('mp-aa').value; }
+  else if (_mpTab==='speed') { a.input=document.getElementById('mp-spi').value; a.factor=parseFloat(document.getElementById('mp-spf').value)||2; }
+  else if (_mpTab==='info')  { a.input=document.getElementById('mp-ii').value; }
+  document.getElementById('mp-out').textContent='⏳...';
+  const d = await api('POST','/api/agent/run',{task:JSON.stringify(a), tool:'moviepy_edit'});
+  document.getElementById('mp-out').textContent = d.result||d.error||'—';
+}
+
+// ── Pillow ────────────────────────────────────────────────────────────────────
+async function runPillow() {
+  const act = document.getElementById('pil-act').value;
+  const inp = document.getElementById('pil-in').value;
+  let extra = {};
+  try { extra = JSON.parse(document.getElementById('pil-args').value||'{}'); } catch {}
+  document.getElementById('pil-out').textContent='⏳...';
+  const d = await api('POST','/api/agent/run',{task:JSON.stringify({action:act,input:inp,...extra}), tool:'pillow_image'});
+  document.getElementById('pil-out').textContent = d.result||d.error||'—';
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Files ─────────────────────────────────────────────────────────────────────
+let _files = [];
+
+async function loadFiles() {
+  const d = await api('GET', '/api/files/list');
+  if (!d.ok) { toast('❌ '+d.error,'er'); return; }
+  _files = d.files || [];
+  renderFiles(_files);
+}
+
+function filterFiles() {
+  const q   = (document.getElementById('files-q')?.value || '').toLowerCase();
+  const ext = document.getElementById('files-ext')?.value || '';
+  const ext_map = {'png':['png','jpg','jpeg','webp','gif'],'mp3':['mp3','ogg','wav','m4a'],'mp4':['mp4','avi','mov','mkv']};
+  const exts = ext_map[ext] || (ext ? [ext] : []);
+  renderFiles(_files.filter(f =>
+    (!q || f.name.toLowerCase().includes(q)) &&
+    (!exts.length || exts.includes(f.ext))
+  ));
+}
+
+function renderFiles(files) {
+  const extIcons = {py:'💻',js:'💻',ts:'💻',zip:'📦',rar:'📦','7z':'📦',
+                    png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🖼',webp:'🖼',svg:'🖼',
+                    mp3:'🎵',wav:'🎵',ogg:'🎵',m4a:'🎵',
+                    mp4:'🎬',avi:'🎬',mov:'🎬',mkv:'🎬',
+                    pdf:'📄',docx:'📄',xlsx:'📊',txt:'📝',md:'📝',
+                    json:'📋',yaml:'📋',csv:'📊',html:'🌐'};
+  if (!files.length) {
+    document.getElementById('files-list').innerHTML = '<div style="padding:30px;text-align:center;color:var(--m)">Нет файлов</div>';
+    return;
+  }
+  document.getElementById('files-list').innerHTML =
+    `<table class="tbl">
+       <tr><th>Файл</th><th>Размер</th><th>Дата</th><th></th></tr>` +
+    files.map(f => {
+      const ic = extIcons[f.ext] || '📎';
+      const dt = new Date(f.mtime * 1000).toLocaleString('ru');
+      return `<tr>
+        <td>${ic} <b>${esc(f.name)}</b></td>
+        <td style="font-size:11px;color:var(--m)">${f.size_hr}</td>
+        <td style="font-size:10px;color:var(--m)">${dt}</td>
+        <td style="display:flex;gap:4px">
+          <a href="${B}/api/files/download?path=${encodeURIComponent(f.path)}&token=${T}"
+             class="btn bo bxs" download="${esc(f.name)}" target="_blank">⬇️</a>
+          <button class="btn bd bxs" onclick="deleteFile('${esc(f.path)}','${esc(f.name)}')">🗑</button>
+        </td>
+      </tr>`;
+    }).join('') + '</table>';
+}
+
+async function uploadFiles(fileList) {
+  const status = document.getElementById('upload-status');
+  const prog   = document.getElementById('upload-progress');
+  let done = 0;
+  for (const file of Array.from(fileList)) {
+    status.textContent = `Загружаю ${file.name}...`;
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const r = await fetch(B + '/api/files/upload', {
+        method: 'POST',
+        headers: {'X-Admin-Token': T},
+        body: form,
+      });
+      const d = await r.json();
+      if (d.ok) {
+        done++;
+        prog.innerHTML += `<div style="font-size:11px;color:var(--g)">✅ ${esc(d.name)} (${d.size_hr})</div>`;
+      } else {
+        prog.innerHTML += `<div style="font-size:11px;color:var(--r)">❌ ${esc(file.name)}: ${esc(d.error)}</div>`;
+      }
+    } catch(e) {
+      prog.innerHTML += `<div style="font-size:11px;color:var(--r)">❌ ${esc(file.name)}: ${e}</div>`;
+    }
+  }
+  status.textContent = `Готово: ${done}/${fileList.length}`;
+  loadFiles();
+}
+
+async function deleteFile(path, name) {
+  if (!confirm(`Удалить ${name}?`)) return;
+  const d = await api('POST', '/api/files/delete', {path});
+  d.ok ? (toast('✅ Удалено','ok'), loadFiles()) : toast('❌ '+d.error,'er');
+}
+
+// ── AGENT NEO ─────────────────────────────────────────────────────────────────
+async function runNeo() {
+  const task = document.getElementById('neo-task').value.trim();
+  if (!task) { toast('Введи задачу','er'); return; }
+  const out = document.getElementById('neo-out');
+  out.textContent = '⏳ NEO запущен...\n';
+  out.style.color = 'var(--m)';
+  const d = await api('POST', '/api/agent/run', {task, agent: 'neo'});
+  if (d.ok) {
+    out.textContent = '✅ ' + (d.final || d.result || 'Готово');
+    out.style.color = 'var(--g)';
+    if (d.steps?.length) {
+      out.textContent += '\n\n📊 Шаги:\n' + d.steps.map(s => (s.ok ? '✅' : '❌') + ' ' + (s.text || s.tool || '')).join('\n');
+    }
+    toast('✅ NEO завершил','ok');
+  } else {
+    out.textContent = '❌ ' + (d.error || 'Ошибка');
+    out.style.color = 'var(--r)';
+  }
+}
+
+async function loadNeoTools() {
+  const d = await api('GET', '/api/neo/tools');
+  const card = document.getElementById('neo-tools-card');
+  const list = document.getElementById('neo-tools-list');
+  card.style.display = '';
+  if (!d.ok || !d.tools?.length) { list.innerHTML = '<div style="padding:12px;color:var(--m)">Нет инструментов</div>'; return; }
+  list.innerHTML = '<table class="tbl"><tr><th>Инструмент</th><th>Тип</th><th>Описание</th></tr>' +
+    d.tools.map(t => `<tr><td><code>${esc(t.name)}</code></td><td>${t.builtin ? '📦 builtin' : '🔧 dynamic'}</td><td style="font-size:10px;color:var(--m)">${esc((t.description||'').slice(0,60))}</td></tr>`).join('') +
+    '</table>';
+}
+
+// ── NEO state ──────────────────────────────────────────────────────────────────
+let _neoFilePath = null;
+let _mxFilePath  = null;
+
+function setNeo(v) {
+  const el = document.getElementById('neo-task');
+  el.value = v; el.focus();
+  el.setSelectionRange(v.length, v.length);
+}
+function setMx(v) {
+  const el = document.getElementById('mx-task');
+  el.value = v; el.focus();
+  el.setSelectionRange(v.length, v.length);
+}
+
+function neoFileChanged() {
+  const f = document.getElementById('neo-file').files[0];
+  if (!f) return;
+  uploadFileForAgent(f, path => {
+    _neoFilePath = path;
+    document.getElementById('neo-file-name').textContent = '📎 ' + f.name;
+    document.getElementById('neo-file-clear').style.display = '';
+  });
+}
+function mxFileChanged() {
+  const f = document.getElementById('mx-file').files[0];
+  if (!f) return;
+  uploadFileForAgent(f, path => {
+    _mxFilePath = path;
+    document.getElementById('mx-file-name').textContent = '📎 ' + f.name;
+    document.getElementById('mx-file-clear').style.display = '';
+  });
+}
+function clearNeoFile() {
+  _neoFilePath = null;
+  document.getElementById('neo-file').value = '';
+  document.getElementById('neo-file-name').textContent = '';
+  document.getElementById('neo-file-clear').style.display = 'none';
+}
+function clearMxFile() {
+  _mxFilePath = null;
+  document.getElementById('mx-file').value = '';
+  document.getElementById('mx-file-name').textContent = '';
+  document.getElementById('mx-file-clear').style.display = 'none';
+}
+
+async function uploadFileForAgent(file, cb) {
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch(B + '/api/files/upload', {
+      method: 'POST',
+      headers: {'X-Admin-Token': T},
+      body: fd,
+    });
+    const d = await r.json();
+    if (d.ok) { cb(d.path); toast('Файл загружен: ' + d.name, 'ok'); }
+    else toast('Ошибка загрузки: ' + d.error, 'er');
+  } catch(e) { toast('Ошибка: ' + e, 'er'); }
+}
+
+// ── Run NEO ────────────────────────────────────────────────────────────────────
+async function runNeo(overrideTask) {
+  const task = overrideTask || document.getElementById('neo-task').value.trim();
+  if (!task) { toast('Введи задачу', 'er'); return; }
+  const out    = document.getElementById('neo-out');
+  const badge  = document.getElementById('neo-status-badge');
+  const filesEl= document.getElementById('neo-files-out');
+  out.textContent = '⏳ NEO запущен...\n';
+  out.style.color = 'var(--m)';
+  badge.textContent = '⏳ работает';
+  badge.style.background = 'rgba(255,200,0,.15)';
+  filesEl.style.display = 'none';
+
+  const body = {task, agent: 'neo'};
+  if (_neoFilePath) body.file_path = _neoFilePath;
+
+  const d = await api('POST', '/api/agent/run', body);
+
+  if (d.ok) {
+    out.textContent = d.final || d.result || '✅ Готово';
+    out.style.color = 'var(--g)';
+    badge.textContent = '✅ готово';
+    badge.style.background = 'rgba(0,200,100,.15)';
+    toast('✅ NEO завершил', 'ok');
+  } else {
+    out.textContent = '❌ ' + (d.error || 'Ошибка') + '\n\n' + (d.trace || '');
+    out.style.color = 'var(--r)';
+    badge.textContent = '❌ ошибка';
+    badge.style.background = 'rgba(255,50,50,.15)';
+  }
+  if (d.steps?.length) {
+    out.textContent += '\n\n📊 Лог:\n' + d.steps.map(s =>
+      (s.ok !== false ? '✅' : s.text?.includes('❌') ? '❌' : '⏳') + ' ' + (s.text || '')
+    ).join('\n');
+  }
+  if (d.files?.length || d.zip_path) {
+    filesEl.style.display = '';
+    const links = [];
+    if (d.zip_path) links.push(`<a href="${B}/api/files/download?path=${encodeURIComponent(d.zip_path)}&token=${T}" target="_blank" class="btn bp bs">📦 Скачать ZIP</a>`);
+    (d.files||[]).slice(0,5).forEach(f => {
+      const nm = f.split('/').pop();
+      links.push(`<a href="${B}/api/files/download?path=${encodeURIComponent(f)}&token=${T}" target="_blank" class="btn bo bs">⬇ ${esc(nm)}</a>`);
+    });
+    filesEl.innerHTML = '<div style="display:flex;gap:6px;flex-wrap:wrap">' + links.join('') + '</div>';
+  }
+  loadAgentTools('neo');
+}
+
+// ── Run MATRIX ─────────────────────────────────────────────────────────────────
+async function runMatrix(overrideTask) {
+  const task = overrideTask || document.getElementById('mx-task').value.trim();
+  if (!task) { toast('Введи задачу', 'er'); return; }
+  const out    = document.getElementById('mx-out');
+  const badge  = document.getElementById('mx-status-badge');
+  const filesEl= document.getElementById('mx-files-out');
+  out.textContent = '⏳ MATRIX запущен...\n';
+  out.style.color = 'var(--m)';
+  badge.textContent = '⏳ работает';
+  badge.style.background = 'rgba(255,200,0,.15)';
+  filesEl.style.display = 'none';
+
+  const body = {task, agent: 'matrix'};
+  if (_mxFilePath) body.file_path = _mxFilePath;
+
+  const d = await api('POST', '/api/agent/run', body);
+
+  if (d.ok) {
+    out.textContent = d.final || d.result || '✅ Готово';
+    out.style.color = 'var(--g)';
+    badge.textContent = '✅ готово';
+    badge.style.background = 'rgba(0,200,100,.15)';
+    toast('✅ MATRIX завершил', 'ok');
+  } else {
+    out.textContent = '❌ ' + (d.error || 'Ошибка') + '\n\n' + (d.trace || '');
+    out.style.color = 'var(--r)';
+    badge.textContent = '❌ ошибка';
+    badge.style.background = 'rgba(255,50,50,.15)';
+  }
+  if (d.steps?.length) {
+    out.textContent += '\n\n📊 Лог:\n' + d.steps.map(s =>
+      (s.ok !== false ? '✅' : s.text?.includes('❌') ? '❌' : '⏳') + ' ' + (s.text || '')
+    ).join('\n');
+  }
+  if (d.files?.length || d.zip_path) {
+    filesEl.style.display = '';
+    const links = [];
+    if (d.zip_path) links.push(`<a href="${B}/api/files/download?path=${encodeURIComponent(d.zip_path)}&token=${T}" target="_blank" class="btn" style="background:var(--r);font-size:11px;padding:4px 10px">📦 ZIP</a>`);
+    (d.files||[]).slice(0,5).forEach(f => {
+      const nm = f.split('/').pop();
+      links.push(`<a href="${B}/api/files/download?path=${encodeURIComponent(f)}&token=${T}" target="_blank" class="btn bo bs">⬇ ${esc(nm)}</a>`);
+    });
+    filesEl.innerHTML = '<div style="display:flex;gap:6px;flex-wrap:wrap">' + links.join('') + '</div>';
+  }
+  if (d.generated_tools?.length) toast('🔧 Создано инструментов: ' + d.generated_tools.length, 'ok');
+  loadAgentTools('matrix');
+}
+
+// ── Tool management ────────────────────────────────────────────────────────────
+async function loadAgentTools(agent) {
+  const listId = agent === 'neo' ? 'neo-tools-list' : 'mx-tools-list';
+  const el = document.getElementById(listId);
+  el.innerHTML = '<div style="padding:8px;color:var(--m);font-size:11px">Загрузка...</div>';
+  const d = await api('GET', '/api/' + agent + '/tools');
+  if (!d.ok || !d.tools?.length) {
+    el.innerHTML = '<div style="padding:8px;color:var(--m);font-size:11px">Нет инструментов</div>';
+    return;
+  }
+  const color = agent === 'neo' ? 'var(--g)' : 'var(--r)';
+  el.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
+    <tr><th>Инструмент</th><th>Тип</th><th>Описание</th><th>Действия</th></tr>` +
+    d.tools.map(t => `<tr>
+      <td><code style="color:${color}">${esc(t.name)}</code></td>
+      <td style="text-align:center">${t.builtin ? '📦' : '🔧'}</td>
+      <td style="font-size:10px;color:var(--m);max-width:200px">${esc((t.description||'').slice(0,55))}</td>
+      <td style="white-space:nowrap">
+        <button class="btn bo bs" style="font-size:9px;padding:2px 7px" onclick="viewToolCode('${agent}','${esc(t.name)}')">Код</button>
+        ${!t.builtin ? `<button class="btn bo bs" style="font-size:9px;padding:2px 7px;color:var(--acc)" onclick="viewToolUsage('${agent}','${esc(t.name)}')">📖</button>` : ''}
+        ${!t.builtin ? `<button class="btn bd bs" style="font-size:9px;padding:2px 7px" onclick="deleteTool('${agent}','${esc(t.name)}')">✕</button>` : ''}
+      </td>
+    </tr>`).join('') +
+  '</table></div>';
+}
+
+async function viewToolUsage(agent, name) {
+  const d = await api('GET', '/api/agent/tool_usage?agent=' + agent + '&name=' + encodeURIComponent(name));
+  document.getElementById('tc-name').textContent = name + ' — Инструкция';
+  document.getElementById('tc-code').textContent = d.ok ? d.guide : ('❌ ' + d.error + '\n\nИспользование:\nЗадача агенту: "Запусти ' + name + ' для <цель>"\nили: "Используй ' + name + ' с аргументами <args>"');
+  document.getElementById('tool-code-modal').style.display = 'flex';
+}
+
+async function viewToolCode(agent, name) {
+  const d = await api('GET', '/api/agent/tool_code?agent=' + agent + '&name=' + encodeURIComponent(name));
+  if (!d.ok) { toast('Ошибка: ' + d.error, 'er'); return; }
+  document.getElementById('tc-name').textContent = name;
+  document.getElementById('tc-code').textContent = d.code || '(нет кода)';
+  document.getElementById('tool-code-modal').style.display = 'flex';
+}
+
+async function deleteTool(agent, name) {
+  if (!confirm('Удалить инструмент ' + name + '?')) return;
+  const d = await api('POST', '/api/' + agent + '/tool/delete', {name});
+  if (d.ok) { toast('Удалён: ' + name, 'ok'); loadAgentTools(agent); }
+  else toast('Ошибка: ' + d.error, 'er');
+}
+
+function showCreateTool(agent) {
+  document.getElementById('ct-agent').value = agent;
+  document.getElementById('ct-name').value = '';
+  document.getElementById('ct-desc').value = '';
+  document.getElementById('ct-github').value = '';
+  document.getElementById('ct-example').value = '{}';
+  document.getElementById('ct-log').style.display = 'none';
+  document.getElementById('ct-log').textContent = '';
+  document.getElementById('create-tool-modal').style.display = 'flex';
+}
+
+async function doCreateTool() {
+  const agent = document.getElementById('ct-agent').value;
+  const name  = document.getElementById('ct-name').value.trim();
+  const desc  = document.getElementById('ct-desc').value.trim();
+  const gh    = document.getElementById('ct-github').value.trim();
+  const exRaw = document.getElementById('ct-example').value.trim();
+  const logEl = document.getElementById('ct-log');
+  if (!name || !desc) { toast('Заполни название и описание', 'er'); return; }
+  let example = {};
+  try { example = JSON.parse(exRaw); } catch(e) {}
+  logEl.style.display = '';
+  logEl.textContent = '⏳ Генерирую...\n';
+  const d = await api('POST', '/api/agent/create_tool', {agent, tool_name: name, description: desc, example_inputs: example, github_url: gh});
+  logEl.textContent = (d.log||[]).join('\n') + '\n' + (d.ok ? '✅ Создан!' : '❌ ' + d.error);
+  if (d.ok) {
+    toast('✅ Инструмент ' + name + ' создан!', 'ok');
+    loadAgentTools(agent);
+    setTimeout(() => closeModal('create-tool-modal'), 1500);
+  }
+}
+
+function showGithubInstall(agent) {
+  document.getElementById('gi-agent').value = agent;
+  document.getElementById('gi-url').value = '';
+  document.getElementById('gi-name').value = '';
+  document.getElementById('gi-desc').value = '';
+  document.getElementById('gi-log').style.display = 'none';
+  document.getElementById('gi-log').textContent = '';
+  document.getElementById('github-install-modal').style.display = 'flex';
+}
+
+async function doGithubInstall() {
+  const agent = document.getElementById('gi-agent').value;
+  const url   = document.getElementById('gi-url').value.trim();
+  const name  = document.getElementById('gi-name').value.trim();
+  const desc  = document.getElementById('gi-desc').value.trim();
+  const logEl = document.getElementById('gi-log');
+  if (!url) { toast('Введи GitHub URL', 'er'); return; }
+  logEl.style.display = '';
+  logEl.textContent = '📥 Устанавливаю...\n';
+  const d = await api('POST', '/api/agent/github_install', {agent, url, tool_name: name, description: desc});
+  logEl.textContent = (d.log||[]).join('\n') + '\n' + (d.ok ? '✅ Установлен: ' + d.tool_name : '❌ ' + d.error);
+  if (d.ok) {
+    toast('✅ Установлен: ' + d.tool_name, 'ok');
+    loadAgentTools(agent);
+    setTimeout(() => closeModal('github-install-modal'), 2000);
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+// ── Tunnel / Access ─────────────────────────────────────────────────────────
+async function loadTunnelStatus() {
+  const el = document.getElementById('tunnel-status');
+  const d = await api('GET', '/api/status');
+  if (!d.ok) { el.innerHTML = '<div style="color:var(--r)">Ошибка: ' + esc(d.error||'') + '</div>'; return; }
+
+  const cfUrl  = d.tunnel_url || '';
+  const boreUrl= d.bore_url   || '';
+  const rows = [];
+
+  if (cfUrl) {
+    rows.push(`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)">
+      <span style="color:var(--g)">🟢</span>
+      <span><b>Cloudflare:</b> <a href="${esc(cfUrl)}" target="_blank" style="color:var(--acc)">${esc(cfUrl)}</a></span>
+      <button class="btn bo bs" onclick="navigator.clipboard.writeText('${esc(cfUrl)}');toast('Скопировано','ok')" style="font-size:9px">📋</button>
+    </div>`);
+    document.getElementById('cf-url').innerHTML = '🟢 <a href="'+esc(cfUrl)+'" target="_blank" style="color:var(--acc)">'+esc(cfUrl)+'</a>';
+  } else {
+    rows.push('<div style="color:var(--m);padding:4px 0">🔴 Cloudflare — не запущен</div>');
+  }
+  if (boreUrl) {
+    rows.push(`<div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+      <span style="color:var(--g)">🟢</span>
+      <span><b>Bore:</b> <a href="${esc(boreUrl)}" target="_blank" style="color:var(--acc)">${esc(boreUrl)}</a></span>
+    </div>`);
+    document.getElementById('bore-url').innerHTML = '🟢 '+esc(boreUrl);
+  } else {
+    rows.push('<div style="color:var(--m);padding:4px 0">🔴 Bore — не запущен</div>');
+  }
+  el.innerHTML = rows.join('');
+
+  // Update topbar badge
+  const tb = document.getElementById('tunnel-badge');
+  const url = cfUrl || boreUrl;
+  tb.innerHTML = url
+    ? `<span class="tunnel-on">🌐 ${esc(url.replace('https://','').slice(0,35))}</span>`
+    : `<span class="tunnel-off">🔴 Нет тоннеля</span>`;
+}
+
+async function startTunnel(type) {
+  toast('⏳ Запускаю ' + type + '...', 'ok');
+  const d = await api('POST', '/api/tunnel/start', {type});
+  if (d.ok) {
+    toast('✅ ' + type + ' запущен', 'ok');
+    setTimeout(loadTunnelStatus, 3000);
+  } else {
+    toast('❌ ' + (d.error||'Ошибка'), 'er');
+  }
+}
+
+async function stopTunnel(type) {
+  const d = await api('POST', '/api/tunnel/stop', {type});
+  toast(d.ok ? '✅ ' + type + ' остановлен' : '❌ ' + (d.error||'Ошибка'), d.ok ? 'ok' : 'er');
+  setTimeout(loadTunnelStatus, 1500);
+}
+
+async function loadNetInfo() {
+  const el = document.getElementById('net-info');
+  el.innerHTML = '⏳ Загрузка...';
+  const d = await api('GET', '/api/system');
+  if (!d.ok) { el.innerHTML = 'Ошибка'; return; }
+  const lines = [];
+  if (d.hostname) lines.push('<b>Hostname:</b> ' + esc(d.hostname));
+  if (d.platform) lines.push('<b>OS:</b> '       + esc(d.platform));
+  if (d.local_ip) lines.push('<b>Local IP:</b> '  + esc(d.local_ip));
+  lines.push('<b>Admin URL:</b> <span style="color:var(--acc)">' + B + '/</span>');
+  el.innerHTML = lines.join('<br>');
+}
+
+let _tokenVisible = false;
+async function toggleToken() {
+  const el = document.getElementById('token-blur');
+  if (!_tokenVisible) {
+    const d = await api('GET', '/api/config');
+    el.textContent = d.config?.ADMIN_WEB_TOKEN || T || '(не получен)';
+    el.style.filter = '';
+    _tokenVisible = true;
+  } else {
+    el.textContent = '••••••••••••••••';
+    el.style.filter = 'blur(4px)';
+    _tokenVisible = false;
+  }
+}
+
+async function changeToken() {
+  const newTok = document.getElementById('new-token').value.trim();
+  if (!newTok || newTok.length < 8) { toast('Минимум 8 символов', 'er'); return; }
+  const d = await api('POST', '/api/config', {ADMIN_WEB_TOKEN: newTok});
+  if (d.ok) {
+    T = newTok;
+    localStorage.setItem('bb_tok', newTok);
+    document.getElementById('ui-tok').value = newTok;
+    toast('✅ Токен обновлён. Перезапусти бота.', 'ok');
+  } else {
+    toast('❌ ' + (d.error||'Ошибка'), 'er');
+  }
+}
+
+function copyGcloudSetup() {
+  const text = `# Google Cloud — BlackBugsAI deployment
+# 1. Create VM
+gcloud compute instances create blackbugsai \\
+  --machine-type=e2-medium --zone=us-central1-a \\
+  --image-family=ubuntu-2204-lts --image-project=ubuntu-os-cloud \\
+  --boot-disk-size=30GB --tags=http-server,https-server
+
+# 2. Firewall
+gcloud compute firewall-rules create allow-blackbugs \\
+  --allow tcp:8080,tcp:5000 --source-ranges=0.0.0.0/0
+
+# 3. SSH + Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER && newgrp docker
+
+# 4. Deploy
+mkdir -p /app && cd /app
+# Upload your BlackBugsAI.zip here, then:
+unzip BlackBugsAI.zip && cd BlackBugsAI
+cp .env.example .env && nano .env
+docker compose up -d
+
+# 5. Cloudflare Tunnel (for HTTPS from anywhere)
+cloudflared tunnel --url http://localhost:8080`;
+  navigator.clipboard.writeText(text).then(() => toast('Скопировано!','ok'));
+}
+
+// ── Auto-refresh ──────────────────────────────────────────────────────────────
+setInterval(() => {
+  const pg = localStorage.getItem('bb_pg') || 'dash';
+  if (pg === 'dash') loadDash();
+}, 30000);</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+.env
+*.db
+__pycache__/
+output/
+fish_logs/
+agent_projects/
+artifacts/
+created_bots/
+neo_workspace/
+matrix_workspace/
+repos/
+fish_uploads/
+fish_pages/
+fish_downloads/
+fish_qr/
+*.zip
+*.pdf
+.env2
+* (1).sh
