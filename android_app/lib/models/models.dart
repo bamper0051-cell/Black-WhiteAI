@@ -212,18 +212,20 @@ class SystemStats {
   });
 
   factory SystemStats.fromJson(Map<String, dynamic> j) {
+    // Parse from /api/status response
+    final queue = j['queue'] as Map<String, dynamic>? ?? {};
     return SystemStats(
-      totalTasks: j['total_tasks'] ?? 0,
-      pendingTasks: j['pending'] ?? 0,
-      runningTasks: j['running'] ?? 0,
-      doneTasks: j['done'] ?? 0,
-      failedTasks: j['failed'] ?? 0,
-      totalUsers: j['total_users'] ?? 0,
+      totalTasks: (queue['total'] as num?)?.toInt() ?? j['total_tasks'] ?? 0,
+      pendingTasks: (queue['pending'] as num?)?.toInt() ?? j['pending'] ?? 0,
+      runningTasks: (queue['running'] as num?)?.toInt() ?? j['running'] ?? 0,
+      doneTasks: (queue['done'] as num?)?.toInt() ?? j['done'] ?? 0,
+      failedTasks: (queue['failed'] as num?)?.toInt() ?? j['failed'] ?? 0,
+      totalUsers: j['users_total'] ?? j['total_users'] ?? 0,
       agents: (j['agents'] as List? ?? [])
           .map((a) => AgentInfo.fromJson(a))
           .toList(),
       tasksByType: Map<String, int>.from(j['tasks_by_type'] ?? {}),
-      timestamp: DateTime.tryParse(j['timestamp'] ?? '') ?? DateTime.now(),
+      timestamp: DateTime.now(),
     );
   }
 

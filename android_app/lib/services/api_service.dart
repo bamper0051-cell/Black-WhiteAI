@@ -46,7 +46,7 @@ class ApiService {
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $adminToken',
+        'X-Admin-Token': adminToken,
       };
 
   Future<bool> _shouldUseDemo() async {
@@ -87,26 +87,23 @@ class ApiService {
   Future<bool> ping() async {
     if (await _shouldUseDemo()) return true;
     try {
-      final data = await _get('/api/health');
-      return data['status'] == 'ok';
+      // Try /ping first (simpler endpoint, no auth required)
+      final data = await http
+          .get(Uri.parse('$baseUrl/ping'))
+          .timeout(const Duration(seconds: 10));
+      if (data.statusCode == 200) {
+        final json = jsonDecode(data.body);
+        return json['ok'] == true || json['pong'] == true;
+      }
+      return false;
     } catch (_) {
       return false;
     }
   }
 
   Future<SystemStats> getStats() async {
-    final useDemo = await _shouldUseDemo();
-    if (!useDemo) {
-      try {
-        final data = await _get('/api/stats');
-        return SystemStats.fromJson(data);
-      } catch (_) {
-        if (!await ApiService.isDemoMode()) rethrow;
-      }
-    }
-
-    final agents = await getAgents();
-    return _demoStats(agents);
+    final data = await _get('/api/status');
+    return SystemStats.fromJson(data);
   }
 
   // ─── Tasks ────────────────────────────────────────────────────────────────
@@ -279,8 +276,27 @@ class ApiService {
       return _demoProviders();
     }
     try {
-      final data = await _get('/api/providers') as List;
-      return data.map((j) => LlmProvider.fromJson(j)).toList();
+      final data = await _get('/api/providers/status') as Map<String, dynamic>;
+      // Backend returns active/best provider info, not a list
+      // Return a synthetic list from the status response
+      final providers = <LlmProvider>[];
+      final activeLlm = data['active_llm'] as String?;
+      final bestLlm = data['best_llm'] as String?;
+      if (activeLlm != null) {
+        final modelsList = <String>[activeLlm];
+        if (bestLlm != null && bestLlm != activeLlm) {
+          modelsList.add(bestLlm);
+        }
+        providers.add(LlmProvider(
+          id: activeLlm,
+          name: activeLlm,
+          enabled: true,
+          isDefault: true,
+          models: modelsList,
+          currentModel: bestLlm ?? activeLlm,
+        ));
+      }
+      return providers;
     } catch (_) {
       if (await ApiService.isDemoMode()) {
         return _demoProviders();
@@ -300,16 +316,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getSystemInfo() async {
-    if (await _shouldUseDemo()) {
-      return {
-        'mode': 'demo',
-        'uptime': '42m',
-        'internet': true,
-        'telegram': 'connected',
-        'version': '1.0.0',
-      };
-    }
-    return await _get('/api/system') as Map<String, dynamic>;
+    return await _get('/api/sysinfo') as Map<String, dynamic>;
   }
 
   // ─── Logs ─────────────────────────────────────────────────────────────────
@@ -331,7 +338,7 @@ class ApiService {
 
   // ─── Docker Control ───────────────────────────────────────────────────────
 
-  /// Получает статус Docker-контейнера (GET /api/docker/status)
+  /// Получает статус Docker-контейнеров (GET /api/rc/docker)
   Future<DockerContainerStatus> getDockerStatus() async {
     if (await _shouldUseDemo()) {
       return _demoDockerStatus();
@@ -355,6 +362,9 @@ class ApiService {
     final data = await _post('/api/docker/exec', {'cmd': cmd});
     return data['output'] ?? data['result'] ?? '';
   }
+
+  /// Alias kept for backward compatibility with docker_screen
+  Future<String> runDockerCommand(String cmd) => runShellCommand(cmd);
 
   // ─── WebSocket Logs ───────────────────────────────────────────────────────
 
