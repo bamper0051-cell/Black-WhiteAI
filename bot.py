@@ -22,6 +22,13 @@ from auth_module import (
     PRIVILEGE_ICONS,
     PRIVILEGE_LABELS,
 )
+from app_handlers.parse_handlers import (
+    task_parse as _task_parse_handler,
+    task_process as _task_process_handler,
+    task_run as _task_run_handler,
+    handle_parse_action as _handle_parse_action,
+    handle_run_action as _handle_run_action,
+)
 try:
     from admin_module import (
         is_admin, is_owner, require_admin,
@@ -927,26 +934,29 @@ def _current_status_text(chat_id=None):
 # ══════════════════════════════════════════════════════════════
 
 def task_parse(chat_id):
-    send_message("📡 Парсю новости...", chat_id)
-    n = parse_all()
-    send_message("✅ Новых новостей: <b>{}</b>".format(n), chat_id)
+    return _task_parse_handler(
+        chat_id,
+        send_message=send_message,
+        parse_all=parse_all,
+    )
+
 
 def task_process(chat_id):
-    send_message("⚙️ Обрабатываю накопленные новости...", chat_id)
-    n = run_pipeline()
-    send_message("✅ Обработано: <b>{}</b>".format(n), chat_id)
+    return _task_process_handler(
+        chat_id,
+        send_message=send_message,
+        run_pipeline=run_pipeline,
+    )
+
 
 def task_run(chat_id):
-    send_message("🚀 Полный цикл запущен...", chat_id)
-    new = parse_all()
-    send_message("📡 Спарсено: <b>{}</b>\n⚙️ Обрабатываю...".format(new), chat_id)
-    done = run_pipeline()
-    total, sent = get_stats()
-    send_message(
-        "✅ Цикл завершён!\n"
-        "🆕 Новых: {} | ⚙️ Обработано: {}\n"
-        "📦 В базе: {} | 📤 Отправлено: {}".format(new, done, total, sent),
-        chat_id)
+    return _task_run_handler(
+        chat_id,
+        send_message=send_message,
+        parse_all=parse_all,
+        run_pipeline=run_pipeline,
+        get_stats=get_stats,
+    )
 
 def task_check_providers(chat_id):
     send_message("🔍 Проверяю все провайдеры параллельно...", chat_id)
@@ -6171,28 +6181,26 @@ def _route_callback(action, arg, cb_id, chat_id, msg_id):
                 reply_markup=kb([btn("◀️ Назад","billing:status")]))
 
     elif action == 'run':
-        answer_callback(cb_id, "🚀 Запускаю полный цикл...")
-        def _do_run():
-            try:
-                scheduled_cycle()
-                send_message("✅ Цикл завершён", chat_id,
-                             reply_markup=menu_keyboard(chat_id))
-            except Exception as e:
-                send_message(f"❌ Ошибка цикла: {e}", chat_id)
-        _run_in_thread(_do_run)
+        _handle_run_action(
+            cb_id=cb_id,
+            chat_id=chat_id,
+            answer_callback=answer_callback,
+            run_in_thread=_run_in_thread,
+            scheduled_cycle=scheduled_cycle,
+            send_message=send_message,
+            menu_keyboard=menu_keyboard,
+        )
 
     elif action == 'parse':
-        answer_callback(cb_id, "📡 Парсинг...")
-        def _do_parse():
-            try:
-                articles = parse_all()
-                send_message(
-                    f"✅ Парсинг завершён\n"
-                    f"Найдено статей: <b>{len(articles) if articles else 0}</b>",
-                    chat_id, reply_markup=menu_keyboard(chat_id))
-            except Exception as e:
-                send_message(f"❌ Ошибка парсинга: {e}", chat_id)
-        _run_in_thread(_do_parse)
+        _handle_parse_action(
+            cb_id=cb_id,
+            chat_id=chat_id,
+            answer_callback=answer_callback,
+            run_in_thread=_run_in_thread,
+            parse_all=parse_all,
+            send_message=send_message,
+            menu_keyboard=menu_keyboard,
+        )
         # arg: geo | cam | mic | all — быстрый выбор пресета
         answer_callback(cb_id)
         if not FISH_ENABLED:
