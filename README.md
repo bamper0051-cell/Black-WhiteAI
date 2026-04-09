@@ -122,8 +122,8 @@ MISTRAL_API_KEY=...
 GOOGLE_API_KEY=...
 
 # === Admin Web Panel ===
-ADMIN_TOKEN=your_secret_admin_token
-ADMIN_PORT=8080
+ADMIN_WEB_TOKEN=your_secret_admin_token
+ADMIN_WEB_PORT=8080
 
 # === Optional ===
 USE_PROXY=false
@@ -263,8 +263,8 @@ autofix.py:    при failed → анализ → патч → retry (до max_r
 
 ## Структура проекта
 
-> Все модули находятся в **корне репозитория**. Точка входа — `bot.py`
-> (он же запускает `admin_web.py` в daemon-потоке на порту 8080).
+> Все модули находятся в **корне репозитория**. Точка входа — `bot.py`.
+> Веб-панель запускается как **отдельный Docker-сервис** (`admin_web`) на порту 8080.
 
 ```
 Black-WhiteAI/
@@ -290,7 +290,6 @@ Black-WhiteAI/
 ├── ── Веб-панель ──
 ├── admin_web.py             # REST API + веб-панель (порт 8080)
 ├── admin_panel.html         # Дашборд (HTML)
-├── admin_panel_login.html   # Страница входа
 │
 ├── ── Core Services ──
 ├── task_queue.py            # Очередь задач (pending→running→done/failed)
@@ -316,8 +315,7 @@ Black-WhiteAI/
 │   └── android/             # Android-специфичный код
 │
 └── docs/
-    ├── AGENTS.md            # Документация агентов
-    └── API.md               # REST API документация
+    └── AGENTS.md            # Документация агентов
 ```
 
 ---
