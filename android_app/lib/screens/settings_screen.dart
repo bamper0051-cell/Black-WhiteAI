@@ -7,6 +7,7 @@ import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../widgets/neon_text_field.dart';
 import '../widgets/neon_card.dart';
+import '../services/api_service.dart';
 import 'setup_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _tokenCtrl = TextEditingController();
   bool _saving = false;
   bool _obscureToken = true;
+  bool _demoMode = false;
 
   @override
   void initState() {
@@ -33,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _urlCtrl.text = prefs.getString('base_url') ?? '';
       _tokenCtrl.text = prefs.getString('admin_token') ?? '';
+      _demoMode = prefs.getBool('demo_mode') ?? false;
     });
   }
 
@@ -45,6 +48,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('✅ Settings saved')),
+    );
+  }
+
+  Future<void> _setDemoMode(bool value) async {
+    await ApiService.setDemoMode(value);
+    if (!mounted) return;
+    setState(() => _demoMode = value);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(value
+            ? 'Demo mode enabled — offline data'
+            : 'Demo mode disabled'),
+      ),
     );
   }
 
@@ -104,6 +120,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: () =>
                           setState(() => _obscureToken = !_obscureToken),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const NeonText(
+                        'DEMO MODE',
+                        color: NeonColors.green,
+                        fontSize: 11,
+                        fontFamily: 'Orbitron',
+                        glowRadius: 4,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Работа без сервера',
+                        style: TextStyle(
+                          color: NeonColors.textSecondary,
+                          fontSize: 10,
+                          fontFamily: 'JetBrainsMono',
+                        ),
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: _demoMode,
+                        onChanged: _setDemoMode,
+                        activeColor: NeonColors.green,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   _saving

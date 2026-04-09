@@ -18,6 +18,8 @@ Flutter-приложение для управления BlackBugsAI с моби
 | Tasks | Управление очередью задач (создание, отмена, повтор) |
 | Agents | Карточки агентов с сетевой визуализацией |
 | Terminal | Live shell-терминал с историей команд |
+| Docker | Контроль контейнера, live-логи |
+| PRO Panel | Статус подключения, demo/offline, память команд |
 | Settings | Конфигурация подключения |
 
 ## Запуск
@@ -52,6 +54,7 @@ flutter build appbundle --release
 3. Введи URL: `http://<IP>:8080`
 4. Введи ADMIN_TOKEN из `.env`
 5. Нажми CONNECT
+6. Для офлайн-демо нажми `ЗАПУСТИТЬ ОФЛАЙН` на экране Setup или включи Demo Mode в настройках
 
 ## Архитектура
 
@@ -65,7 +68,9 @@ lib/
 ├── models/
 │   └── models.dart        # Task, AgentInfo, SystemStats, etc.
 ├── services/
-│   └── api_service.dart   # HTTP клиент для admin API
+│   ├── api_service.dart           # HTTP клиент для admin API
+│   ├── ssh_tunnel_service.dart    # Конфигурация GCP/Docker подключения
+│   └── command_memory_service.dart# Память команд терминала
 ├── screens/
 │   ├── splash_screen.dart
 │   ├── setup_screen.dart
@@ -74,6 +79,8 @@ lib/
 │   ├── tasks_screen.dart
 │   ├── agents_screen.dart
 │   ├── terminal_screen.dart
+│   ├── docker_screen.dart
+│   ├── pro_panel_screen.dart
 │   └── settings_screen.dart
 └── widgets/
     ├── neon_card.dart

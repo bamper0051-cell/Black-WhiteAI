@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
@@ -116,6 +117,8 @@ class _SetupScreenState extends State<SetupScreen> {
         return;
       }
 
+      await ApiService.setDemoMode(false);
+
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         NeonPageRoute(child: const MainShell()),
@@ -123,6 +126,29 @@ class _SetupScreenState extends State<SetupScreen> {
     } catch (e) {
       setState(() {
         _error = 'Ошибка подключения: $e';
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _useDemoMode() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('base_url');
+      await prefs.remove('admin_token');
+      await ApiService.setDemoMode(true);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        NeonPageRoute(child: const MainShell()),
+      );
+    } catch (e) {
+      setState(() {
+        _error = 'Не удалось включить офлайн режим: $e';
         _loading = false;
       });
     }
@@ -416,6 +442,65 @@ class _SetupScreenState extends State<SetupScreen> {
                       ],
                     ),
                   ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
+
+                  const SizedBox(height: 16),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: neonCardDecoration(
+                      glowColor: NeonColors.green,
+                      glowRadius: 10,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const NeonText(
+                          '> OFFLINE / DEMO MODE',
+                          color: NeonColors.green,
+                          fontSize: 11,
+                          fontFamily: 'Orbitron',
+                          glowRadius: 6,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Использовать приложение без ПК и сервера. Доступны агенты, терминал и визуализации с локальными данными.',
+                          style: TextStyle(
+                            color: NeonColors.textSecondary,
+                            fontSize: 11,
+                            fontFamily: 'JetBrainsMono',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _loading
+                            ? const Center(
+                                child: NeonLoadingIndicator(
+                                  size: 28,
+                                  label: 'ACTIVATING...',
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: _useDemoMode,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 12),
+                                  decoration: neonButtonDecoration(
+                                      color: NeonColors.green),
+                                  child: const Center(
+                                    child: NeonText(
+                                      'ЗАПУСТИТЬ ОФЛАЙН',
+                                      color: NeonColors.green,
+                                      fontSize: 11,
+                                      fontFamily: 'Orbitron',
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 700.ms, duration: 600.ms),
                 ],
               ),
             ),
@@ -554,4 +639,3 @@ class _NeonButtonState extends State<_NeonButton> {
     );
   }
 }
-
