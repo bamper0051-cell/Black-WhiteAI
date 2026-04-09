@@ -153,7 +153,11 @@ try:
         try:
             from agent_neo import warmup
             result = warmup()
-            print(f"  📚 NEO tools: {result['registered']} зарегистрировано", flush=True)
+            reg = int(result.get('registered', 0))
+            skip = int(result.get('skipped', 0))
+            fail = int(result.get('failed', 0))
+            total = reg + skip
+            print(f"  📚 NEO tools: {total} всего (new={reg}, skip={skip}, err={fail})", flush=True)
         except Exception as _we:
             print(f'  ⚠️ NEO warmup: {_we}', flush=True)
     import threading as _thr
@@ -178,7 +182,11 @@ try:
         import time as _t; _t.sleep(4)
         try:
             result = matrix_warmup()
-            print(f"  🟥 MATRIX tools: {result['registered']} зарегистрировано", flush=True)
+            reg = int(result.get('registered', 0))
+            skip = int(result.get('skipped', 0))
+            fail = int(result.get('failed', 0))
+            total = reg + skip
+            print(f"  🟥 MATRIX tools: {total} всего (new={reg}, skip={skip}, err={fail})", flush=True)
         except Exception as _we:
             print(f'  ⚠️ MATRIX warmup: {_we}', flush=True)
     _thr.Thread(target=_matrix_warmup, daemon=True, name='matrix-warmup').start()
