@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os as _os
 # PATCH v3: Fish module does NOT manage tunnels (admin_web.py is the only tunnel manager)
 # This prevents the fish/admin tunnel conflict
@@ -10,6 +11,8 @@ def _check_tunnel_allowed():
             "Use /api/tunnel/start in admin panel."
         )
 
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 """
 fish_bot_state.py — глобальный стейт фишинг-модуля.
 Хранит tunnel_process и tunnel_url, чтобы fish_web.py и bot.py

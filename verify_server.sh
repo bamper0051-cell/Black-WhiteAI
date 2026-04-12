@@ -41,11 +41,19 @@ fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "1. Checking Docker Container..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+<<<<<<< HEAD
 if docker ps | grep -q blackbugs-main; then
     echo -e "${GREEN}✓ Container 'blackbugs-main' is running${NC}"
     docker ps | grep blackbugs-main | awk '{print "  Status: " $7 " ago"}'
 else
     echo -e "${RED}✗ Container 'blackbugs-main' is not running${NC}"
+=======
+if docker ps | grep -q automuvie; then
+    echo -e "${GREEN}✓ Container 'automuvie' is running${NC}"
+    docker ps | grep automuvie | awk '{print "  Status: " $7 " ago"}'
+else
+    echo -e "${RED}✗ Container 'automuvie' is not running${NC}"
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     echo "  Start it with: docker-compose up -d"
     exit 1
 fi

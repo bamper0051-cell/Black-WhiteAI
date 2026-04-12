@@ -69,17 +69,29 @@ def get_provider_model(role: str) -> tuple[str, str]:
 
 
 def call_llm_for(role: str, prompt: str, system: str = "",
+<<<<<<< HEAD
                  max_tokens: int = 4000, temperature: float = 0.2) -> str:   # FIX: temperature
+=======
+                 max_tokens: int = 4000) -> str:
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     """Call LLM using the provider/model assigned to this agent role."""
     provider, model = get_provider_model(role)
     try:
         from llm_client import _call_provider
+<<<<<<< HEAD
         return _call_provider(provider, prompt, system, max_tokens, model=model,
                               temperature=temperature)
     except Exception:
         # Fallback to global call_llm
         from llm_client import call_llm
         return call_llm(prompt, system, max_tokens, temperature=temperature)
+=======
+        return _call_provider(provider, prompt, system, max_tokens, model=model)
+    except Exception:
+        # Fallback to global call_llm
+        from llm_client import call_llm
+        return call_llm(prompt, system, max_tokens)
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
 
 def get_llm_for(role: str) -> Callable[[str, str], str]:

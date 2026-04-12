@@ -1,0 +1,63 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Flutter APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: 📥 Клонирование репозитория
+        uses: actions/checkout@de0fac2e5ce4786f42d4d7c9e14af13c83bf9212  # v6.0.2
+
+      - name: ☕ Настройка Java (JDK 17)
+        uses: actions/setup-java@be666c2f9e4024b35fe9eb2a56b5d6893ece8d13  # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐦 Установка Flutter
+        run: |
+          git clone --depth 1 --branch 3.19.6 https://github.com/flutter/flutter.git $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
+
+      - name: 🔧 Генерация local.properties
+        run: |
+          echo "flutter.sdk=$HOME/flutter" > android_app/android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android_app/android/local.properties
+
+      - name: 📦 Получение зависимостей Flutter
+        working-directory: android_app
+        run: flutter pub get
+
+      - name: 🔍 Анализ кода
+        working-directory: android_app
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: 🛠️ Сборка Android APK (debug)
+        working-directory: android_app
+        run: flutter build apk --debug --verbose
+
+      - name: 🛠️ Сборка Android APK (release)
+        working-directory: android_app
+        run: flutter build apk --release --no-shrink || true
+
+      - name: 📤 Загрузка Debug APK
+        uses: actions/upload-artifact@bbbca2dd87ba6bfe12b05c2f3404c5e21ef7c1f6  # v7
+        with:
+          name: BlackBugsAI-debug
+          path: android_app/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
+
+      - name: 📤 Загрузка Release APK
+        uses: actions/upload-artifact@bbbca2dd87ba6bfe12b05c2f3404c5e21ef7c1f6  # v7
+        with:
+          name: BlackBugsAI-release
+          path: android_app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: warn

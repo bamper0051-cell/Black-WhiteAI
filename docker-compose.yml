@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # BlackBugsAI — Docker Compose v3.0 (PRODUCTION)
 # 
@@ -137,3 +138,139 @@ volumes:
   blackbugs-neo:     {name: blackbugs-neo}
   blackbugs-fish:    {name: blackbugs-fish}
   blackbugs-logs:    {name: blackbugs-logs}
+=======
+services:
+  bot:
+    build: .
+    container_name: automuvie
+    restart: unless-stopped
+    stop_grace_period: 15s
+    ports:
+      - "5000:5000"
+      # Port 8080 is handled by admin_web service below
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
+      - ADMIN_WEB_PORT=8081  # internal only, not exposed
+      - AUTO_TUNNEL=${AUTO_TUNNEL:-0}  # установи 1 для авто-запуска cloudflared
+    volumes:
+      # ── Конфиг и базы данных ──────────────────────────────────────────────
+      - ./.env:/app/.env
+      - ./auth.db:/app/auth.db
+      - ./automuvie.db:/app/automuvie.db
+      - ./sessions.db:/app/sessions.db
+
+      # ── Данные агентов (персистентные) ───────────────────────────────────
+      - ./agent_projects:/app/agent_projects
+      - ./artifacts:/app/artifacts
+      - ./created_bots:/app/created_bots
+      - ./neo_workspace:/app/neo_workspace
+      - ./matrix_workspace:/app/matrix_workspace
+
+      # ── Fish/Phishing (если используется) ───────────────────────────────
+      - ./fish_uploads:/app/fish_uploads
+      - ./fish_pages:/app/fish_pages
+      - ./fish_logs:/app/fish_logs
+
+      # ── Код — монтируем напрямую (изменения без пересборки) ──────────────
+      # Ядро
+      - ./bot.py:/app/bot.py
+      - ./config.py:/app/config.py
+      - ./telegram_client.py:/app/telegram_client.py
+      - ./llm_client.py:/app/llm_client.py
+      - ./database.py:/app/database.py
+      - ./task_queue.py:/app/task_queue.py
+      - ./structured_logger.py:/app/structured_logger.py
+      - ./billing.py:/app/billing.py
+      - ./roles.py:/app/roles.py
+      - ./auth_module.py:/app/auth_module.py
+      - ./user_settings.py:/app/user_settings.py
+      - ./tts_engine.py:/app/tts_engine.py
+
+      # Агент-кодер
+      - ./chat_agent.py:/app/chat_agent.py
+      - ./agent_session.py:/app/agent_session.py
+      - ./agent_tools_registry.py:/app/agent_tools_registry.py
+
+      # Агент-core (для чата и 0051)
+      - ./agent_core.py:/app/agent_core.py
+      - ./agent_executor.py:/app/agent_executor.py
+      - ./agent_planner.py:/app/agent_planner.py
+      - ./agent_memory.py:/app/agent_memory.py
+      - ./agent_roles.py:/app/agent_roles.py
+
+      # AGENT NEO
+      - ./agent_neo.py:/app/agent_neo.py
+      - ./neo_tool_library.py:/app/neo_tool_library.py
+
+      # AGENT MATRIX
+      - ./agent_matrix.py:/app/agent_matrix.py
+
+      # Admin
+      - ./admin_module.py:/app/admin_module.py
+      - ./admin_web.py:/app/admin_web.py
+      - ./admin_panel.html:/app/admin_panel.html
+
+      # Вспомогательные
+      - ./bot_tools.py:/app/bot_tools.py
+      - ./file_agent.py:/app/file_agent.py
+      - ./fish_bot_state.py:/app/fish_bot_state.py
+      - ./backup.py:/app/backup.py
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  admin_web:
+    build: .
+    container_name: admin-web
+    restart: unless-stopped
+    stop_grace_period: 10s
+    ports:
+      - "8080:8080"
+    entrypoint: ["python", "admin_web.py"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
+      - ADMIN_WEB_PORT=8080
+    volumes:
+      - ./.env:/app/.env
+      - ./auth.db:/app/auth.db
+      - ./automuvie.db:/app/automuvie.db
+      - ./sessions.db:/app/sessions.db
+      - ./agent_projects:/app/agent_projects
+      - ./artifacts:/app/artifacts
+      # Admin files
+      - ./admin_web.py:/app/admin_web.py
+      - ./admin_module.py:/app/admin_module.py
+      - ./admin_panel.html:/app/admin_panel.html
+      - ./config.py:/app/config.py
+      - ./database.py:/app/database.py
+      - ./structured_logger.py:/app/structured_logger.py
+      - ./billing.py:/app/billing.py
+      - ./bot.py:/app/bot.py
+      - ./roles.py:/app/roles.py
+      - ./auth_module.py:/app/auth_module.py
+      - ./task_queue.py:/app/task_queue.py
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999

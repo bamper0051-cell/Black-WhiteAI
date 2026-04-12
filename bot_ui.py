@@ -6,7 +6,11 @@ import os, sys, re, json, time, random, threading, subprocess, shutil
 import config
 from telegram_client import (
     send_message, edit_message, answer_callback, send_document,
+<<<<<<< HEAD
     delete_webhook,
+=======
+    delete_message, delete_webhook,
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 )
 try:
     from agent_roles import get_role, has_perm, perm_error, get_user_limits
@@ -16,7 +20,11 @@ except ImportError:
     def get_role(cid): return 'user'
     def has_perm(cid, p): return True
     def perm_error(p, cid): return "🚫 Нет доступа"
+<<<<<<< HEAD
 from roles import role_icon, role_label
+=======
+from roles import norm_role, role_icon, role_label
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
 def kb(*rows):
     """Собирает InlineKeyboardMarkup из рядов кнопок."""
@@ -263,6 +271,7 @@ def agent_keyboard(chat_id=None):
         rows.append([btn("🧩 Кодер 2", "agent_code2_start"), btn("🛠 Кодер 3", "agent_code3_start")])
         rows.append([btn("🎬 YouTube", "agent_youtube_start")])
 
+<<<<<<< HEAD
     # ── Новые агенты ──────────────────────────────────────────────────────────
     # Проверяем привилегии для owner/god-агентов
     show_neo = False
@@ -280,6 +289,8 @@ def agent_keyboard(chat_id=None):
         rows.append([btn("🟣 Morpheus", "agent_morpheus_start")])
     # ─────────────────────────────────────────────────────────────────────────
 
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     rows.append([btn("📁 Файловый менеджер", "fm:open:~"), btn("🔧 Инструменты", "agent_tools_menu")])
     rows.append([btn("ℹ️ Как пользоваться", "agent_help")])
     rows.append([back_btn()])
@@ -1016,4 +1027,7 @@ def _show_quick_provider(chat_id):
     )
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999

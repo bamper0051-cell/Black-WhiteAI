@@ -624,7 +624,11 @@ def generate_tool(
             continue
 
         # Sandbox test — timeout increases with attempts
+<<<<<<< HEAD
         sandbox_timeout = 60 + attempt * 40  # 100s→140s→...→340s for pip installs
+=======
+        sandbox_timeout = 20 + attempt * 10  # 30s → 40s → ... → 90s
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         status(f"  🧪 Тестирую в sandbox (timeout={sandbox_timeout}s)...")
         ok, output, files = sandbox_run(code, example_inputs, timeout=sandbox_timeout)
 
@@ -1052,6 +1056,17 @@ def run_neo(
             on_status(msg)
 
     status("🧠 NEO анализирует задачу...")
+<<<<<<< HEAD
+=======
+    # Skill evolution: suggest tools from past success
+    try:
+        from agent_memory import AgentMemory
+        _mem = AgentMemory(chat_id)
+        _ctx = _mem.build_context(task)
+        _sug = _mem.learning.suggest_tools(task)
+        if _sug: status(f"  💡 Из опыта: {_sug[:3]}")
+    except Exception: pass
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
     # ── Step 1: Plan ──────────────────────────────────────────────────────────
     plan = plan_task(task, chat_id, attached_files)
@@ -1179,6 +1194,15 @@ def run_neo(
             if ok and output:
                 final_answer = output
             status(f"  {'✅' if ok else '⚠️'} {output[:60]}")
+<<<<<<< HEAD
+=======
+            # Learning loop
+            try:
+                from agent_memory import AgentLearning
+                if ok: AgentLearning().record_success(task[:50], [tool_name])
+                else:  AgentLearning().record_fail(task[:50], [tool_name])
+            except Exception: pass
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
         except Exception as exc:
             step_log["error"] = str(exc)[:300]

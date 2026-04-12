@@ -142,6 +142,13 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--acc)}
+<<<<<<< HEAD
+=======
+
+.wf-node-item{padding:7px 10px;cursor:grab;font-size:11px;font-weight:500;border-radius:6px;margin:2px 6px;user-select:none}
+.wf-node-item:hover{opacity:.8}
+.wf-node-item:active{cursor:grabbing}
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 </style>
 </head>
 <body>
@@ -165,6 +172,7 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
   <div class="sb-nav"     onclick="nav('smith',this)"><span class="ic">🕵️</span> АГЕНТ_СМИТ</div>
   <div class="sb-nav"     onclick="nav('neo',this)"><span class="ic">🟢</span> AGENT NEO</div>
   <div class="sb-nav"     onclick="nav('matrix',this)"><span class="ic">🟥</span> AGENT MATRIX</div>
+<<<<<<< HEAD
   <div class="sb-nav"     onclick="nav('anderson',this)"><span class="ic">🔍</span> MR. ANDERSON</div>
   <div class="sb-nav"     onclick="nav('pythia',this)"><span class="ic">💻</span> AGENT PYTHIA</div>
   <div class="sb-nav"     onclick="nav('tanker',this)"><span class="ic">🛡</span> AGENT TANKER</div>
@@ -177,12 +185,27 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
   <div class="sb-nav"     onclick="nav('logs',this)"><span class="ic">📋</span> Логи</div>
   <div class="sb-nav"     onclick="nav('shell',this)"><span class="ic">💻</span> Shell</div>
   <div class="sb-nav"     onclick="nav('sys',this)"><span class="ic">🖥</span> Система</div>
+=======
+  <div class="sb-nav"     onclick="nav('tools',this)"><span class="ic">🔧</span> Инструменты</div>
+  <div class="sb-nav"     onclick="nav('tasks',this)"><span class="ic">📋</span> Задачи<span class="badge" id="bg-t">0</span></div><div class="sb-sec">AI Brain</div>
+  <div class="sb-nav"     onclick="nav('learning',this)"><span class="ic">🧠</span> Learning Loop</div>
+  <div class="sb-nav"     onclick="nav('skills',this)"><span class="ic">⚡</span> Skill Evolution</div>
+  <div class="sb-nav"     onclick="nav('workflow',this)"><span class="ic">⬡</span> Workflow (n8n)</div>
+  <div class="sb-nav"     onclick="nav('marketplace',this)"><span class="ic">🛒</span> Marketplace</div>
+  <div class="sb-nav"     onclick="nav('memory',this)"><span class="ic">💾</span> Память агентов</div>
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
   <div class="sb-sec">Настройки</div>
   <div class="sb-nav"     onclick="nav('cfg',this)"><span class="ic">⚙️</span> Конфиг</div>
   <div class="sb-nav"     onclick="nav('media',this)"><span class="ic">🎨</span> Медиа</div>
   <div class="sb-nav"     onclick="nav('files',this)"><span class="ic">📁</span> Файлы</div>
+<<<<<<< HEAD
   <div class="sb-nav"     onclick="nav('access',this)"><span class="ic">🌐</span> Доступ / Тоннель</div>
+=======
+  <div class="sb-nav"     onclick="nav('models',this)"><span class="ic">🤖</span> Модели / LLM</div>
+  <div class="sb-nav"     onclick="nav('billing',this)"><span class="ic">💳</span> Биллинг</div>
+  <div class="sb-nav"     onclick="nav('backup',this)"><span class="ic">🗄</span> Бэкап</div>
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
   <div class="sb-bot" id="sbot">—</div>
 </nav>
@@ -729,6 +752,7 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- ══ AGENT ANDERSON ══ -->
   <div class="page" id="pg-anderson">
     <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🔍 MR. ANDERSON</h2>
@@ -861,6 +885,177 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
     </div>
   </div>
 
+=======
+
+  <!-- ══ LEARNING LOOP ══ -->
+  <div class="page" id="pg-learning">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🧠 Learning Loop</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Агенты учатся на каждом выполнении — записывают успехи и неудачи</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Паттерны успеха</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn bo bs" onclick="loadLearning()">↻</button>
+          <button class="btn bd bs" onclick="clearLearning()">🗑 Очистить</button>
+        </div>
+      </div>
+      <div id="learning-table" class="cb"><div style="padding:12px;color:var(--m)">Загрузка...</div></div>
+    </div>
+    <div class="card">
+      <div class="ch">🔮 Предсказание инструментов</div>
+      <div class="cb">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="predict-task" placeholder="Введи задачу..." style="flex:1">
+          <button class="btn bp bs" onclick="predictTools()">Предсказать</button>
+        </div>
+        <div id="predict-result" style="font-size:12px;color:var(--m)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SKILL EVOLUTION ══ -->
+  <div class="page" id="pg-skills">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">⚡ Skill Evolution</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Эволюция навыков агентов на основе накопленного опыта</div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Навыки агентов</span>
+        <button class="btn bo bs" onclick="loadSkills()">↻</button>
+      </div>
+      <div id="skills-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding:12px"></div>
+    </div>
+  </div>
+
+  <!-- ══ WORKFLOW (n8n-style) ══ -->
+  <div class="page" id="pg-workflow" style="display:flex;flex-direction:column;height:calc(100vh - 120px)">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0 8px;flex-shrink:0">
+      <h2 style="font-size:15px;font-weight:600">⬡ Workflow Builder</h2>
+      <span style="font-size:11px;color:var(--m)">Перетаскивай блоки · Соединяй линиями · Запускай</span>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn bo bs" onclick="wfAutoLayout()">⊞ Авто</button>
+        <button class="btn bo bs" onclick="wfClear()">🗑</button>
+        <button class="btn bo bs" onclick="wfSave()">💾 Сохранить</button>
+        <button class="btn bo bs" onclick="showShareWorkflow()">📤 Поделиться</button>
+        <button class="btn bp bs" onclick="wfRun()">▶ Запустить</button>
+      </div>
+    </div>
+    <div style="display:flex;flex:1;gap:0;overflow:hidden;border:0.5px solid var(--bdr);border-radius:10px">
+      <!-- Node palette -->
+      <div style="width:160px;background:var(--bg2);border-right:0.5px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0">
+        <div style="padding:8px 10px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px">Агенты</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'neo')" style="background:#EAF3DE">🟢 AGENT NEO</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'matrix')" style="background:#FCEBEB">🟥 AGENT MATRIX</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'smith')" style="background:#FAEEDA">🕵️ АГЕНТ СМИТ</div>
+        <div style="padding:8px 10px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px">Инструменты</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'code')" style="background:#EEEDFE">✦ Python Eval</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'github')" style="background:#E6F1FB">⬡ GitHub</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'osint')" style="background:#FBEAF0">◎ OSINT</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'webhook')" style="background:#E1F5EE">⟳ Webhook</div>
+        <div style="padding:8px 10px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px">Управление</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'trigger')">⚡ Trigger</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'condition')">◈ Condition</div>
+        <div class="wf-node-item" draggable="true" ondragstart="wfDragStart(event,'output')">→ Output</div>
+      </div>
+      <!-- Canvas -->
+      <div id="wf-canvas-wrap" style="flex:1;position:relative;overflow:hidden;background:var(--bg3)" ondrop="wfDrop(event)" ondragover="event.preventDefault()">
+        <canvas id="wf-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+        <div id="wf-exec-overlay" style="display:none;position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:var(--bg1);border:0.5px solid var(--bdr);border-radius:10px;padding:10px 16px;font-size:12px;min-width:280px;text-align:center"></div>
+        <div style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:5px">
+          <button onclick="wfZoom(1.1)" style="width:28px;height:28px;border-radius:6px;border:0.5px solid var(--bdr);background:var(--bg1);cursor:pointer">+</button>
+          <button onclick="wfZoom(.9)" style="width:28px;height:28px;border-radius:6px;border:0.5px solid var(--bdr);background:var(--bg1);cursor:pointer">−</button>
+          <button onclick="wfResetView()" style="width:28px;height:28px;border-radius:6px;border:0.5px solid var(--bdr);background:var(--bg1);cursor:pointer">⊙</button>
+        </div>
+      </div>
+      <!-- Properties panel -->
+      <div id="wf-props" style="width:200px;background:var(--bg2);border-left:0.5px solid var(--bdr);padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <div style="font-size:11px;font-weight:500">Свойства</div>
+        <div id="wf-props-content" style="font-size:11px;color:var(--m)">Выбери ноду</div>
+      </div>
+    </div>
+    <div id="wf-status" style="padding:4px 0;font-size:11px;color:var(--m);flex-shrink:0"></div>
+  </div>
+
+  <!-- ══ MARKETPLACE ══ -->
+  <div class="page" id="pg-marketplace">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🛒 Pipeline Marketplace</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Делись готовыми workflow с другими пользователями</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Доступные пайплайны</span>
+        <button class="btn bo bs" onclick="loadMarketplace()">↻</button>
+      </div>
+      <div id="mp-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;padding:12px"></div>
+    </div>
+  </div>
+
+  <!-- ══ MEMORY ══ -->
+  <div class="page" id="pg-memory">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">💾 Память агентов</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">История задач · Что агенты знают о пользователях</div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>История задач</span>
+        <button class="btn bo bs" onclick="loadMemory()">↻</button>
+      </div>
+      <div id="memory-table" class="cb"><div style="padding:12px;color:var(--m)">Загрузка...</div></div>
+    </div>
+  </div>
+
+  <!-- ══ MODELS ══ -->
+  <div class="page" id="pg-models">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🤖 Модели / LLM</h2>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="card">
+        <div class="ch" style="display:flex;justify-content:space-between">
+          <span>Активные провайдеры</span>
+          <button class="btn bo bs" onclick="loadProviders()">↻</button>
+        </div>
+        <div id="providers-info" class="cb" style="font-size:12px;color:var(--m)">Загрузка...</div>
+      </div>
+      <div class="card">
+        <div class="ch" style="display:flex;justify-content:space-between">
+          <span>Доступные модели</span>
+          <button class="btn bp bs" onclick="discoverModels()">🔍 Сканировать</button>
+        </div>
+        <div id="models-list" class="cb" style="font-size:11px;max-height:200px;overflow-y:auto;color:var(--m)">Нажми Сканировать</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BILLING ══ -->
+  <div class="page" id="pg-billing">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">💳 Биллинг</h2>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Кредиты пользователей</span>
+        <button class="btn bo bs" onclick="loadBilling()">↻</button>
+      </div>
+      <div id="billing-table" class="cb"><div style="padding:12px;color:var(--m)">Загрузка...</div></div>
+    </div>
+  </div>
+
+  <!-- ══ BACKUP ══ -->
+  <div class="page" id="pg-backup">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🗄 Резервное копирование</h2>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Создать бэкап</div>
+      <div class="cb">
+        <div style="font-size:12px;color:var(--m);margin-bottom:10px">Полный архив всех файлов проекта (без баз данных)</div>
+        <button class="btn bp" onclick="createBackup()" id="backup-btn">🗄 Создать архив</button>
+        <div id="backup-result" style="margin-top:8px;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">Обновление зависимостей</div>
+      <div class="cb">
+        <button class="btn bo bs" onclick="checkUpdates()">🔍 Проверить обновления</button>
+        <div id="update-result" style="margin-top:8px;font-size:11px;color:var(--m)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ДОСТУП / ТОННЕЛЬ ══ -->
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   <div class="page" id="pg-access">
     <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🌐 Удалённый доступ</h2>
     <div style="font-size:11px;color:var(--m);margin-bottom:14px">Cloudflare Tunnel · Bore · ngrok · Google Cloud</div>
@@ -1005,12 +1200,17 @@ docker compose up -d</code>
 <script>
 'use strict';
 // ── State ────────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 let B = localStorage.getItem('bb_url') || ((location.protocol.startsWith('http')) ? location.origin : 'http://localhost:8080');
+=======
+let B = localStorage.getItem('bb_url')||'http://localhost:8080';
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 let T = localStorage.getItem('bb_tok')||'';
 let _U = [], _Tools = [], _liveInt = null, _mUid = null, _smT = null, _mpTab = 'slideshow';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 addEventListener('load', () => {
+<<<<<<< HEAD
   const qs = new URLSearchParams(location.search);
   const qBase = (qs.get('base') || '').trim();
   const qTok  = (qs.get('token') || '').trim();
@@ -1020,6 +1220,10 @@ addEventListener('load', () => {
   document.getElementById('ui-tok').value = T;
   if (qBase) localStorage.setItem('bb_url', B);
   if (qTok)  localStorage.setItem('bb_tok', T);
+=======
+  document.getElementById('ui-url').value = B;
+  document.getElementById('ui-tok').value = T;
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   buildShellCmds();
   buildSmithTemplates();
   const pg = localStorage.getItem('bb_pg')||'dash';
@@ -1040,6 +1244,7 @@ function nav(pg, el) {
   ({dash:loadDash, users:loadUsers, tools:loadTools, tasks:loadTasks,
     procs:loadProcs, logs:loadLogs, sys:loadSys, cfg:loadCfg,
     files:loadFiles,
+<<<<<<< HEAD
     neo:      () => { loadNeoTools(); },
     matrix:   () => { loadMatrixTools(); },
     anderson: () => {},
@@ -1055,6 +1260,19 @@ function nav(pg, el) {
     billing:     () => loadBilling(),
     access:      () => loadTunnelStatus(),
     backup:      () => {},
+=======
+    neo:         () => { loadNeoTools(); },
+    matrix:      () => { loadMatrixTools(); },
+    learning:    () => loadLearning(),
+    skills:      () => loadSkills(),
+    memory:      () => loadMemory(),
+    models:      () => loadProviders(),
+    billing:     () => loadBilling(),
+    marketplace: () => loadMarketplace(),
+    access:      () => loadTunnelStatus(),
+    backup:      () => {},
+    workflow:    () => { if (!wfCvs) setTimeout(wfInit, 80); else setTimeout(wfResize, 50); },
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   })[pg]?.();
 }
 
@@ -1067,7 +1285,11 @@ async function api(method, path, body) {
       method, headers:{'Content-Type':'application/json','X-Admin-Token':T},
       body: body ? JSON.stringify(body) : undefined
     });
+<<<<<<< HEAD
     if (!r.ok) { const t = await r.text(); const msg = (r.status===401) ? 'Неверный токен или токен не задан' : `HTTP ${r.status}: ${t.slice(0,100)}`; return {ok:false, error:msg}; }
+=======
+    if (!r.ok) { const t = await r.text(); return {ok:false, error:`HTTP ${r.status}: ${t.slice(0,100)}`}; }
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     return await r.json();
   } catch(e) { return {ok:false, error:String(e)}; }
 }
@@ -1078,7 +1300,10 @@ async function connect() {
   localStorage.setItem('bb_url', B);
   localStorage.setItem('bb_tok', T);
   upd_dot('warn', 'Подключение...');
+<<<<<<< HEAD
   if (!T) toast('⚠️ Вставь ADMIN_WEB_TOKEN или открой /panel?token=...','warn');
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   const d = await api('GET', '/api/status');
   if (d.ok) {
     upd_dot('ok', d.version||'Online');
@@ -2090,6 +2315,7 @@ cloudflared tunnel --url http://localhost:8080`;
   navigator.clipboard.writeText(text).then(() => toast('Скопировано!','ok'));
 }
 
+<<<<<<< HEAD
 // ── Generic Agent Runner (Anderson / Pythia / Tanker / Operator) ─────────────
 async function runGenericAgent(agent, taskId, outId, badgeId, modeId) {
   const task = document.getElementById(taskId)?.value.trim();
@@ -2158,6 +2384,461 @@ const _origNav = window._navHooked ? nav : null;
   window._navHooked = true;
 })();
 
+=======
+
+// ── Learning Loop ─────────────────────────────────────────────────────────────
+async function loadLearning() {
+  const el = document.getElementById('learning-table');
+  el.innerHTML = '<div style="padding:8px;color:var(--m)">Загрузка...</div>';
+  const d = await api('GET', '/api/learning/stats');
+  if (!d.ok || !d.patterns?.length) {
+    el.innerHTML = '<div style="padding:8px;color:var(--m)">Данных пока нет — агенты ещё учатся</div>';
+    return;
+  }
+  el.innerHTML = '<table class="tbl"><tr><th>Паттерн</th><th>Инструменты</th><th>✅</th><th>❌</th><th>%</th></tr>' +
+    d.patterns.map(p => {
+      let tools = []; try { tools = JSON.parse(p.tool_sequence); } catch(e) { tools = [p.tool_sequence]; }
+      const total = (p.success_count||0)+(p.fail_count||0);
+      const rate = total ? Math.round(p.success_count/total*100) : 0;
+      const col = rate>=80?'var(--g)':rate>=50?'#BA7517':'var(--r)';
+      return `<tr><td style="max-width:120px;font-size:10px">${esc(p.pattern)}</td>
+        <td style="font-size:10px">${tools.map(t=>`<code>${esc(t)}</code>`).join(' ')}</td>
+        <td style="color:var(--g)">${p.success_count}</td>
+        <td style="color:var(--r)">${p.fail_count||0}</td>
+        <td style="color:${col};font-weight:500">${rate}%</td></tr>`;
+    }).join('') + '</table>';
+}
+
+async function clearLearning() {
+  if (!confirm('Очистить данные обучения?')) return;
+  const d = await api('POST', '/api/learning/clear', {});
+  if (d.ok) { toast('Очищено','ok'); loadLearning(); }
+  else toast('Ошибка: '+d.error,'er');
+}
+
+async function predictTools() {
+  const task = document.getElementById('predict-task').value.trim();
+  if (!task) return;
+  const d = await api('POST', '/api/learning/suggest', {task});
+  const el = document.getElementById('predict-result');
+  if (d.ok && d.tools?.length) {
+    el.innerHTML = '💡 Рекомендуемые инструменты: ' + d.tools.map(t=>`<code>${esc(t)}</code>`).join(' → ');
+    el.style.color = 'var(--g)';
+  } else {
+    el.innerHTML = '🤔 Недостаточно данных для предсказания';
+    el.style.color = 'var(--m)';
+  }
+}
+
+// ── Skill Evolution ────────────────────────────────────────────────────────────
+async function loadSkills() {
+  const el = document.getElementById('skills-grid');
+  el.innerHTML = '<div style="color:var(--m)">Загрузка...</div>';
+  const d = await api('GET', '/api/skills/evolution');
+  if (!d.ok || !d.skills?.length) {
+    el.innerHTML = '<div style="color:var(--m);padding:12px">Навыков пока нет — запусти несколько задач</div>';
+    return;
+  }
+  const lvlColor = {expert:'var(--g)',trained:'#BA7517',learning:'var(--r)'};
+  const lvlEmoji = {expert:'⭐',trained:'📈',learning:'🌱'};
+  el.innerHTML = d.skills.map(s => `
+    <div style="background:var(--bg1);border:0.5px solid var(--bdr);border-radius:8px;padding:10px">
+      <div style="font-size:11px;font-weight:500;margin-bottom:4px">${lvlEmoji[s.level]||''} ${esc(s.pattern)}</div>
+      <div style="font-size:10px;color:var(--m);margin-bottom:6px">${s.tools.map(t=>`<code>${esc(t)}</code>`).join('→')}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;height:4px;background:var(--bg3);border-radius:2px">
+          <div style="width:${s.rate}%;height:100%;background:${lvlColor[s.level]||'var(--m)'};border-radius:2px;transition:width .4s"></div>
+        </div>
+        <span style="font-size:10px;color:${lvlColor[s.level]||'var(--m)'};font-weight:500">${s.rate}%</span>
+      </div>
+      <div style="font-size:10px;color:${lvlColor[s.level]};margin-top:3px">${s.level}</div>
+    </div>`).join('');
+}
+
+// ── Memory ─────────────────────────────────────────────────────────────────────
+async function loadMemory() {
+  const el = document.getElementById('memory-table');
+  el.innerHTML = '<div style="padding:8px;color:var(--m)">Загрузка...</div>';
+  const d = await api('GET', '/api/memory/users');
+  if (!d.ok || !d.history?.length) {
+    el.innerHTML = '<div style="padding:8px;color:var(--m)">История пуста</div>';
+    return;
+  }
+  el.innerHTML = '<table class="tbl"><tr><th>Пользователь</th><th>Задача</th><th>Статус</th><th>Время</th></tr>' +
+    d.history.map(h => {
+      const ts = h.created_at ? new Date(h.created_at*1000).toLocaleString('ru') : '';
+      const col = h.status==='done'?'var(--g)':'var(--r)';
+      return `<tr><td style="font-family:monospace;font-size:10px">${esc(String(h.user_id||'').slice(0,12))}</td>
+        <td style="font-size:10px;max-width:200px">${esc((h.task||'').slice(0,60))}</td>
+        <td style="color:${col};font-size:10px">${esc(h.status||'')}</td>
+        <td style="font-size:10px;color:var(--m)">${ts}</td></tr>`;
+    }).join('') + '</table>';
+}
+
+// ── Providers / Models ─────────────────────────────────────────────────────────
+async function loadProviders() {
+  const el = document.getElementById('providers-info');
+  const d = await api('GET', '/api/providers/status');
+  if (!d.ok) { el.innerHTML = '❌ ' + esc(d.error||''); return; }
+  el.innerHTML = [
+    d.active_llm   ? `<div>🤖 Active LLM: <code>${esc(String(d.active_llm))}</code></div>` : '',
+    d.best_llm     ? `<div>⭐ Best LLM: <code>${esc(String(d.best_llm))}</code></div>` : '',
+    d.active_image ? `<div>🎨 Image: <code>${esc(String(d.active_image))}</code></div>` : '',
+  ].filter(Boolean).join('') || '<div style="color:var(--m)">Нет активных провайдеров</div>';
+}
+
+async function discoverModels() {
+  const el = document.getElementById('models-list');
+  el.innerHTML = '⏳ Сканирование...';
+  const d = await api('GET', '/api/models/discover');
+  if (!d.ok) { el.innerHTML = '❌ ' + esc(d.error||''); return; }
+  const lines = [];
+  for (const [prov, models] of Object.entries(d.models||{})) {
+    if (Array.isArray(models) && models.length) {
+      lines.push(`<b>${esc(prov)}</b>: ${models.slice(0,5).map(m=>`<code>${esc(String(m))}</code>`).join(', ')}`);
+    }
+  }
+  el.innerHTML = lines.join('<br>') || '<div style="color:var(--m)">Нет данных</div>';
+  el.style.color = 'var(--tx)';
+}
+
+// ── Billing ────────────────────────────────────────────────────────────────────
+async function loadBilling() {
+  const el = document.getElementById('billing-table');
+  const d = await api('GET', '/api/billing/stats');
+  if (!d.ok || !d.billing?.length) {
+    el.innerHTML = '<div style="padding:8px;color:var(--m)">Нет данных</div>';
+    return;
+  }
+  el.innerHTML = '<table class="tbl"><tr><th>ID</th><th>Тариф</th><th>Кредиты</th></tr>' +
+    d.billing.map(b=>`<tr><td style="font-family:monospace;font-size:10px">${esc(String(b.user_id||'').slice(0,12))}</td>
+      <td><span class="badge ${b.plan==='pro'?'green':''}">  ${esc(b.plan||'free')}</span></td>
+      <td style="font-weight:500">${b.credits||0}</td></tr>`).join('') + '</table>';
+}
+
+// ── Backup ─────────────────────────────────────────────────────────────────────
+async function createBackup() {
+  const btn = document.getElementById('backup-btn');
+  const el  = document.getElementById('backup-result');
+  btn.textContent = '⏳ Создаю...';
+  btn.disabled = true;
+  const d = await api('POST', '/api/backup/create', {});
+  btn.textContent = '🗄 Создать архив';
+  btn.disabled = false;
+  if (d.ok) {
+    el.innerHTML = `✅ Создан: <code>${esc(d.path||'')}</code> (${esc(d.size_hr||'')})<br>
+      <a href="${B}/api/files/download?path=${encodeURIComponent(d.path||'')}&token=${T}" style="color:var(--acc)">⬇ Скачать</a>`;
+    el.style.color = 'var(--g)';
+  } else {
+    el.innerHTML = '❌ ' + esc(d.error||'Ошибка');
+    el.style.color = 'var(--r)';
+  }
+}
+
+async function checkUpdates() {
+  const el = document.getElementById('update-result');
+  el.innerHTML = '⏳ Проверяю...';
+  const d = await api('GET', '/api/updater/check');
+  if (d.ok) {
+    const lines = [];
+    if (d.bot?.version) lines.push('Бот v' + d.bot.version);
+    if (d.deps && typeof d.deps === 'object') {
+      const outdated = Object.entries(d.deps).filter(([,v])=>v?.outdated);
+      if (outdated.length) lines.push('Устаревших пакетов: ' + outdated.length);
+      else lines.push('✅ Все пакеты актуальны');
+    }
+    el.innerHTML = lines.join('<br>');
+    el.style.color = 'var(--g)';
+  } else {
+    el.innerHTML = 'Ошибка: ' + esc(d.error||'');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  WORKFLOW CANVAS (n8n-style)
+// ══════════════════════════════════════════════════════════════════════════════
+let wfNodes=[], wfConns=[], wfSelected=null, wfDragging=null, wfConnFrom=null;
+let wfScale=1, wfOffX=0, wfOffY=0, wfPanStart=null, wfPanOff=null;
+let wfMouseX=0, wfMouseY=0, wfDragType=null;
+let wfCvs=null, wfCtx=null;
+
+const WF_W=160, WF_H=64;
+const WF_COLORS={
+  neo:    {bg:'#EAF3DE',brd:'#639922',tx:'#27500A',icon:'🟢'},
+  matrix: {bg:'#FCEBEB',brd:'#E24B4A',tx:'#501313',icon:'🟥'},
+  smith:  {bg:'#FAEEDA',brd:'#BA7517',tx:'#412402',icon:'🕵️'},
+  code:   {bg:'#EEEDFE',brd:'#7F77DD',tx:'#26215C',icon:'✦'},
+  github: {bg:'#E6F1FB',brd:'#378ADD',tx:'#042C53',icon:'⬡'},
+  osint:  {bg:'#FBEAF0',brd:'#D4537E',tx:'#4B1528',icon:'◎'},
+  webhook:{bg:'#E1F5EE',brd:'#1D9E75',tx:'#04342C',icon:'⟳'},
+  trigger:{bg:'#F1EFE8',brd:'#888780',tx:'#2C2C2A',icon:'⚡'},
+  condition:{bg:'#FAEEDA',brd:'#BA7517',tx:'#412402',icon:'◈'},
+  output: {bg:'#E6F1FB',brd:'#378ADD',tx:'#042C53',icon:'→'},
+};
+const WF_LABELS={neo:'AGENT NEO',matrix:'AGENT MATRIX',smith:'АГЕНТ СМИТ',
+  code:'Python Eval',github:'GitHub',osint:'OSINT',webhook:'Webhook',
+  trigger:'Trigger',condition:'Condition',output:'Output'};
+
+function wfInit() {
+  wfCvs = document.getElementById('wf-canvas');
+  if (!wfCvs) return;
+  wfCtx = wfCvs.getContext('2d');
+  wfResize();
+  window.addEventListener('resize', wfResize);
+  wfCvs.addEventListener('mousedown', wfMouseDown);
+  wfCvs.addEventListener('mousemove', wfMouseMove);
+  wfCvs.addEventListener('mouseup', wfMouseUp);
+  wfCvs.addEventListener('wheel', wfWheel, {passive:false});
+  wfCvs.addEventListener('dblclick', wfDblClick);
+  wfCvs.addEventListener('contextmenu', wfContextMenu);
+  // Default nodes
+  const n1=wfAddNode('neo',80,80), n2=wfAddNode('osint',300,40), n3=wfAddNode('matrix',520,80);
+  wfConns.push({from:n1.id,to:n2.id},{from:n2.id,to:n3.id});
+  wfDraw();
+}
+
+function wfResize() {
+  if (!wfCvs) return;
+  const r = wfCvs.parentElement.getBoundingClientRect();
+  wfCvs.width=r.width; wfCvs.height=r.height; wfDraw();
+}
+
+function wfTC(x,y){return{x:(x-wfOffX)/wfScale,y:(y-wfOffY)/wfScale}}
+function wfTS(x,y){return{x:x*wfScale+wfOffX,y:y*wfScale+wfOffY}}
+function wfNodeAt(cx,cy){for(let i=wfNodes.length-1;i>=0;i--){const n=wfNodes[i];if(cx>=n.x&&cx<=n.x+WF_W&&cy>=n.y&&cy<=n.y+WF_H)return n;}return null}
+function wfPortOut(n){return{x:n.x+WF_W,y:n.y+WF_H/2}}
+function wfPortIn(n){return{x:n.x,y:n.y+WF_H/2}}
+
+function wfDraw() {
+  if (!wfCtx) return;
+  const W=wfCvs.width,H=wfCvs.height;
+  wfCtx.clearRect(0,0,W,H);
+  wfCtx.save();
+  wfCtx.translate(wfOffX,wfOffY);
+  wfCtx.scale(wfScale,wfScale);
+  // Grid
+  const gs=40,ox=(-wfOffX/wfScale)%gs,oy=(-wfOffY/wfScale)%gs;
+  wfCtx.strokeStyle='rgba(127,119,221,0.07)';wfCtx.lineWidth=0.5;
+  for(let x=ox-gs;x<W/wfScale+gs;x+=gs){wfCtx.beginPath();wfCtx.moveTo(x,0);wfCtx.lineTo(x,H/wfScale);wfCtx.stroke()}
+  for(let y=oy-gs;y<H/wfScale+gs;y+=gs){wfCtx.beginPath();wfCtx.moveTo(0,y);wfCtx.lineTo(W/wfScale,y);wfCtx.stroke()}
+  // Connections
+  wfConns.forEach(c=>{
+    const a=wfNodes.find(n=>n.id===c.from),b=wfNodes.find(n=>n.id===c.to);
+    if(!a||!b)return;
+    const p=wfPortOut(a),q=wfPortIn(b);
+    wfCtx.beginPath();wfCtx.moveTo(p.x,p.y);
+    wfCtx.bezierCurveTo(p.x+50,p.y,q.x-50,q.y,q.x,q.y);
+    const col = (a.status==='running'||b.status==='running') ? '#1D9E75' : 
+                (a.status==='done'&&b.status==='done') ? '#639922' : 'rgba(127,119,221,.5)';
+    wfCtx.strokeStyle=col; wfCtx.lineWidth=2; wfCtx.stroke();
+    // Arrow
+    wfCtx.fillStyle=col;wfCtx.beginPath();
+    wfCtx.moveTo(q.x,q.y);wfCtx.lineTo(q.x-8,q.y-4);wfCtx.lineTo(q.x-8,q.y+4);wfCtx.closePath();wfCtx.fill();
+  });
+  // Active connection line
+  if(wfConnFrom){
+    const p=wfPortOut(wfConnFrom),m=wfTC(wfMouseX,wfMouseY);
+    wfCtx.beginPath();wfCtx.moveTo(p.x,p.y);
+    wfCtx.bezierCurveTo(p.x+50,p.y,m.x-50,m.y,m.x,m.y);
+    wfCtx.strokeStyle='rgba(127,119,221,.4)';wfCtx.lineWidth=1.5;wfCtx.setLineDash([5,4]);wfCtx.stroke();wfCtx.setLineDash([]);
+  }
+  // Nodes
+  wfNodes.forEach(n=>{
+    const c=WF_COLORS[n.type]||{bg:'#F1EFE8',brd:'#888780',tx:'#2C2C2A',icon:'🔧'};
+    const sel=wfSelected===n.id;
+    // Glow for running
+    if(n.status==='running'){
+      wfCtx.shadowColor='#1D9E75';wfCtx.shadowBlur=12;
+    } else if(n.status==='done'){
+      wfCtx.shadowColor='#639922';wfCtx.shadowBlur=6;
+    }
+    wfCtx.beginPath();wfCtx.roundRect(n.x,n.y,WF_W,WF_H,8);
+    wfCtx.fillStyle=c.bg;wfCtx.fill();
+    wfCtx.shadowBlur=0;
+    wfCtx.strokeStyle=sel?c.brd:n.status==='running'?'#1D9E75':'rgba(0,0,0,.1)';
+    wfCtx.lineWidth=sel||n.status==='running'?2:.5;wfCtx.stroke();
+    // Left accent
+    wfCtx.fillStyle=c.brd;wfCtx.beginPath();wfCtx.roundRect(n.x,n.y,4,WF_H,[8,0,0,8]);wfCtx.fill();
+    // Icon
+    wfCtx.font='16px serif';wfCtx.textBaseline='middle';
+    wfCtx.fillText(c.icon||'🔧',n.x+12,n.y+WF_H/2);
+    // Label
+    wfCtx.font='500 11px var(--font-sans,system-ui)';wfCtx.fillStyle=c.tx;wfCtx.textBaseline='middle';
+    wfCtx.fillText((WF_LABELS[n.type]||n.label||n.type).slice(0,16),n.x+36,n.y+WF_H/2-7);
+    // Status/subtitle
+    const stCol=n.status==='done'?'#3B6D11':n.status==='running'?'#1D9E75':n.status==='error'?'#A32D2D':c.brd;
+    wfCtx.font='10px var(--font-sans,system-ui)';wfCtx.fillStyle=stCol;
+    wfCtx.fillText(n.statusText||n.status||'Ready',n.x+36,n.y+WF_H/2+8);
+    // Ports
+    [wfPortIn(n),wfPortOut(n)].forEach(p=>{
+      wfCtx.beginPath();wfCtx.arc(p.x,p.y,5,0,Math.PI*2);
+      wfCtx.fillStyle=sel?c.brd:'rgba(0,0,0,.2)';wfCtx.fill();
+    });
+    // Running spinner
+    if(n.status==='running'){
+      const t=Date.now()/400;
+      wfCtx.strokeStyle=c.brd;wfCtx.lineWidth=2;
+      wfCtx.beginPath();wfCtx.arc(n.x+WF_W-14,n.y+13,5,t,t+Math.PI*1.4);wfCtx.stroke();
+      requestAnimationFrame(wfDraw);
+    }
+  });
+  wfCtx.restore();
+  const st = document.getElementById('wf-status');
+  if(st) st.textContent = `Нод: ${wfNodes.length} · Связей: ${wfConns.length} · Масштаб: ${Math.round(wfScale*100)}%`;
+}
+
+function wfAddNode(type,x,y){
+  const n={id:Date.now()+'',type,x,y,label:WF_LABELS[type]||type,status:'idle',statusText:'Ready'};
+  wfNodes.push(n); wfDraw(); return n;
+}
+
+function wfMouseDown(e){
+  const r=wfCvs.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const c=wfTC(mx,my),n=wfNodeAt(c.x,c.y);
+  if(e.button===1||(!n&&e.button===0)){wfPanStart={x:e.clientX,y:e.clientY};wfPanOff={x:wfOffX,y:wfOffY};return}
+  if(n){
+    const op=wfPortOut(n),sp=wfTS(op.x,op.y);
+    if(Math.hypot(e.clientX-r.left-sp.x,e.clientY-r.top-sp.y)<10){wfConnFrom=n;return}
+    wfSelected=n.id;wfDragging={node:n,dx:c.x-n.x,dy:c.y-n.y};
+    // Show props
+    const pc=WF_COLORS[n.type]||{};
+    document.getElementById('wf-props-content').innerHTML=`
+      <div style="font-weight:500;margin-bottom:8px">${pc.icon||''} ${WF_LABELS[n.type]||n.type}</div>
+      <div style="margin-bottom:6px"><label style="display:block;color:var(--m);font-size:10px;margin-bottom:2px">Задача</label>
+        <textarea id="wf-task-${n.id}" rows="3" style="width:100%;font-size:11px;border:0.5px solid var(--bdr);border-radius:4px;padding:4px;background:var(--bg1);color:var(--tx)">${n.task||''}</textarea></div>
+      <button class="btn bo bs" style="font-size:10px;width:100%" onclick="wfSaveNodeTask('${n.id}')">Сохранить</button>
+      <button class="btn bd bs" style="font-size:10px;width:100%;margin-top:4px" onclick="wfDeleteNode('${n.id}')">Удалить</button>`;
+    wfDraw();
+  }
+}
+
+function wfSaveNodeTask(id){
+  const n=wfNodes.find(x=>x.id===id); if(!n) return;
+  n.task=document.getElementById('wf-task-'+id).value;
+  toast('Сохранено','ok');
+}
+function wfDeleteNode(id){
+  wfNodes=wfNodes.filter(n=>n.id!==id);
+  wfConns=wfConns.filter(c=>c.from!==id&&c.to!==id);
+  wfSelected=null; wfDraw();
+  document.getElementById('wf-props-content').innerHTML='Выбери ноду';
+}
+
+function wfMouseMove(e){
+  const r=wfCvs.getBoundingClientRect();
+  wfMouseX=e.clientX-r.left; wfMouseY=e.clientY-r.top;
+  if(wfPanStart){wfOffX=wfPanOff.x+(e.clientX-wfPanStart.x);wfOffY=wfPanOff.y+(e.clientY-wfPanStart.y);wfDraw();return}
+  if(wfConnFrom){wfDraw();return}
+  if(wfDragging){const c=wfTC(wfMouseX,wfMouseY);wfDragging.node.x=c.x-wfDragging.dx;wfDragging.node.y=c.y-wfDragging.dy;wfDraw()}
+}
+
+function wfMouseUp(e){
+  if(wfConnFrom){
+    const r=wfCvs.getBoundingClientRect(),c=wfTC(e.clientX-r.left,e.clientY-r.top),n=wfNodeAt(c.x,c.y);
+    if(n&&n.id!==wfConnFrom.id&&!wfConns.find(x=>x.from===wfConnFrom.id&&x.to===n.id))
+      wfConns.push({from:wfConnFrom.id,to:n.id});
+    wfConnFrom=null; wfDraw();
+  }
+  wfDragging=null; wfPanStart=null;
+}
+
+function wfWheel(e){
+  e.preventDefault();
+  const r=wfCvs.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,zf=e.deltaY<0?1.1:.9;
+  wfOffX=mx-(mx-wfOffX)*zf; wfOffY=my-(my-wfOffY)*zf;
+  wfScale=Math.max(.2,Math.min(3,wfScale*zf)); wfDraw();
+}
+
+function wfDblClick(e){
+  const r=wfCvs.getBoundingClientRect(),c=wfTC(e.clientX-r.left,e.clientY-r.top),n=wfNodeAt(c.x,c.y);
+  if(n){const t=prompt('Задача для '+WF_LABELS[n.type]+':',n.task||'');if(t!==null){n.task=t;wfDraw();}}
+}
+
+function wfContextMenu(e){
+  e.preventDefault();
+  const r=wfCvs.getBoundingClientRect(),c=wfTC(e.clientX-r.left,e.clientY-r.top),n=wfNodeAt(c.x,c.y);
+  if(n&&confirm('Удалить "'+WF_LABELS[n.type]+'"?')) wfDeleteNode(n.id);
+}
+
+function wfDragStart(e,type){wfDragType=type}
+function wfDrop(e){
+  e.preventDefault(); if(!wfDragType) return;
+  const r=e.currentTarget.getBoundingClientRect(),c=wfTC(e.clientX-r.left,e.clientY-r.top);
+  wfAddNode(wfDragType,c.x-WF_W/2,c.y-WF_H/2); wfDragType=null;
+}
+function wfZoom(f){wfScale=Math.max(.2,Math.min(3,wfScale*f));wfDraw()}
+function wfResetView(){wfScale=1;wfOffX=0;wfOffY=0;wfDraw()}
+function wfAutoLayout(){
+  const cols=3,pad=40,w=WF_W+pad,h=WF_H+pad;
+  wfNodes.forEach((n,i)=>{n.x=(i%cols)*w+60;n.y=Math.floor(i/cols)*h+60});wfDraw();
+}
+function wfClear(){if(confirm('Очистить холст?')){wfNodes=[];wfConns=[];wfDraw()}}
+function wfSave(){
+  localStorage.setItem('bb_workflow',JSON.stringify({nodes:wfNodes,conns:wfConns}));
+  toast('Workflow сохранён','ok');
+}
+
+async function wfRun() {
+  const tasks = wfNodes.filter(n=>n.task);
+  if(!tasks.length){toast('Добавь задачи нодам (двойной клик)','er');return}
+  const ov=document.getElementById('wf-exec-overlay');
+  ov.style.display='block'; ov.textContent='⏳ Запуск workflow...';
+  // Visual: set all to running
+  tasks.forEach(n=>{n.status='running';n.statusText='Running...'});wfDraw();
+  const d = await api('POST','/api/workflow/execute',{nodes:tasks,agent:'matrix'});
+  // Update statuses
+  (d.results||[]).forEach(r=>{
+    const n=wfNodes.find(x=>x.id===r.node||tasks.find(t=>t.id===x.id));
+    if(n){n.status=r.ok?'done':'error';n.statusText=r.ok?'Done ✓':'Error'}
+  });
+  if(d.ok) tasks.forEach(n=>{if(n.status==='running'){n.status='done';n.statusText='Done ✓'}});
+  wfDraw();
+  ov.textContent = d.ok?'✅ Выполнено!':'❌ '+esc(d.error||'Ошибка');
+  setTimeout(()=>ov.style.display='none',3000);
+}
+
+function showShareWorkflow(){
+  const name=prompt('Название пайплайна:'); if(!name) return;
+  const desc=prompt('Описание:',''); 
+  shareWorkflow(name,desc||'');
+}
+async function shareWorkflow(name,desc){
+  const d=await api('POST','/api/marketplace/share',{name,description:desc,nodes:wfNodes,author:'Admin'});
+  if(d.ok){toast('✅ Опубликован в Marketplace!','ok');loadMarketplace();}
+  else toast('❌ '+d.error,'er');
+}
+
+// ── Marketplace ────────────────────────────────────────────────────────────────
+async function loadMarketplace(){
+  const el=document.getElementById('mp-grid');
+  el.innerHTML='<div style="color:var(--m);padding:12px">Загрузка...</div>';
+  const d=await api('GET','/api/marketplace/pipelines');
+  if(!d.ok||!d.pipelines?.length){
+    el.innerHTML='<div style="color:var(--m);padding:12px;grid-column:1/-1">Пусто — поделись своим workflow!</div>';
+    return;
+  }
+  el.innerHTML=d.pipelines.map(p=>`
+    <div style="background:var(--bg1);border:0.5px solid var(--bdr);border-radius:10px;padding:12px">
+      <div style="font-weight:500;font-size:13px;margin-bottom:4px">${esc(p.name)}</div>
+      <div style="font-size:11px;color:var(--m);margin-bottom:8px">${esc(p.description||'')}</div>
+      <div style="font-size:10px;color:var(--m);margin-bottom:8px">👤 ${esc(p.author||'')} · 📅 ${esc(p.created||'')} · ▶ ${p.runs||0} запусков</div>
+      <div style="font-size:10px;margin-bottom:8px">${(p.nodes||[]).map(n=>`<code>${esc(n.type||n.label||'')}</code>`).join(' → ')}</div>
+      <button class="btn bp bs" style="font-size:10px;width:100%" onclick="importPipeline('${esc(p.id||'')}')">📥 Импортировать</button>
+    </div>`).join('');
+}
+
+async function importPipeline(id){
+  const d=await api('POST','/api/marketplace/import',{id});
+  if(!d.ok){toast('❌ '+d.error,'er');return}
+  if(d.pipeline?.nodes){
+    wfNodes=d.pipeline.nodes.map(n=>({...n,status:'idle',statusText:'Ready'}));
+    wfConns=[];
+    toast('✅ Импортировано! Переключись на Workflow','ok');
+  }
+}
+
+// ── Page nav hook (init canvas on first visit) ─────────────────────────────────
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 // ── Auto-refresh ──────────────────────────────────────────────────────────────
 setInterval(() => {
   const pg = localStorage.getItem('bb_pg') || 'dash';

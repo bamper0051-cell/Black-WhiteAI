@@ -1,4 +1,5 @@
 """
+<<<<<<< HEAD
 BlackBugsAI — Agent Executor (обновлённый)
 Выполняет план пошагово. Поддерживает генерацию инструментов, кэширование, возврат артефактов.
 """
@@ -15,6 +16,16 @@ from enum import Enum
 # Подключаем кэш
 import agent_tool_cache as cache
 
+=======
+BlackBugsAI — Agent Executor
+Выполняет Plan пошагово. Поддерживает зависимости между шагами и multi-agent.
+"""
+import time, threading
+from dataclasses import dataclass, field
+from typing import List, Dict, Callable, Optional, Any
+from enum import Enum
+
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 class StepStatus(str, Enum):
     PENDING  = "pending"
     RUNNING  = "running"
@@ -55,11 +66,18 @@ class ExecutionResult:
 
 
 AGENT_ROLES = {
+<<<<<<< HEAD
     'research':   'Ты агент-исследователь. Собираешь информацию и анализируешь.',
     'coder':      'Ты агент-разработчик. Пишешь код, исправляешь баги.',
     'video':      'Ты агент-видеопродюсер. Монтируешь видео, создаёшь контент.',
     'analysis':   'Ты агент-аналитик. Анализируешь данные, строишь отчёты.',
     'tool_builder':'Ты агент-сборщик инструментов. Генерируешь код, компилируешь, сохраняешь в кэш.',
+=======
+    'research':  'Ты агент-исследователь. Собираешь информацию и анализируешь.',
+    'coder':     'Ты агент-разработчик. Пишешь код, исправляешь баги.',
+    'video':     'Ты агент-видеопродюсер. Монтируешь видео, создаёшь контент.',
+    'analysis':  'Ты агент-аналитик. Анализируешь данные, строишь отчёты.',
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 }
 
 
@@ -73,17 +91,29 @@ class Executor:
 
     def execute_plan(self, plan, user_id: str = None,
                      chat_id: str = None) -> ExecutionResult:
+<<<<<<< HEAD
+=======
+        """Выполняет план пошагово."""
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         from agent_tools_registry import execute_tool
         t0 = time.time()
         step_results: List[StepResult] = []
         all_artifacts: List[str] = []
         tools_used: List[str] = []
+<<<<<<< HEAD
         context: Dict[int, str] = {}
+=======
+        context: Dict[int, str] = {}   # результаты предыдущих шагов
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
         self._status(f"🚀 {len(plan.steps)} шагов")
 
         for step in plan.steps:
+<<<<<<< HEAD
             # Проверка зависимостей
+=======
+            # Проверяем зависимости
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
             if step.depends_on:
                 failed_deps = [d for d in step.depends_on
                                if any(r.step_id==d and r.status==StepStatus.FAILED
@@ -102,17 +132,30 @@ class Executor:
 
             self._status(f"▶️ Шаг {step.step_id}/{len(plan.steps)}: {step.description}")
 
+<<<<<<< HEAD
             # Подготовка аргументов
+=======
+            # Обогащаем args контекстом
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
             args = dict(step.args) if isinstance(step.args, dict) else {'input': str(step.args)}
             for dep_id in step.depends_on:
                 if dep_id in context:
                     args.setdefault(f'prev_{dep_id}', context[dep_id])
 
+<<<<<<< HEAD
             # Вызов инструмента с поддержкой возврата (ok, result, artifacts)
             ts = time.time()
             tool_name = step.tool or 'chat'
             ok, result, artifacts = self._call_tool_with_artifacts(
                 tool_name, args, chat_id=chat_id, user_id=user_id, step=step
+=======
+            ts = time.time()
+            tool_name = step.tool or 'chat'  # guard against None
+            ok, result = execute_tool(
+                tool_name, args,
+                chat_id=chat_id, on_status=self._status,
+                user_id=user_id
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
             )
             duration = time.time() - ts
 
@@ -120,28 +163,54 @@ class Executor:
             sr = StepResult(step.step_id, step.tool, status,
                             result=result if ok else "",
                             error=result if not ok else "",
+<<<<<<< HEAD
                             duration_s=duration,
                             artifacts=artifacts)
+=======
+                            duration_s=duration)
+
+            # Собираем файлы-артефакты из результата
+            import re, os
+            for fpath in re.findall(r'(?:/[^\s]+\.(?:mp4|mp3|jpg|png|pdf|zip|py|txt|docx))', result):
+                if os.path.exists(fpath):
+                    sr.artifacts.append(fpath)
+                    all_artifacts.append(fpath)
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
             step_results.append(sr)
             context[step.step_id] = result[:300]
             tools_used.append(step.tool)
+<<<<<<< HEAD
             all_artifacts.extend(artifacts)
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
             if not ok and not step.optional:
                 self._status(f"❌ Шаг {step.step_id} упал")
                 break
 
+<<<<<<< HEAD
         # Итоговый статус
+=======
+        # Статус
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         done_n = sum(1 for s in step_results if s.status==StepStatus.DONE)
         fail_n = sum(1 for s in step_results if s.status==StepStatus.FAILED)
         overall = 'done' if fail_n==0 else ('failed' if done_n==0 else 'partial')
 
+<<<<<<< HEAD
         # Синтез финального текста
         results_text = "\n".join(f"[{s.tool}]: {s.result or s.error}" for s in step_results)
         final = self._synthesize(plan.task, results_text)
 
         # Сохранение в память
+=======
+        # Финальный текст
+        results_text = "\n".join(f"[{s.tool}]: {s.result or s.error}" for s in step_results)
+        final = self._synthesize(plan.task, results_text)
+
+        # Память
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         if user_id:
             try:
                 from agent_memory import AgentMemory
@@ -161,6 +230,7 @@ class Executor:
             artifacts=all_artifacts, duration_s=total,
         )
 
+<<<<<<< HEAD
     def _call_tool_with_artifacts(self, tool_name: str, args: dict,
                                    chat_id=None, user_id=None, step=None) -> Tuple[bool, str, List[str]]:
         """Вызывает инструмент и преобразует результат в (ok, message, artifacts)."""
@@ -281,6 +351,8 @@ class Executor:
 
     # ----- Остальное без изменений -----
 
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     def _synthesize(self, task: str, results: str) -> str:
         if not self._llm: return results
         try:
@@ -293,12 +365,20 @@ class Executor:
 
     def run_multi_agent(self, task: str, roles: List[str] = None,
                         user_id: str = None, chat_id: str = None) -> Dict[str, str]:
+<<<<<<< HEAD
         """Параллельные агенты (добавлена роль tool_builder)."""
+=======
+        """Параллельные агенты."""
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         if not roles:
             kw = task.lower()
             roles = []
             if any(w in kw for w in ['найди','исследуй','search']): roles.append('research')
+<<<<<<< HEAD
             if any(w in kw for w in ['код','script','баг','исправь','создай инструмент','сгенерируй']): roles.append('tool_builder')
+=======
+            if any(w in kw for w in ['код','script','баг','исправь']): roles.append('coder')
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
             if any(w in kw for w in ['видео','video','ролик']): roles.append('video')
             if any(w in kw for w in ['анализ','отчёт','данные']): roles.append('analysis')
             if not roles: roles = ['research']

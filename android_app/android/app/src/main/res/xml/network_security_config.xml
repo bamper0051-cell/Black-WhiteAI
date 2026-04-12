@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration for BlackBugsAI
+  This app connects to user-controlled self-hosted servers (HTTP/HTTPS).
+  Cleartext HTTP is permitted for all hosts since users run their own servers
+  that typically don't have SSL certificates.
+  Reference: https://developer.android.com/training/articles/security-config
+-->
+<network-security-config>
+
+    <!-- Allow cleartext HTTP for all connections (self-hosted servers) -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Trust system CAs for HTTPS connections -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+</network-security-config>
