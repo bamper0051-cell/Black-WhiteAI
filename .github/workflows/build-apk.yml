@@ -84,9 +84,16 @@ jobs:
         run: |
           TAG="${{ github.event.inputs.release_tag }}"
           TAG="${TAG:-latest}"
-          gh release create "$TAG" \
-            --title "BlackBugsAI Android App $TAG" \
-            --notes "## BlackBugsAI Android App
+
+          # Check if release already exists
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, uploading to existing release"
+            gh release upload "$TAG" release-apks/* --clobber
+          else
+            echo "Creating new release $TAG"
+            gh release create "$TAG" \
+              --title "BlackBugsAI Android App $TAG" \
+              --notes "## BlackBugsAI Android App
 
 Neon-styled management app for BlackBugsAI multi-agent platform.
 
@@ -104,4 +111,5 @@ Neon-styled management app for BlackBugsAI multi-agent platform.
 1. Запусти \`docker-compose up -d\` на сервере
 2. Введи URL: \`http://<IP>:8080\`
 3. Введи \`ADMIN_TOKEN\` из \`.env\`" \
-            release-apks/* || true
+              release-apks/*
+          fi

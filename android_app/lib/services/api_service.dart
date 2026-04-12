@@ -246,8 +246,16 @@ class ApiService {
     return data['output'] ?? data['result'] ?? '';
   }
 
-  /// Alias kept for backward compatibility with docker_screen
-  Future<String> runDockerCommand(String cmd) => runShellCommand(cmd);
+  /// Выполняет действие Docker для контейнера (POST /api/rc/docker/action)
+  Future<String> runDockerCommand(String action, {String? container}) async {
+    final payload = <String, dynamic>{'action': action};
+    if (container != null && container.isNotEmpty) {
+      payload['container'] = container;
+    }
+
+    final data = await _post('/api/rc/docker/action', payload);
+    return data['output'] ?? data['result'] ?? data['message'] ?? '';
+  }
 
   // ─── WebSocket Logs ───────────────────────────────────────────────────────
 

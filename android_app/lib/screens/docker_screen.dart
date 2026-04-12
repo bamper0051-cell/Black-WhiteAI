@@ -91,7 +91,15 @@ class _DockerScreenState extends State<DockerScreen> {
     });
     try {
       final api = ApiServiceProvider.of(context);
-      final result = await api.runDockerCommand(cmd);
+      // For Docker actions (start/stop/restart), pass container name
+      // For other commands, use shell command
+      final container = _status?.name;
+      String result;
+      if (['start', 'stop', 'restart'].contains(cmd) && container != null) {
+        result = await api.runDockerCommand(cmd, container: container);
+      } else {
+        result = await api.runShellCommand(cmd);
+      }
       setState(() {
         _cmdResult = result;
         _runningCmd = false;
