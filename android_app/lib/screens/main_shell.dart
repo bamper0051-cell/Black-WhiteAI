@@ -1,16 +1,17 @@
 // main_shell.dart — Main navigation shell with bottom nav bar
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'dashboard_screen.dart';
 import 'tasks_screen.dart';
 import 'agents_screen.dart';
 import 'terminal_screen.dart';
 import 'settings_screen.dart';
 import 'docker_screen.dart';
+import 'pro_panel_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -31,6 +32,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     AgentsScreen(),
     TerminalScreen(),
     DockerScreen(),
+    ProPanelScreen(),
     SettingsScreen(),
   ];
 
@@ -40,6 +42,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy, label: 'AGENTS'),
     _NavItem(icon: Icons.terminal_outlined, activeIcon: Icons.terminal, label: 'SHELL'),
     _NavItem(icon: Icons.cloud_queue_outlined, activeIcon: Icons.cloud_queue, label: 'DOCKER'),
+    _NavItem(icon: Icons.workspace_premium_outlined, activeIcon: Icons.workspace_premium, label: 'PRO'),
     _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'CONFIG'),
   ];
 
@@ -54,10 +57,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   }
 
   Future<void> _init() async {
-    final prefs = await SharedPreferences.getInstance();
-    final baseUrl = prefs.getString('base_url') ?? '';
-    final token = prefs.getString('admin_token') ?? '';
-    _api = ApiService(baseUrl: baseUrl, adminToken: token);
+    final session = await AuthService.loadSession();
+    _api = ApiService(
+      baseUrl: session['base_url'] ?? '',
+      adminToken: session['token'] ?? '',
+    );
     setState(() => _initialized = true);
   }
 
@@ -236,4 +240,3 @@ class _NeonBottomNav extends StatelessWidget {
     );
   }
 }
-
