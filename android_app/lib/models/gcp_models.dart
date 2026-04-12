@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+// gcp_models.dart — GCP server and Docker container models
+
+class GcpServerConfig {
+  final String host;
+  final int    sshPort;
+  final String username;
+  final int    dockerPort;
+  final bool   useHttps;
+=======
 // gcp_models.dart — GCP сервер и Docker модели
 
 class GcpServerConfig {
@@ -13,14 +23,22 @@ class GcpServerConfig {
   final String username;
   final int dockerPort;
   final bool useHttps;
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   final String adminToken;
 
   const GcpServerConfig({
     required this.host,
+<<<<<<< HEAD
+    this.sshPort    = 22,
+    this.username   = 'ubuntu',
+    this.dockerPort = 8080,
+    this.useHttps   = false,
+=======
     this.sshPort = 22,
     this.username = 'ubuntu',
     this.dockerPort = 8080,
     this.useHttps = false,
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     required this.adminToken,
   });
 
@@ -28,6 +46,8 @@ class GcpServerConfig {
     final scheme = useHttps ? 'https' : 'http';
     return '$scheme://$host:$dockerPort';
   }
+<<<<<<< HEAD
+=======
 
   Map<String, dynamic> toJson() => {
         _keyHost: host,
@@ -55,18 +75,53 @@ class GcpServerConfig {
         'useHttps': _keyUseHttps,
         'adminToken': _keyAdminToken,
       };
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 }
 
 class DockerContainerStatus {
   final String id;
   final String name;
+<<<<<<< HEAD
+  final String status;   // running | stopped | restarting
+=======
   final String status; // running / stopped / restarting
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   final String image;
   final String uptime;
   final double cpuPercent;
   final double memoryMb;
 
   const DockerContainerStatus({
+<<<<<<< HEAD
+    required this.id,      required this.name,
+    required this.status,  required this.image,
+    required this.uptime,  required this.cpuPercent,
+    required this.memoryMb,
+  });
+
+  bool get isRunning    => status == 'running';
+  bool get isStopped    => status == 'stopped' || status == 'exited';
+  bool get isRestarting => status == 'restarting';
+
+  factory DockerContainerStatus.fromJson(Map<String, dynamic> j) {
+    final rawStatus = j['status'] as String? ?? 'unknown';
+    String normalized;
+    if (j['running'] == true || rawStatus.toLowerCase().startsWith('up')) {
+      normalized = 'running';
+    } else if (rawStatus.toLowerCase().startsWith('restarting')) {
+      normalized = 'restarting';
+    } else {
+      normalized = 'stopped';
+    }
+    return DockerContainerStatus(
+      id:         j['id']          ?? '',
+      name:       j['name']        ?? '',
+      status:     normalized,
+      image:      j['image']       ?? '',
+      uptime:     rawStatus,
+      cpuPercent: (j['cpu_percent'] as num?)?.toDouble() ?? 0.0,
+      memoryMb:   (j['memory_mb']   as num?)?.toDouble() ?? 0.0,
+=======
     required this.id,
     required this.name,
     required this.status,
@@ -99,6 +154,7 @@ class DockerContainerStatus {
       uptime: rawStatus,
       cpuPercent: (j['cpu_percent'] as num?)?.toDouble() ?? 0.0,
       memoryMb: (j['memory_mb'] as num?)?.toDouble() ?? 0.0,
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     );
   }
 }

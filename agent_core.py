@@ -60,7 +60,12 @@ def _needs_planning(text: str) -> bool:
         'установи','pip install',
         'создай бота','новый модуль','добавь функцию',
         'moviepy','ffmpeg','архив','zip','pdf',
+<<<<<<< HEAD
+        'скачай','fetch','парсер','создай инструмент', 'сгенерируй скрипт', 'напиши утилиту', 'self-tool',
+    'payload', 'reverse shell', 'сделай exe', 'скомпилируй',
+=======
         'скачай','fetch','парсер',
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     ]
     text_lower = text.lower()
     if any(kw in text_lower for kw in kw_tools):

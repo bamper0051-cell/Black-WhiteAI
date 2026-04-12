@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BlackBugsAI Mobile</title>
+<style>
+:root {
+  --bg0:    #0a0a0f;
+  --bg1:    #111118;
+  --bg2:    #16161f;
+  --bg3:    #1e1e2a;
+  --border: #2a2a3a;
+  --accent: #6c63ff;
+  --accentg: #00e5a0;
+  --accentr: #ff4466;
+  --accentb: #00c8ff;
+  --text:   #e8e8f0;
+  --text2:  #9090b0;
+  --text3:  #50506a;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'SF Pro Display', -apple-system, 'Helvetica Neue', sans-serif;
+  background: var(--bg0);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-top: var(--safe-top);
+}
+
+/* ── Login Screen ── */
+#login-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100dvh;
+  padding: 32px 24px;
+  gap: 0;
+}
+.login-glow {
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(108,99,255,0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108,99,255,0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(108,99,255,0); }
+}
+.login-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+.login-sub { color: var(--text2); font-size: 14px; margin-bottom: 40px; text-align: center; }
+
+.login-field {
+  width: 100%; background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 16px 18px; font-size: 15px;
+  color: var(--text); outline: none; margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.login-field:focus { border-color: var(--accent); }
+.login-btn {
+  width: 100%; background: var(--accent); border: none; border-radius: 14px;
+  padding: 17px; font-size: 16px; font-weight: 700; color: #fff;
+  margin-top: 6px; cursor: pointer; letter-spacing: 0.3px;
+  transition: opacity 0.15s, transform 0.1s;
+  active: scale(0.97);
+}
+.login-btn:active { transform: scale(0.97); opacity: 0.85; }
+
+/* ── Main App ── */
+#app { display: none; flex-direction: column; min-height: 100dvh; }
+#app.visible { display: flex; }
+
+/* ── Top Bar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 18px calc(12px + var(--safe-top));
+  padding-top: calc(12px + var(--safe-top));
+  display: flex; align-items: center; gap: 12px;
+}
+.topbar-logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.topbar-logo span { color: var(--accent); }
+.topbar-status { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); transition: background 0.3s; }
+.dot.online { background: var(--accentg); box-shadow: 0 0 8px var(--accentg); }
+.status-text { font-size: 12px; color: var(--text2); }
+
+/* ── Tab Bar (bottom) ── */
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg1);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bot);
+}
+.tab { flex: 1; padding: 10px 4px 8px; display: flex; flex-direction: column;
+       align-items: center; gap: 3px; cursor: pointer; }
+.tab-icon { font-size: 22px; transition: transform 0.15s; }
+.tab-label { font-size: 10px; color: var(--text3); font-weight: 500; transition: color 0.15s; }
+.tab.active .tab-icon { transform: scale(1.1); }
+.tab.active .tab-label { color: var(--accent); }
+
+/* ── Content ── */
+.content { flex: 1; overflow-y: auto; padding: 16px 14px; padding-bottom: calc(80px + var(--safe-bot)); }
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ── Cards / Stats ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px; position: relative; overflow: hidden;
+}
+.stat-card::after {
+  content: ''; position: absolute; top: -30px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle, var(--card-glow, rgba(108,99,255,0.12)) 0%, transparent 70%);
+}
+.stat-label { font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-val { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.stat-card.green { --card-glow: rgba(0,229,160,0.15); }
+.stat-card.green .stat-val { color: var(--accentg); }
+.stat-card.blue  { --card-glow: rgba(0,200,255,0.15); }
+.stat-card.blue  .stat-val { color: var(--accentb); }
+.stat-card.purple { --card-glow: rgba(108,99,255,0.2); }
+.stat-card.purple .stat-val { color: var(--accent); }
+.stat-card.red  { --card-glow: rgba(255,68,102,0.15); }
+.stat-card.red  .stat-val { color: var(--accentr); }
+
+/* ── Section ── */
+.section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+.section-header { padding: 14px 16px; font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+
+/* ── Agent Cards ── */
+.agent-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.agent-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  position: relative; overflow: hidden;
+}
+.agent-card:active { background: var(--bg0); transform: scale(0.99); }
+.agent-card.running { border-color: var(--accentg); }
+.agent-icon { font-size: 24px; flex-shrink: 0; }
+.agent-info { flex: 1; min-width: 0; }
+.agent-name { font-weight: 700; font-size: 14px; }
+.agent-desc { font-size: 12px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; flex-shrink: 0;
+  background: rgba(108,99,255,0.15); color: var(--accent);
+}
+.agent-badge.running { background: rgba(0,229,160,0.15); color: var(--accentg); }
+.agent-badge.idle    { background: rgba(80,80,106,0.2);  color: var(--text3); }
+.agent-badge.locked  { background: rgba(255,68,102,0.1); color: var(--accentr); }
+
+/* ── Matrix Chat ── */
+.chat-box {
+  height: 320px; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.msg { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; max-width: 85%; }
+.msg.user { background: var(--accent); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+.msg.agent { background: var(--bg3); border: 1px solid var(--border); border-bottom-left-radius: 4px; white-space: pre-wrap; font-size: 12px; max-width: 100%; }
+.chat-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); }
+.chat-input { flex: 1; background: var(--bg3); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--text); outline: none; resize: none; min-height: 42px; max-height: 120px; }
+.chat-input:focus { border-color: var(--accent); }
+.send-btn { background: var(--accent); border: none; border-radius: 12px; width: 42px; height: 42px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.send-btn:active { opacity: 0.75; transform: scale(0.95); }
+
+/* ── Users ── */
+.user-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.user-row:last-child { border-bottom: none; }
+.user-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accentb)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+.user-name { font-weight: 600; font-size: 14px; }
+.user-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.user-role { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; flex-shrink: 0; }
+.role-god    { background: rgba(255,68,102,0.15); color: var(--accentr); }
+.role-owner  { background: rgba(108,99,255,0.15); color: var(--accent); }
+.role-adm    { background: rgba(0,200,255,0.15); color: var(--accentb); }
+.role-vip    { background: rgba(0,229,160,0.15); color: var(--accentg); }
+.role-user   { background: rgba(80,80,106,0.15); color: var(--text2); }
+.role-banned { background: rgba(255,68,102,0.1); color: var(--accentr); }
+
+/* ── Shell ── */
+.shell-out {
+  background: #0a0a0c; font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px; color: #a0ffb0; padding: 12px; height: 280px;
+  overflow-y: auto; white-space: pre-wrap; word-break: break-all; border-radius: 0;
+}
+.shell-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--bg0); }
+.shell-prompt { font-family: monospace; font-size: 12px; color: var(--accentg); flex-shrink: 0; }
+.shell-input { flex: 1; background: transparent; border: none; font-family: monospace; font-size: 12px; color: var(--text); outline: none; }
+
+/* ── Logs ── */
+.log-list { padding: 4px 0; max-height: 380px; overflow-y: auto; }
+.log-entry { padding: 6px 16px; font-size: 12px; font-family: monospace; border-bottom: 1px solid rgba(42,42,58,0.5); display: flex; gap: 10px; }
+.log-ts { color: var(--text3); flex-shrink: 0; }
+.log-msg { color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-entry.ERROR .log-msg { color: var(--accentr); }
+.log-entry.WARN  .log-msg { color: #ffb347; }
+.log-entry.INFO  .log-msg { color: var(--text); }
+
+/* ── Resource Meters ── */
+.meters { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.meter-row { display: flex; align-items: center; gap: 10px; }
+.meter-label { width: 32px; font-size: 12px; font-weight: 700; color: var(--text2); }
+.meter-track { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.5s ease; }
+.meter-fill.warn { background: #ffb347; }
+.meter-fill.crit { background: var(--accentr); }
+.meter-val { width: 36px; font-size: 12px; text-align: right; color: var(--text2); }
+
+/* ── Buttons ── */
+.btn { background: var(--bg3); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 13px; color: var(--text); cursor: pointer; font-weight: 600; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:active { transform: scale(0.97); opacity: 0.8; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.danger  { background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.3); color: var(--accentr); }
+.btn.success { background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.3); color: var(--accentg); }
+
+/* ── LLM Info ── */
+.llm-row { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-bottom: 1px solid var(--border); }
+.llm-row:last-child { border-bottom: none; }
+.llm-key { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
+.llm-val { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.llm-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accentg); box-shadow: 0 0 6px var(--accentg); flex-shrink: 0; }
+
+/* ── Toast ── */
+#toasts { position: fixed; top: calc(20px + var(--safe-top)); left: 16px; right: 16px; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 14px; display: flex; gap: 10px; align-items: center; animation: slideDown 0.2s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } }
+.toast.hide { animation: slideUp 0.2s ease forwards; }
+@keyframes slideUp { to { opacity: 0; transform: translateY(-10px); } }
+.toast.success { border-color: rgba(0,229,160,0.3); }
+.toast.error   { border-color: rgba(255,68,102,0.3); }
+</style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div id="login-screen">
+  <div class="login-glow">🤖</div>
+  <div class="login-title">BlackBugsAI</div>
+  <div class="login-sub">Мобильный центр управления ботом</div>
+  <input class="login-field" id="base-input" type="url" placeholder="https://your-server.com:8080" autocomplete="off">
+  <input class="login-field" id="token-input" type="password" placeholder="Admin token" autocomplete="off">
+  <button class="login-btn" onclick="doLogin()">🚀 Войти</button>
+</div>
+
+<!-- ── Main App ── -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">Black<span>Bugs</span>AI</div>
+    <div class="topbar-status">
+      <div class="dot" id="ws-dot"></div>
+      <div class="status-text" id="ws-label">Offline</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div class="panel active" id="panel-home">
+      <div class="stats-grid">
+        <div class="stat-card purple">
+          <div class="stat-label">Пользователи</div>
+          <div class="stat-val" id="s-users">—</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Сессии</div>
+          <div class="stat-val" id="s-sessions">—</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Инструменты</div>
+          <div class="stat-val" id="s-tools">—</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Аптайм</div>
+          <div class="stat-val" id="s-uptime" style="font-size:16px;padding-top:6px">—</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">⚙️ Система</div>
+        <div class="meters" id="meters">
+          <div class="meter-row">
+            <div class="meter-label">CPU</div>
+            <div class="meter-track"><div class="meter-fill" id="cpu-fill" style="width:0%"></div></div>
+            <div class="meter-val" id="cpu-val">0%</div>
+          </div>
+          <div class="meter-row">
+            <div class="meter-label">RAM</div>
+            <div class="meter-track"><div class="meter-fill" id="ram-fill" style="width:0%"></div></div>
+            <div class="meter-val" id="ram-val">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">🧠 LLM</div>
+        <div class="llm-row">
+          <div class="llm-dot"></div>
+          <div class="llm-key">Провайдер</div>
+          <div class="llm-val" id="llm-provider">—</div>
+        </div>
+        <div class="llm-row">
+          <div class="llm-dot"></div>
+          <div class="llm-key">Модель</div>
+          <div class="llm-val" id="llm-model">—</div>
+        </div>
+        <div class="llm-row">
+          <div class="llm-dot"></div>
+          <div class="llm-key">TTS</div>
+          <div class="llm-val" id="tts-info">—</div>
+        </div>
+        <div class="llm-row">
+          <div class="llm-dot" style="background:#ffb347; box-shadow:0 0 6px #ffb347;"></div>
+          <div class="llm-key">Туннель</div>
+          <div class="llm-val" id="tunnel-url">—</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">📢 Рассылка</div>
+        <div style="padding:12px">
+          <textarea class="chat-input" id="bc-text" placeholder="Текст рассылки..." style="width:100%;margin-bottom:8px;"></textarea>
+          <button class="btn primary" onclick="sendBroadcast()">📡 Разослать всем</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="panel" id="panel-agents">
+      <div class="section" style="margin-bottom:12px;">
+        <div class="section-header">🧬 Запустить Matrix</div>
+        <div class="section" style="margin:0;border:none;">
+          <div class="chat-box" id="matrix-chat">
+            <div style="text-align:center;color:var(--text3);padding:40px 0;font-size:13px;">Задайте задачу MATRIX агенту</div>
+          </div>
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="matrix-input" placeholder="Задача для агента..." rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMatrix();}"></textarea>
+            <button class="send-btn" onclick="sendMatrix()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">🤖 Статус агентов</div>
+        <div class="agent-list" id="agent-list">
+          <div class="agent-card">
+            <div class="agent-icon">🔮</div>
+            <div class="agent-info">
+              <div class="agent-name">Agent Matrix</div>
+              <div class="agent-desc">Генерация инструментов, GitHub install</div>
+            </div>
+            <div class="agent-badge idle" id="badge-matrix">idle</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🧬</div>
+            <div class="agent-info">
+              <div class="agent-name">Agent NEO</div>
+              <div class="agent-desc">Автономный агент, self-tool generation</div>
+            </div>
+            <div class="agent-badge idle" id="badge-neo">idle</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🟣</div>
+            <div class="agent-info">
+              <div class="agent-name">Morpheus</div>
+              <div class="agent-desc">Root-уровень: apt, docker, systemctl</div>
+            </div>
+            <div class="agent-badge locked" id="badge-morpheus">owner</div>
+          </div>
+          <div class="agent-card running">
+            <div class="agent-icon">🤖</div>
+            <div class="agent-info">
+              <div class="agent-name">Chat Agent</div>
+              <div class="agent-desc">LLM чат, персистентные сессии</div>
+            </div>
+            <div class="agent-badge running" id="badge-chat">running</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🧠</div>
+            <div class="agent-info">
+              <div class="agent-name">Brain + Memory</div>
+              <div class="agent-desc">Reflexion, feedback, user memory</div>
+            </div>
+            <div class="agent-badge idle" id="badge-brain">idle</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="panel" id="panel-users">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn" onclick="loadUsers()" style="flex:1;">🔄 Обновить</button>
+        <button class="btn primary" onclick="openMsgModal()" style="flex:1;">💬 Написать</button>
+      </div>
+      <div class="section">
+        <div class="section-header">👥 Пользователи</div>
+        <div id="users-list"><div style="padding:20px;text-align:center;color:var(--text3)">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <!-- Shell -->
+    <div class="panel" id="panel-shell">
+      <div class="section">
+        <div class="section-header">💻 Shell</div>
+        <div class="shell-out" id="shell-out">root@blackbugs:~$ </div>
+        <div class="shell-row">
+          <span class="shell-prompt">$</span>
+          <input class="shell-input" id="shell-input" placeholder="команда..."
+            onkeydown="if(event.key==='Enter'){execShell(this.value);this.value='';}">
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:12px;">
+        <div class="section-header">📋 Логи</div>
+        <div class="log-list" id="log-list">
+          <div style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">Загрузка логов...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Bottom Tab Bar -->
+  <div class="tabbar">
+    <div class="tab active" id="tab-home" onclick="showTab('home')">
+      <div class="tab-icon">🏠</div>
+      <div class="tab-label">Главная</div>
+    </div>
+    <div class="tab" id="tab-agents" onclick="showTab('agents')">
+      <div class="tab-icon">🤖</div>
+      <div class="tab-label">Агенты</div>
+    </div>
+    <div class="tab" id="tab-users" onclick="showTab('users')">
+      <div class="tab-icon">👥</div>
+      <div class="tab-label">Юзеры</div>
+    </div>
+    <div class="tab" id="tab-shell" onclick="showTab('shell')">
+      <div class="tab-icon">💻</div>
+      <div class="tab-label">Shell</div>
+    </div>
+  </div>
+</div><!-- /app -->
+
+<div id="toasts"></div>
+
+<script>
+let API_BASE = '', TOKEN = '';
+let shellHistory = [], shellHistIdx = -1;
+
+// ── Login ──────────────────────────────────────────────────────────────────
+function doLogin() {
+  const base  = document.getElementById('base-input').value.trim().replace(/\/$/, '');
+  const token = document.getElementById('token-input').value.trim();
+  if (!base || !token) { toast('Заполни оба поля', 'error'); return; }
+  API_BASE = base; TOKEN = token;
+  localStorage.setItem('bb_base', base);
+  localStorage.setItem('bb_token', token);
+  connect();
+}
+
+async function connect() {
+  try {
+    const r = await api('/api/status');
+    if (!r.ok) { toast('Неверный токен', 'error'); return; }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('ws-dot').classList.add('online');
+    document.getElementById('ws-label').textContent = 'Online';
+    toast('Подключено!', 'success');
+    updateStatus(r);
+    loadUsers();
+    loadLogs();
+    startAutoRefresh();
+    startSysRefresh();
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function api(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {
+      'X-Admin-Token': TOKEN,
+      'Authorization': 'Bearer ' + TOKEN,
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API_BASE + path, opts);
+  if (r.status === 401) { toast('Unauthorized', 'error'); throw new Error('401'); }
+  return r.json();
+}
+
+// ── Status ─────────────────────────────────────────────────────────────────
+function updateStatus(r) {
+  document.getElementById('s-users').textContent    = r.users_total ?? '—';
+  document.getElementById('s-sessions').textContent = r.active_sessions ?? '—';
+  document.getElementById('s-tools').textContent    = r.matrix?.total ?? '—';
+  document.getElementById('s-uptime').textContent   = r.uptime_str?.replace('ч','h').replace('м','m').replace('с','s') ?? '—';
+  document.getElementById('llm-provider').textContent = r.llm_provider ?? '—';
+  document.getElementById('llm-model').textContent    = r.llm_model ?? '—';
+  document.getElementById('tts-info').textContent     = r.tts_provider ?? '—';
+  document.getElementById('tunnel-url').textContent   = r.tunnel_url || 'нет';
+
+  // NEO badge
+  if (r.neo?.total > 0) {
+    const b = document.getElementById('badge-neo');
+    if (b) { b.textContent = r.neo.total + ' tools'; b.className = 'agent-badge running'; }
+  }
+  if (r.matrix?.total > 0) {
+    const b = document.getElementById('badge-matrix');
+    if (b) { b.textContent = r.matrix.total + ' tools'; b.className = 'agent-badge running'; }
+  }
+}
+
+function startAutoRefresh() {
+  setInterval(async () => {
+    try { const r = await api('/api/status'); updateStatus(r); } catch(e) {}
+  }, 8000);
+}
+
+function startSysRefresh() {
+  setInterval(async () => {
+    try {
+      const r = await api('/api/sysinfo');
+      const cpu = Math.round(r.cpu_percent || 0);
+      const ram = Math.round(r.ram_percent || 0);
+      const cpuF = document.getElementById('cpu-fill');
+      cpuF.style.width = cpu + '%';
+      cpuF.className = 'meter-fill' + (cpu > 80 ? ' crit' : cpu > 60 ? ' warn' : '');
+      document.getElementById('cpu-val').textContent = cpu + '%';
+      const ramF = document.getElementById('ram-fill');
+      ramF.style.width = ram + '%';
+      ramF.className = 'meter-fill' + (ram > 85 ? ' crit' : ram > 65 ? ' warn' : '');
+      document.getElementById('ram-val').textContent = ram + '%';
+    } catch(e) {}
+  }, 5000);
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'users') loadUsers();
+  if (name === 'shell') loadLogs();
+}
+
+// ── Matrix ─────────────────────────────────────────────────────────────────
+async function sendMatrix() {
+  const inp = document.getElementById('matrix-input');
+  const task = inp.value.trim();
+  if (!task) return;
+  inp.value = '';
+  addMsg('user', task);
+  const b = document.getElementById('badge-matrix');
+  if (b) { b.textContent = 'running'; b.className = 'agent-badge running'; }
+  try {
+    const r = await api('/api/matrix/run', 'POST', { task, chat_id: 'admin' });
+    if (!r.ok) addMsg('agent', '❌ ' + r.error);
+    else addMsg('agent', '⏳ Задача принята... ожидаю выполнения.');
+  } catch(e) { addMsg('agent', '❌ ' + e.message); }
+}
+
+function addMsg(role, text) {
+  const chat = document.getElementById('matrix-chat');
+  const empty = chat.querySelector('[style*="text-align"]');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const r = await api('/api/users');
+    renderUsers(r.users || []);
+  } catch(e) {}
+}
+
+function renderUsers(users) {
+  const el = document.getElementById('users-list');
+  if (!users.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">Нет пользователей</div>';
+    return;
+  }
+  el.innerHTML = users.map(u => {
+    const role = u.privilege || 'user';
+    const letter = (u.username || u.first_name || '?')[0].toUpperCase();
+    return `
+    <div class="user-row">
+      <div class="user-avatar">${letter}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name">${esc(u.username || u.first_name || 'Аноним')}</div>
+        <div class="user-meta">ID: ${u.chat_id}</div>
+      </div>
+      <span class="user-role role-${role}">${role}</span>
+    </div>`;
+  }).join('');
+}
+
+function openMsgModal() {
+  const uid = prompt('ID пользователя:');
+  if (!uid) return;
+  const text = prompt('Сообщение:');
+  if (!text) return;
+  api('/api/msg/user', 'POST', { chat_id: parseInt(uid), text })
+    .then(r => r.ok ? toast('Отправлено!', 'success') : toast('Ошибка', 'error'))
+    .catch(() => toast('Ошибка сети', 'error'));
+}
+
+async function sendBroadcast() {
+  const text = document.getElementById('bc-text').value.trim();
+  if (!text) { toast('Введи текст', 'error'); return; }
+  try {
+    const r = await api('/api/msg/broadcast', 'POST', { text });
+    if (r.ok) {
+      toast(`Отправлено: ${r.sent} пользователям`, 'success');
+      document.getElementById('bc-text').value = '';
+    } else toast('Ошибка: ' + r.error, 'error');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Shell ──────────────────────────────────────────────────────────────────
+async function execShell(cmd) {
+  if (!cmd.trim()) return;
+  appendShell('$ ' + cmd + '\n');
+  try {
+    const r = await api('/api/shell', 'POST', { cmd });
+    appendShell((r.output || '') + '\n');
+  } catch(e) { appendShell('Error: ' + e.message + '\n'); }
+}
+
+function appendShell(text) {
+  const out = document.getElementById('shell-out');
+  out.textContent += text;
+  out.scrollTop = out.scrollHeight;
+}
+
+// ── Logs ───────────────────────────────────────────────────────────────────
+async function loadLogs() {
+  try {
+    const r = await api('/api/logs?n=50');
+    const el = document.getElementById('log-list');
+    if (!r.logs?.length) { el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">Логи пусты</div>'; return; }
+    el.innerHTML = r.logs.slice(-50).reverse().map(l =>
+      `<div class="log-entry ${l.level||'INFO'}">
+        <span class="log-ts">${(l.ts||'').substring(11,19)}</span>
+        <span class="log-msg">${esc(l.text||l.msg||'')}</span>
+      </div>`
+    ).join('');
+  } catch(e) {}
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const icons = {success:'✅',error:'❌',info:'ℹ️',warn:'⚠️'};
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${esc(msg)}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 250); }, 3000);
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const savedBase  = localStorage.getItem('bb_base');
+  const savedToken = localStorage.getItem('bb_token');
+  // Auto-fill from URL params: ?base=...&token=...
+  const params = new URLSearchParams(location.search);
+  const paramBase  = params.get('base');
+  const paramToken = params.get('token');
+  if (paramBase)  document.getElementById('base-input').value  = paramBase;
+  else if (savedBase)  document.getElementById('base-input').value  = savedBase;
+  if (paramToken) document.getElementById('token-input').value = paramToken;
+  else if (savedToken) document.getElementById('token-input').value = savedToken;
+  if ((paramBase || savedBase) && (paramToken || savedToken)) {
+    API_BASE = paramBase || savedBase;
+    TOKEN    = paramToken || savedToken;
+    connect();
+  }
+});
+</script>
+</body>
+</html>

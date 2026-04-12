@@ -53,6 +53,17 @@ def api_pages():
 
 @app.route('/api/tunnel')
 def api_tunnel():
+<<<<<<< HEAD
+    """READ-ONLY: Tunnel is managed by admin_web.py (FISH_TUNNEL_DISABLED=true)"""
+    import os as _os
+    url = None
+    try:
+        from pathlib import Path
+        url = Path('/tmp/tunnel_url.txt').read_text().strip()
+    except Exception:
+        pass
+    return jsonify({'running': bool(url), 'url': url, 'managed_by': 'admin_web'})
+=======
     try:
         import fish_bot_state
         running = fish_bot_state.tunnel_process is not None and fish_bot_state.tunnel_process.poll() is None
@@ -60,6 +71,7 @@ def api_tunnel():
     except Exception:
         running, url = False, None
     return jsonify({'running': running, 'url': url})
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
 @app.route('/')
 def index():

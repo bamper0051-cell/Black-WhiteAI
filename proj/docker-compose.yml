@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    container_name: automuvie
+    restart: unless-stopped
+    stop_grace_period: 10s
+
+    ports:
+      - "5000:5000"
+      - "8080:8080"
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
+      - ADMIN_WEB_PORT=8080
+
+    volumes:
+      # ── БД ──────────────────────────────────────────────────────────────
+      - ./.env:/app/.env
+      - ./data:/app/data  # Монтируем одну папку для всех БД
+      - ./bot.py:/app/bot.py
+      # ── Данные ──────────────────────────────────────────────────────────
+      - ./fish_uploads:/app/fish_uploads
+      - ./fish_pages:/app/fish_pages
+      - ./fish_logs:/app/fish_logs
+      # ── Fish module ───────────────────────────────────────────────────────
+      - ./fish_bot_state.py:/app/fish_bot_state.py
+      - ./fish_config.py:/app/fish_config.py
+      - ./fish_db.py:/app/fish_db.py
+      - ./fish_downloader.py:/app/fish_downloader.py
+      - ./fish_utils.py:/app/fish_utils.py
+      - ./agent_projects:/app/agent_projects
+      - ./created_bots:/app/created_bots
+      - ./artifacts:/app/artifacts
+      # ── Основной бот ────────────────────────────────────────────────────
+      - ./bot.py:/app/bot.py
+      - ./config.py:/app/config.py
+      - ./admin_web.py:/app/admin_web.py
+      - ./admin_panel.html:/app/admin_panel.html
+      # ── Auth / Admin ─────────────────────────────────────────────────────
+      - ./auth_module.py:/app/auth_module.py
+      - ./admin_module.py:/app/admin_module.py
+      # ── LLM / Chat ───────────────────────────────────────────────────────
+      - ./chat_agent.py:/app/chat_agent.py
+      - ./llm_client.py:/app/llm_client.py
+      # ── Agent core ──────────────────────────────────────────────────────
+      - ./agent_core.py:/app/agent_core.py
+      - ./agent_planner.py:/app/agent_planner.py
+      - ./agent_executor.py:/app/agent_executor.py
+      - ./agent_memory.py:/app/agent_memory.py
+      - ./agent_session.py:/app/agent_session.py
+      - ./agent_tools_registry.py:/app/agent_tools_registry.py
+      - ./agent_roles.py:/app/agent_roles.py
+      # ── Queue / Settings / Billing ──────────────────────────────────────
+      - ./task_queue.py:/app/task_queue.py
+      - ./user_settings.py:/app/user_settings.py
+      - ./billing.py:/app/billing.py
+      - ./proxy_manager.py:/app/proxy_manager.py
+      # ── Logging ──────────────────────────────────────────────────────────
+      - ./structured_logger.py:/app/structured_logger.py
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,3 +1,56 @@
+<<<<<<< HEAD
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.env
+*.zip
+*.log
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Env / secrets
+.env
+.env.*
+
+# Logs / db / temp
+*.log
+*.db
+*.sqlite
+*.sqlite3
+output.txt
+search_results_*.json
+
+# Archives / binaries
+*.zip
+*.rar
+*.7z
+*.exe
+*.apk
+
+# Backup / duplicate files
+*.bak
+*.BK
+*~
+docker-compose.ymlBK
+nginx.confBK
+
+# Work dirs
+matrix_workspace/
+neo_workspace/
+workspace/
+fish_logs/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+=======
 # ============================================================
 # BlackBugsAI — .gitignore
 # ============================================================
@@ -143,3 +196,5 @@ yarn-error.log*
 .cache/
 tmp/
 temp/
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
+x22.zip

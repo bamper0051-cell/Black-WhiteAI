@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  automuvie:
+    build: .
+    container_name: automuvie_fish_v2
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - bot_net
+
+networks:
+  bot_net:
+    driver: bridge

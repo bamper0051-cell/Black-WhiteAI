@@ -1,0 +1,3 @@
+Fixed callback routing for legacy/new Coder3 buttons.
+- Added fallback: action in ("coder3", "agent_code3_start")
+- Verified py_compile for bot.py, keyboards.py, agent_coder3.py, coder3/*.py

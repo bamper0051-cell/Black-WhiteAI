@@ -1,8 +1,17 @@
 """
+<<<<<<< HEAD
+BlackBugsAI — Agent Planner (обновлённый)
+Поддержка генерации инструментов.
+"""
+import json
+import re
+import time
+=======
 BlackBugsAI — Agent Planner
 Режимы: auto | patch | scaffold | plan_first | direct
 """
 import json, re, time
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Callable
 from enum import Enum
@@ -24,9 +33,12 @@ class PlanStep:
     optional:    bool = False
     estimated_s: int = 10
 
+<<<<<<< HEAD
+=======
     def to_text(self) -> str:
         return f"  {self.step_id}. [{self.tool}] {self.description}"
 
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 @dataclass
 class Plan:
     task:      str
@@ -50,6 +62,10 @@ class Plan:
         return "\n".join(lines)
 
 
+<<<<<<< HEAD
+# Расширенная эвристика с self-tool generation
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 _HEURISTIC_MAP = {
     'tts':               ['озвучь','tts','голос','speech','произнеси'],
     'moviepy_edit':      ['видео','video','ролик','монтаж','moviepy','слайд'],
@@ -60,12 +76,56 @@ _HEURISTIC_MAP = {
     'create_file':       ['создай файл','сохрани в файл','запиши в'],
     'code_agent':        ['напиши код','создай скрипт','scaffold','patch','исправь баг'],
     'install_package':   ['установи пакет','pip install','нужен пакет'],
+<<<<<<< HEAD
+    'generate_tool':     ['создай инструмент','сгенерируй скрипт','напиши утилиту','self-tool','payload','reverse shell','сделай exe','скомпилируй'],
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 }
 
 def _heuristic_steps(task: str) -> List[dict]:
     kw = task.lower()
     steps = []
+<<<<<<< HEAD
+    # Проверяем, не запрос на генерацию инструмента
+    if any(k in kw for k in _HEURISTIC_MAP['generate_tool']):
+        # Специальный план для генерации инструмента
+        steps = [
+            {
+                'step_id': 1,
+                'tool': 'generate_code',
+                'args': {'task': task, 'language': 'auto'},
+                'description': 'Генерация кода инструмента',
+                'depends_on': [],
+                'optional': False,
+                'estimated_s': 30,
+            },
+            {
+                'step_id': 2,
+                'tool': 'save_tool_cache',
+                'args': {},
+                'description': 'Сохранение в кэш',
+                'depends_on': [1],
+                'optional': False,
+                'estimated_s': 5,
+            },
+            {
+                'step_id': 3,
+                'tool': 'return_artifact',
+                'args': {},
+                'description': 'Возврат файла или base64',
+                'depends_on': [2],
+                'optional': False,
+                'estimated_s': 5,
+            }
+        ]
+        return steps
+
     for tool, keywords in _HEURISTIC_MAP.items():
+        if tool == 'generate_tool':
+            continue
+=======
+    for tool, keywords in _HEURISTIC_MAP.items():
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         if any(k in kw for k in keywords):
             steps.append({
                 'step_id': len(steps)+1, 'tool': tool,
@@ -90,7 +150,12 @@ class Planner:
         if self._llm:
             try:
                 return self._llm_plan(task, mode, context)
+<<<<<<< HEAD
+            except Exception as e:
+                # fallback to heuristic
+=======
             except Exception:
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                 pass
         # Fallback: эвристика
         return self._heuristic_plan(task, mode)
@@ -105,8 +170,14 @@ class Planner:
         system = (
             "Ты планировщик задач. Составь план выполнения в JSON.\n"
             f"Доступные инструменты:\n{tools_ctx}\n\n"
+<<<<<<< HEAD
+            "Важно: если задача требует создания нового инструмента (скрипта, утилиты), используй инструмент generate_code, затем save_tool_cache, затем return_artifact.\n"
+            'Формат: {"mode":"direct","reasoning":"...","risks":[],"rollback":"","steps":['
+            '{"step_id":1,"tool":"generate_code","args":{"task":"...","language":"python"},"description":"...","depends_on":[],"optional":false,"estimated_s":30}]}'
+=======
             'Формат: {"mode":"direct","reasoning":"...","risks":[],"rollback":"","steps":['
             '{"step_id":1,"tool":"tts","args":{"text":"привет"},"description":"...","depends_on":[],"optional":false,"estimated_s":10}]}'
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         )
         prompt = f"Задача: {task}"
         if context:

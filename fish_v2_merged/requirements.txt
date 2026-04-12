@@ -1,0 +1,16 @@
+# Автомуви + Фишинг — объединённые зависимости
+requests
+feedparser
+beautifulsoup4
+edge-tts
+python-dotenv
+schedule
+anthropic
+
+# Фишинг-модуль
+flask
+qrcode[pil]
+folium
+pandas
+python-magic
+bcrypt>=4.0.0
