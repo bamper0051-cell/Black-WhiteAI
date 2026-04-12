@@ -344,8 +344,21 @@ class ApiService {
       return _demoDockerStatus();
     }
     try {
-      final data = await _get('/api/docker/status') as Map<String, dynamic>;
-      return DockerContainerStatus.fromJson(data);
+      final data = await _get('/api/rc/docker') as Map<String, dynamic>;
+      // Backend returns {ok, containers: [...]}
+      final containers = data['containers'] as List?;
+      if (containers != null && containers.isNotEmpty) {
+        return DockerContainerStatus.fromJson(containers.first as Map<String, dynamic>);
+      }
+      return const DockerContainerStatus(
+        id: '',
+        name: 'unknown',
+        status: 'unknown',
+        image: '',
+        uptime: '-',
+        cpuPercent: 0,
+        memoryMb: 0,
+      );
     } catch (_) {
       if (await ApiService.isDemoMode()) {
         return _demoDockerStatus();
@@ -354,17 +367,14 @@ class ApiService {
     }
   }
 
-  /// Выполняет команду в Docker-контейнере (POST /api/docker/exec)
+  /// Выполняет shell-команду на сервере (POST /api/rc/shell)
   Future<String> runDockerCommand(String cmd) async {
     if (await _shouldUseDemo()) {
       return 'Demo: executed "$cmd" locally';
     }
-    final data = await _post('/api/docker/exec', {'cmd': cmd});
+    final data = await _post('/api/rc/shell', {'cmd': cmd});
     return data['output'] ?? data['result'] ?? '';
   }
-
-  /// Alias kept for backward compatibility with docker_screen
-  Future<String> runDockerCommand(String cmd) => runShellCommand(cmd);
 
   // ─── WebSocket Logs ───────────────────────────────────────────────────────
 
