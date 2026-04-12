@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
 import '../widgets/neon_text_field.dart';
 import '../widgets/neon_card.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import 'setup_screen.dart';
 import 'login_screen.dart';
 
@@ -26,7 +28,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _baseUrl;
   String? _authMode;    // 'login' | 'token'
   final _tokenCtrl = TextEditingController();
-  bool _saving = false;
   bool _obscureToken = true;
   bool _demoMode = false;
 
@@ -44,13 +45,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _load() async {
     final session = await AuthService.loadSession();
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _username = session['username'];
       _role     = session['role'];
       _baseUrl  = session['base_url'];
       _authMode = session['auth_mode'];
       _urlCtrl.text = session['base_url'] ?? '';
-      _urlCtrl.text = prefs.getString('base_url') ?? '';
       _tokenCtrl.text = prefs.getString('admin_token') ?? '';
       _demoMode = prefs.getBool('demo_mode') ?? false;
     });
@@ -341,6 +343,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 14),
 
                   _savingUrl
+                      ? const Center(
+                          child: NeonLoadingIndicator(
+                              size: 24, label: 'СОХРАНЕНИЕ...'))
+                      : const SizedBox.shrink(),
                   const SizedBox(height: 12),
                   NeonTextField(
                     controller: _tokenCtrl,
@@ -388,7 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _saving
+                  _savingUrl
                       ? const Center(
                           child: NeonLoadingIndicator(
                               size: 30, label: 'ПРОВЕРЯЕМ...'))
