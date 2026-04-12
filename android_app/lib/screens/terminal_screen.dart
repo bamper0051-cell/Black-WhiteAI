@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/neon_theme.dart';
 import '../animations/neon_animations.dart';
+import '../services/command_memory_service.dart';
 import 'main_shell.dart';
 
 class TerminalScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
   final List<_TerminalLine> _lines = [];
   bool _running = false;
   final List<String> _history = [];
+  List<String> _pinnedCommands = [];
   int _historyIdx = -1;
 
   static const _welcomeLines = [
@@ -36,6 +38,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
     for (final l in _welcomeLines) {
       _lines.add(_TerminalLine(text: l, type: _LineType.system));
     }
+    _loadMemory();
   }
 
   @override
@@ -45,11 +48,26 @@ class _TerminalScreenState extends State<TerminalScreen> {
     super.dispose();
   }
 
+  Future<void> _loadMemory() async {
+    final savedHistory = await CommandMemoryService.loadHistory();
+    final pinned = await CommandMemoryService.loadPinned();
+    if (!mounted) return;
+    setState(() {
+      _history
+        ..clear()
+        ..addAll(savedHistory);
+      _pinnedCommands = pinned;
+    });
+  }
+
   Future<void> _execute(String cmd) async {
     cmd = cmd.trim();
     if (cmd.isEmpty) return;
 
-    _history.insert(0, cmd);
+    final updatedHistory = await CommandMemoryService.addHistory(cmd);
+    _history
+      ..clear()
+      ..addAll(updatedHistory);
     _historyIdx = -1;
 
     setState(() {
@@ -157,8 +175,27 @@ class _TerminalScreenState extends State<TerminalScreen> {
     });
   }
 
+  Future<void> _togglePinned(String cmd) async {
+    final normalized = cmd.trim();
+    if (normalized.isEmpty) return;
+    final updated = await CommandMemoryService.togglePinned(normalized);
+    if (!mounted) return;
+    setState(() => _pinnedCommands = updated);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          updated.contains(normalized)
+              ? 'Команда сохранена в памяти'
+              : 'Команда удалена из памяти',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final inputPinned =
+        _pinnedCommands.contains(_inputCtrl.text.trim());
     return Scaffold(
       backgroundColor: NeonColors.bgDeep,
       appBar: AppBar(
@@ -183,6 +220,20 @@ class _TerminalScreenState extends State<TerminalScreen> {
       ),
       body: Column(
         children: [
+          if (_pinnedCommands.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: _MemoryBar(
+                commands: _pinnedCommands,
+                onRun: (cmd) {
+                  _inputCtrl.text = cmd;
+                  _execute(cmd);
+                  _inputCtrl.clear();
+                },
+                onRemove: _togglePinned,
+              ),
+            ),
+
           // Output area
           Expanded(
             child: ListView.builder(
@@ -265,6 +316,17 @@ class _TerminalScreenState extends State<TerminalScreen> {
                 ),
                 const SizedBox(width: 4),
                 GestureDetector(
+                  onTap: () => _togglePinned(_inputCtrl.text),
+                  child: Icon(
+                    inputPinned ? Icons.star : Icons.star_border,
+                    color: inputPinned
+                        ? NeonColors.yellow
+                        : NeonColors.textSecondary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
                   onTap: () {
                     if (_inputCtrl.text.trim().isNotEmpty) {
                       _execute(_inputCtrl.text);
@@ -285,6 +347,69 @@ class _TerminalScreenState extends State<TerminalScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MemoryBar extends StatelessWidget {
+  final List<String> commands;
+  final ValueChanged<String> onRun;
+  final ValueChanged<String> onRemove;
+
+  const _MemoryBar({
+    required this.commands,
+    required this.onRun,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: NeonColors.bgDark,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: NeonColors.greenGlow),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const NeonText('> MEMORY', color: NeonColors.green,
+              fontSize: 10, fontFamily: 'Orbitron', glowRadius: 4),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: commands
+                .map(
+                  (cmd) => GestureDetector(
+                    onTap: () => onRun(cmd),
+                    onLongPress: () => onRemove(cmd),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: NeonColors.green.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color: NeonColors.green.withOpacity(0.4)),
+                      ),
+                      child: Text(
+                        cmd,
+                        style: const TextStyle(
+                          color: NeonColors.textPrimary,
+                          fontFamily: 'JetBrainsMono',
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
