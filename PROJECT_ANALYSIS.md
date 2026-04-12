@@ -980,53 +980,57 @@ volumes:
   matrix_workspace:
 ```
 
-#### Issue #3: Admin Panel + Fish Port Conflict
+#### Issue #3: Admin Panel + Fish — Port Configuration
 
-**Problem:**
-Both admin panel and fish module try to use port 8080.
+**Current Status: No conflict in default configuration.**
 
-**Evidence:**
+`fish_web` defaults to port **5000** (configured via `FISH_SERVER_PORT` or `SERVER_PORT` env vars):
+
 ```python
-# admin_web.py:13
-ADMIN_WEB_PORT = 8080
-
-# fish_web.py (if exists)
-FISH_PORT = 8080
+# fish_config.py:13
+SERVER_PORT = int(os.getenv('FISH_SERVER_PORT', os.getenv('SERVER_PORT', '5000')))
 ```
 
-**Solution:**
+`admin_web` uses port **8080** (configured via `ADMIN_WEB_PORT`):
+
+```python
+# admin_web.py
+ADMIN_WEB_PORT = int(os.getenv('ADMIN_WEB_PORT', 8080))
+```
+
+`docker-compose.yml` already maps both ports without conflict:
+
 ```yaml
-# docker-compose.yml
+ports:
+  - "5000:5000"   # fish_web
+  - "8080:8080"   # admin_web
 environment:
   - ADMIN_WEB_PORT=8080
-  - FISH_WEB_PORT=5000  # Use different port
 ```
 
-**Or run fish in separate container:**
+**Potential conflict scenario:** A conflict only occurs if `FISH_SERVER_PORT` (or `SERVER_PORT`) is explicitly set to `8080` in the environment. If that happens, change it back to `5000`:
+
 ```yaml
-services:
-  bot:
-    ports:
-      - "8080:8080"  # Admin only
-
-  fish:
-    build: .
-    ports:
-      - "5000:5000"  # Fish only
-    environment:
-      - RUN_FISH_ONLY=1
+# docker-compose.yml — correct env var name is FISH_SERVER_PORT (not FISH_WEB_PORT)
+environment:
+  - FISH_SERVER_PORT=5000
+  - ADMIN_WEB_PORT=8080
 ```
 
-#### Issue #4: No Production Server
+> **Note:** `FISH_WEB_PORT` is **not** a recognized env var in the codebase. Use `FISH_SERVER_PORT` instead.
 
-**Problem:**
+#### Issue #4: Production Server Considerations
+
+**Current implementation** (`admin_web.py`):
 ```python
-# admin_web.py:1437
-app.run(host='0.0.0.0', port=ADMIN_WEB_PORT, debug=True)
+# admin_web.py — actual startup (not debug=True)
+port = _find_free_port(ADMIN_WEB_PORT)   # auto-selects free port starting from ADMIN_WEB_PORT
+app.run(host='0.0.0.0', port=port,
+        debug=False, threaded=True, use_reloader=False)
 ```
 
-Flask development server is **NOT production-ready**:
-- Single-threaded
+Flask's built-in server runs with `debug=False, threaded=True` and auto-selects a free port via `_find_free_port()`. While this is better than a single-threaded debug server, Flask's built-in WSGI server is still **not recommended for heavy production loads**:
+- No process-level concurrency (relies on Python threading)
 - No request queuing
 - Crashes on exceptions
 
@@ -1046,7 +1050,7 @@ CMD gunicorn -w 4 -b 0.0.0.0:8080 admin_web:app
 
 ### 11.1 Build Configuration
 
-**Flutter Version:** 3.19.6
+**Flutter Version:** 3.24.5
 **Dart Version:** 3.0+
 **Android SDK:** 21+ (Lollipop)
 
@@ -1098,12 +1102,12 @@ flutter build appbundle --release
 
 ### 11.3 GitHub Actions Workflow
 
-**File:** `.github/workflows/build_apk.yml`
+**File:** `.github/workflows/build-apk.yml`
 
 **Steps:**
 1. Checkout repository
 2. Setup Java JDK 17
-3. Install Flutter 3.19.6
+3. Install Flutter 3.24.5
 4. Generate `local.properties`
 5. Run `flutter pub get`
 6. Run `flutter analyze`
