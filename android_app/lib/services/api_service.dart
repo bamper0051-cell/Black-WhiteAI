@@ -87,15 +87,8 @@ class ApiService {
   Future<bool> ping() async {
     if (await _shouldUseDemo()) return true;
     try {
-      // Try /ping first (simpler endpoint, no auth required)
-      final data = await http
-          .get(Uri.parse('$baseUrl/ping'))
-          .timeout(const Duration(seconds: 10));
-      if (data.statusCode == 200) {
-        final json = jsonDecode(data.body);
-        return json['ok'] == true || json['pong'] == true;
-      }
-      return false;
+      final data = await _get('/health');
+      return data['status'] == 'ok';
     } catch (_) {
       return false;
     }
@@ -340,40 +333,38 @@ class ApiService {
 
   /// Получает статус Docker-контейнеров (GET /api/rc/docker)
   Future<DockerContainerStatus> getDockerStatus() async {
-    if (await _shouldUseDemo()) {
-      return _demoDockerStatus();
+    final data = await _get('/api/rc/docker') as Map<String, dynamic>;
+    // Backend returns {ok, containers: [...]}
+    final containers = data['containers'] as List?;
+    if (containers != null && containers.isNotEmpty) {
+      return DockerContainerStatus.fromJson(containers.first as Map<String, dynamic>);
     }
-    try {
-      final data = await _get('/api/rc/docker') as Map<String, dynamic>;
-      // Backend returns {ok, containers: [...]}
-      final containers = data['containers'] as List?;
-      if (containers != null && containers.isNotEmpty) {
-        return DockerContainerStatus.fromJson(containers.first as Map<String, dynamic>);
-      }
-      return const DockerContainerStatus(
-        id: '',
-        name: 'unknown',
-        status: 'unknown',
-        image: '',
-        uptime: '-',
-        cpuPercent: 0,
-        memoryMb: 0,
-      );
-    } catch (_) {
-      if (await ApiService.isDemoMode()) {
-        return _demoDockerStatus();
-      }
-      rethrow;
-    }
+    return const DockerContainerStatus(
+      id: '',
+      name: 'unknown',
+      status: 'unknown',
+      image: '',
+      uptime: '-',
+      cpuPercent: 0,
+      memoryMb: 0,
+    );
   }
 
   /// Выполняет shell-команду на сервере (POST /api/rc/shell)
-  Future<String> runDockerCommand(String cmd) async {
-    if (await _shouldUseDemo()) {
-      return 'Demo: executed "$cmd" locally';
-    }
+  Future<String> runShellCommand(String cmd) async {
     final data = await _post('/api/rc/shell', {'cmd': cmd});
     return data['output'] ?? data['result'] ?? '';
+  }
+
+  /// Выполняет действие Docker для контейнера (POST /api/rc/docker/action)
+  Future<String> runDockerCommand(String action, {String? container}) async {
+    final payload = <String, dynamic>{'action': action};
+    if (container != null && container.isNotEmpty) {
+      payload['container'] = container;
+    }
+
+    final data = await _post('/api/rc/docker/action', payload);
+    return data['output'] ?? data['result'] ?? data['message'] ?? '';
   }
 
   // ─── WebSocket Logs ───────────────────────────────────────────────────────

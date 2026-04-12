@@ -214,6 +214,30 @@ class SystemStats {
   factory SystemStats.fromJson(Map<String, dynamic> j) {
     // Parse from /api/status response
     final queue = j['queue'] as Map<String, dynamic>? ?? {};
+
+    // Compute individual task counts with fallbacks
+    final pending = (queue['pending'] as num?)?.toInt() ?? j['pending'] ?? 0;
+    final running = (queue['running'] as num?)?.toInt() ?? j['running'] ?? 0;
+    final done = (queue['done'] as num?)?.toInt() ?? j['done'] ?? 0;
+    final failed = (queue['failed'] as num?)?.toInt() ?? j['failed'] ?? 0;
+
+    // Compute totalTasks: prefer queue['total'], fall back to sum of counts, then j['total_tasks']
+    int totalTasks;
+    if (queue['total'] != null) {
+      totalTasks = (queue['total'] as num).toInt();
+    } else if (queue.isNotEmpty) {
+      // Sum all numeric values in queue when 'total' is missing
+      totalTasks = queue.values.whereType<num>().fold(0, (sum, val) => sum + val.toInt());
+    } else {
+      totalTasks = j['total_tasks'] ?? 0;
+    }
+
+    return SystemStats(
+      totalTasks: totalTasks,
+      pendingTasks: pending,
+      runningTasks: running,
+      doneTasks: done,
+      failedTasks: failed,
     return SystemStats(
       totalTasks: (queue['total'] as num?)?.toInt() ?? j['total_tasks'] ?? 0,
       pendingTasks: (queue['pending'] as num?)?.toInt() ?? j['pending'] ?? 0,

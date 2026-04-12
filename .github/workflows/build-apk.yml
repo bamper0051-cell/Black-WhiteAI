@@ -2,6 +2,7 @@ name: Build Android APK
 
 on:
   push:
+    branches: [ main, claude/project-setup-android-app-wyDHh, copilot/fix-github-actions-apk-build ]
     branches: [ main, claude/project-setup-android-app-wyDHh, copilot/fix-github-actions-apk-build, claude/fix-all-bugs, copilot/fix-reference-commit-345c88a ]
     paths:
       - 'android_app/**'
@@ -82,6 +83,11 @@ jobs:
           cp android_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
              release-apks/BlackBugsAI-arm32.apk    || true
           cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
+             release-apks/BlackBugsAI-x86_64.apk || true
+          ls -lh release-apks/
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@bbbca2dd87ba6bfe12b05c2f3404c5e21ef7c1f6  # v7
              release-apks/BlackBugsAI-x86_64.apk  || true
           cp android_app/build/app/outputs/flutter-apk/app-debug.apk \
              debug-apks/BlackBugsAI-debug.apk      || true
@@ -109,6 +115,16 @@ jobs:
         run: |
           TAG="${{ github.event.inputs.release_tag }}"
           TAG="${TAG:-latest}"
+
+          # Check if release already exists
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, uploading to existing release"
+            gh release upload "$TAG" release-apks/* --clobber
+          else
+            echo "Creating new release $TAG"
+            gh release create "$TAG" \
+              --title "BlackBugsAI Android App $TAG" \
+              --notes "## BlackBugsAI Android App
           gh release create "$TAG" \
             --title "BlackBugsAI Android App $TAG" \
             --notes "## BlackBugsAI Android App
@@ -129,4 +145,6 @@ Neon-styled management app for BlackBugsAI multi-agent platform.
 1. Запусти \`docker-compose up -d\` на сервере
 2. Введи URL: \`http://<IP>:8080\`
 3. Введи \`ADMIN_TOKEN\` из \`.env\`" \
+              release-apks/*
+          fi
             release-apks/* || true
