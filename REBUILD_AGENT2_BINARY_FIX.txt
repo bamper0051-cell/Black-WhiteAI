@@ -1,0 +1,12 @@
+Rebuild: Agent-coder 2 binary/text fix
+
+Changes:
+1. chat_agent.py and proj/chat_agent.py
+   - subprocess.run now uses text=True, encoding=utf-8, errors=replace
+   - stdout/stderr are returned as str instead of bytes
+2. bot.py and proj/bot.py
+   - added _send_generated_artifact helper
+   - standard artifact sending routed through helper
+
+Expected fix:
+- resolves can only concatenate str (not "bytes") to str during Agent-coder 2 runs that generate binary files like GIF

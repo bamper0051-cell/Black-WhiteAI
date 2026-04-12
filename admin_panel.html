@@ -165,6 +165,10 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
   <div class="sb-nav"     onclick="nav('smith',this)"><span class="ic">🕵️</span> АГЕНТ_СМИТ</div>
   <div class="sb-nav"     onclick="nav('neo',this)"><span class="ic">🟢</span> AGENT NEO</div>
   <div class="sb-nav"     onclick="nav('matrix',this)"><span class="ic">🟥</span> AGENT MATRIX</div>
+  <div class="sb-nav"     onclick="nav('anderson',this)"><span class="ic">🔍</span> MR. ANDERSON</div>
+  <div class="sb-nav"     onclick="nav('pythia',this)"><span class="ic">💻</span> AGENT PYTHIA</div>
+  <div class="sb-nav"     onclick="nav('tanker',this)"><span class="ic">🛡</span> AGENT TANKER</div>
+  <div class="sb-nav"     onclick="nav('operator',this)"><span class="ic">🎯</span> OPERATOR</div>
   <div class="sb-nav"     onclick="nav('tools',this)"><span class="ic">🔧</span> Инструменты</div>
   <div class="sb-nav"     onclick="nav('tasks',this)"><span class="ic">📋</span> Задачи<span class="badge" id="bg-t">0</span></div>
 
@@ -725,7 +729,138 @@ label{font-size:11px;color:var(--m);margin-bottom:4px;display:block}
     </div>
   </div>
 
-  <!-- ══ ДОСТУП / ТОННЕЛЬ ══ -->
+  <!-- ══ AGENT ANDERSON ══ -->
+  <div class="page" id="pg-anderson">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🔍 MR. ANDERSON</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Анализ уязвимостей · Code Fix · Review · Рефлексия</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача</div>
+      <div class="cb">
+        <textarea id="and-task" rows="4" placeholder="Проверь этот код на уязвимости&#10;Найди SQL injection в auth_module.py&#10;Сделай code review функции parse_user_input"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="and-mode" style="flex:1">
+            <option value="auto">🤖 Auto</option>
+            <option value="vuln_scan">🔎 Vuln Scan</option>
+            <option value="code_fix">🔧 Code Fix</option>
+            <option value="review">📋 Code Review</option>
+          </select>
+          <button class="btn bp" onclick="runGenericAgent('anderson','and-task','and-out','and-badge','and-mode')">🔍 Запустить</button>
+          <button class="btn bo bs" onclick="clearAgentOut('and-out','and-badge')">✕</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          <button class="btn bo bs" onclick="setAgentTask('and-task','Проверь на SQL injection: SELECT * FROM users WHERE id='+user_id)">💉 SQL Inject</button>
+          <button class="btn bo bs" onclick="setAgentTask('and-task','Найди XSS уязвимости в HTML шаблонах')">🕸 XSS</button>
+          <button class="btn bo bs" onclick="setAgentTask('and-task','Полный code review с рекомендациями')">📋 Review</button>
+          <button class="btn bo bs" onclick="setAgentTask('and-task','Исправь найденные уязвимости в коде')">🔧 Fix All</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод</span>
+        <span id="and-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="and-out" style="padding:12px;min-height:80px;max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--acc2)">Готов к работе...</pre>
+    </div>
+  </div>
+
+  <!-- ══ AGENT PYTHIA ══ -->
+  <div class="page" id="pg-pythia">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">💻 AGENT PYTHIA</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Кодер: quick · project · review · sandbox · autofix</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача</div>
+      <div class="cb">
+        <textarea id="pyt-task" rows="4" placeholder="Напиши Flask API с JWT авторизацией&#10;Создай многофайловый проект: парсер hh.ru&#10;Сделай review этого кода и исправь баги"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="pyt-mode" style="flex:1">
+            <option value="auto">🤖 Auto</option>
+            <option value="quick">⚡ Quick</option>
+            <option value="autofix">🔧 Autofix</option>
+            <option value="project">🗂 Project</option>
+            <option value="review">📋 Review</option>
+            <option value="sandbox">🧪 Sandbox</option>
+          </select>
+          <button class="btn" style="background:var(--cy);color:#000" onclick="runGenericAgent('pythia','pyt-task','pyt-out','pyt-badge','pyt-mode')">💻 Запустить</button>
+          <button class="btn bo bs" onclick="clearAgentOut('pyt-out','pyt-badge')">✕</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          <button class="btn bo bs" onclick="setAgentTask('pyt-task','Напиши Flask REST API с CRUD и SQLite')">⚡ Flask API</button>
+          <button class="btn bo bs" onclick="setAgentTask('pyt-task','Создай многофайловый проект Telegram бота на aiogram 3')">🗂 TG Проект</button>
+          <button class="btn bo bs" onclick="setAgentTask('pyt-task','Запусти и протестируй следующий код:')">🧪 Sandbox</button>
+          <button class="btn bo bs" onclick="setAgentTask('pyt-task','Сделай code review и найди баги в: ')">📋 Review</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод</span>
+        <span id="pyt-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="pyt-out" style="padding:12px;min-height:80px;max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--cy)">Готов к работе...</pre>
+    </div>
+  </div>
+
+  <!-- ══ AGENT TANKER ══ -->
+  <div class="page" id="pg-tanker">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🛡 AGENT TANKER</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Red Team · Multitool · Двухстадийный цикл Plan→Execute→Verify</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача</div>
+      <div class="cb">
+        <textarea id="tnk-task" rows="4" placeholder="Собери цепочку: скачать сайт → извлечь текст → анализ&#10;Создай автоматизированный пайплайн для обработки данных&#10;Проверь безопасность своей системы"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="tnk-mode" style="flex:1">
+            <option value="auto">🤖 Auto</option>
+            <option value="code">💻 Code</option>
+            <option value="multitool">⛓ Multitool</option>
+            <option value="analyze">🔬 Analyze</option>
+          </select>
+          <button class="btn" style="background:var(--y);color:#000" onclick="runGenericAgent('tanker','tnk-task','tnk-out','tnk-badge','tnk-mode')">🛡 Запустить</button>
+          <button class="btn bo bs" onclick="clearAgentOut('tnk-out','tnk-badge')">✕</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+          <button class="btn bo bs" onclick="setAgentTask('tnk-task','Скачай сайт example.com → извлеки текст → сделай резюме')">⛓ Web Chain</button>
+          <button class="btn bo bs" onclick="setAgentTask('tnk-task','Создай pipeline: читать CSV → фильтровать → записать результат')">📊 Data Pipeline</button>
+          <button class="btn bo bs" onclick="setAgentTask('tnk-task','Анализ кода на security: ')">🔬 Security Analyze</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод</span>
+        <span id="tnk-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="tnk-out" style="padding:12px;min-height:80px;max-height:400px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--y)">Готов к работе...</pre>
+    </div>
+  </div>
+
+  <!-- ══ AGENT OPERATOR ══ -->
+  <div class="page" id="pg-operator">
+    <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🎯 OPERATOR</h2>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Мета-агент · Оркестрация NEO + MATRIX + SMITH + TANKER + ANDERSON + PYTHIA</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch">Задача для оркестрации</div>
+      <div class="cb">
+        <textarea id="op-task" rows="5" placeholder="Проанализируй уязвимости и напиши патч для auth_module.py&#10;Создай полный проект Telegram бота с парсером и базой данных&#10;Задача требует нескольких агентов — OPERATOR сам распределит"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" style="background:linear-gradient(90deg,var(--acc),var(--pk))" onclick="runGenericAgent('operator','op-task','op-out','op-badge')">🎯 Оркестрировать</button>
+          <button class="btn bo bs" onclick="clearAgentOut('op-out','op-badge')">✕</button>
+        </div>
+        <div style="margin-top:10px;padding:8px;background:var(--bg3);border-radius:6px;font-size:11px;color:var(--m)">
+          ⚠️ OPERATOR доступен только GOD/OWNER. Автоматически распределяет задачу по лучшим агентам.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch" style="display:flex;justify-content:space-between">
+        <span>Вывод Оркестратора</span>
+        <span id="op-badge" style="font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3)">готов</span>
+      </div>
+      <pre id="op-out" style="padding:12px;min-height:80px;max-height:500px;overflow-y:auto;white-space:pre-wrap;font-size:11px;color:var(--acc3)">Готов к оркестрации...</pre>
+    </div>
+  </div>
+
   <div class="page" id="pg-access">
     <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">🌐 Удалённый доступ</h2>
     <div style="font-size:11px;color:var(--m);margin-bottom:14px">Cloudflare Tunnel · Bore · ngrok · Google Cloud</div>
@@ -870,14 +1005,21 @@ docker compose up -d</code>
 <script>
 'use strict';
 // ── State ────────────────────────────────────────────────────────────────────
-let B = localStorage.getItem('bb_url')||'http://localhost:8080';
+let B = localStorage.getItem('bb_url') || ((location.protocol.startsWith('http')) ? location.origin : 'http://localhost:8080');
 let T = localStorage.getItem('bb_tok')||'';
 let _U = [], _Tools = [], _liveInt = null, _mUid = null, _smT = null, _mpTab = 'slideshow';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 addEventListener('load', () => {
+  const qs = new URLSearchParams(location.search);
+  const qBase = (qs.get('base') || '').trim();
+  const qTok  = (qs.get('token') || '').trim();
+  if (qBase) B = qBase.replace(/\/$/, '');
+  if (qTok) T = qTok;
   document.getElementById('ui-url').value = B;
   document.getElementById('ui-tok').value = T;
+  if (qBase) localStorage.setItem('bb_url', B);
+  if (qTok)  localStorage.setItem('bb_tok', T);
   buildShellCmds();
   buildSmithTemplates();
   const pg = localStorage.getItem('bb_pg')||'dash';
@@ -898,8 +1040,21 @@ function nav(pg, el) {
   ({dash:loadDash, users:loadUsers, tools:loadTools, tasks:loadTasks,
     procs:loadProcs, logs:loadLogs, sys:loadSys, cfg:loadCfg,
     files:loadFiles,
-    neo:    () => { loadNeoTools(); },
-    matrix: () => { loadMatrixTools(); },
+    neo:      () => { loadNeoTools(); },
+    matrix:   () => { loadMatrixTools(); },
+    anderson: () => {},
+    pythia:   () => {},
+    tanker:   () => {},
+    operator: () => {},
+    learning:    () => loadLearning(),
+    skills:      () => loadSkills(),
+    workflow:    () => { if (!wfCvs) setTimeout(wfInit, 80); else setTimeout(wfResize, 50); },
+    marketplace: () => loadMarketplace(),
+    memory:      () => loadMemory(),
+    models:      () => loadProviders(),
+    billing:     () => loadBilling(),
+    access:      () => loadTunnelStatus(),
+    backup:      () => {},
   })[pg]?.();
 }
 
@@ -912,7 +1067,7 @@ async function api(method, path, body) {
       method, headers:{'Content-Type':'application/json','X-Admin-Token':T},
       body: body ? JSON.stringify(body) : undefined
     });
-    if (!r.ok) { const t = await r.text(); return {ok:false, error:`HTTP ${r.status}: ${t.slice(0,100)}`}; }
+    if (!r.ok) { const t = await r.text(); const msg = (r.status===401) ? 'Неверный токен или токен не задан' : `HTTP ${r.status}: ${t.slice(0,100)}`; return {ok:false, error:msg}; }
     return await r.json();
   } catch(e) { return {ok:false, error:String(e)}; }
 }
@@ -923,6 +1078,7 @@ async function connect() {
   localStorage.setItem('bb_url', B);
   localStorage.setItem('bb_tok', T);
   upd_dot('warn', 'Подключение...');
+  if (!T) toast('⚠️ Вставь ADMIN_WEB_TOKEN или открой /panel?token=...','warn');
   const d = await api('GET', '/api/status');
   if (d.ok) {
     upd_dot('ok', d.version||'Online');
@@ -1933,6 +2089,74 @@ docker compose up -d
 cloudflared tunnel --url http://localhost:8080`;
   navigator.clipboard.writeText(text).then(() => toast('Скопировано!','ok'));
 }
+
+// ── Generic Agent Runner (Anderson / Pythia / Tanker / Operator) ─────────────
+async function runGenericAgent(agent, taskId, outId, badgeId, modeId) {
+  const task = document.getElementById(taskId)?.value.trim();
+  const mode = modeId ? (document.getElementById(modeId)?.value || 'auto') : 'auto';
+  if (!task) { toast('Введи задачу', 'er'); return; }
+
+  const out   = document.getElementById(outId);
+  const badge = document.getElementById(badgeId);
+  if (!out) return;
+
+  out.textContent = '⏳ Запускаю ' + agent.toUpperCase() + '...\n';
+  if (badge) { badge.textContent = '⏳ работает'; badge.style.background = 'rgba(255,200,0,.15)'; }
+
+  const d = await api('POST', '/api/agent/run', { task, agent, mode });
+
+  const text = d.ok ? (d.final || d.result || '✅ Готово') : '❌ ' + (d.error || 'Ошибка');
+  let full = text;
+
+  if (d.steps && d.steps.length) {
+    const log = d.steps
+      .map(s => s.text || s.tool || '')
+      .filter(Boolean)
+      .join('\n');
+    if (log) full += '\n\n📊 Лог:\n' + log;
+  }
+  if (d.zip_path) full += '\n\n📦 ZIP: ' + d.zip_path;
+  if (d.generated_tools && d.generated_tools.length)
+    full += '\n🔧 Созданы инструменты: ' + d.generated_tools.join(', ');
+
+  out.textContent = full;
+  if (badge) {
+    badge.textContent = d.ok ? '✅ готово' : '❌ ошибка';
+    badge.style.background = d.ok ? 'rgba(0,200,100,.15)' : 'rgba(255,50,50,.15)';
+  }
+  toast(d.ok ? ('✅ ' + agent.toUpperCase() + ' завершил') : ('❌ ' + (d.error || 'Ошибка')),
+        d.ok ? 'ok' : 'er');
+}
+
+function setAgentTask(fieldId, text) {
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  el.value = text;
+  el.focus();
+  el.setSelectionRange(text.length, text.length);
+}
+
+function clearAgentOut(outId, badgeId) {
+  const out = document.getElementById(outId);
+  const badge = document.getElementById(badgeId);
+  if (out)   out.textContent = 'Готов к работе...';
+  if (badge) { badge.textContent = 'готов'; badge.style.background = 'var(--bg3)'; }
+}
+
+// ── Подключаем новые агенты к nav() ────────────────────────────────────────
+const _origNav = window._navHooked ? nav : null;
+(function patchNav() {
+  const _extraPages = {
+    anderson: () => {},
+    pythia:   () => {},
+    tanker:   () => {},
+    operator: () => {},
+  };
+  const _oldNavMap = window.__navMap || {};
+  Object.assign(_oldNavMap, _extraPages);
+  window.__navMap = _oldNavMap;
+  window._navHooked = true;
+})();
 
 // ── Auto-refresh ──────────────────────────────────────────────────────────────
 setInterval(() => {

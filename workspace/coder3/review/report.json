@@ -1,0 +1,28 @@
+{
+  "findings": [
+    "Есть bot.py: проверь разбиение на handlers / services / callbacks.",
+    "Registry есть: стоит разнести tools по категориям, иначе будет новый монолит.",
+    "Добавь compile/smoke-check в CI, чтобы ловить синтаксис до запуска."
+  ],
+  "risks": [],
+  "files_sample": [
+    "admin_module.py",
+    "admin_web.py",
+    "agent_code.py",
+    "agent_core.py",
+    "agent_executor.py",
+    "agent_memory.py",
+    "agent_planner.py",
+    "agent_roles.py",
+    "agent_session (1).py",
+    "agent_session (2).py",
+    "agent_session.py",
+    "agent_tools_registry.py",
+    "auth_module.py",
+    "autofix.py",
+    "backup.py"
+  ],
+  "entry_points": [
+    "bot.py"
+  ]
+}

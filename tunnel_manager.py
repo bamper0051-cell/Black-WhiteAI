@@ -170,13 +170,8 @@ def _start_cloudflared(port: int = 8080) -> bool:
 #  PUBLIC API
 # ══════════════════════════════════════════════════════════════════════════════
 
-def start(provider: str = "bore", port: int = 0, **kwargs) -> dict:
-    """Start tunnel. provider: bore | localtunnel | cloudflared
-    Port default: TUNNEL_TARGET_PORT env (80 for nginx, 8080 for direct).
-    In Docker with nginx set TUNNEL_TARGET_PORT=80.
-    """
-    if port == 0:
-        port = int(os.environ.get("TUNNEL_TARGET_PORT", os.environ.get("ADMIN_WEB_PORT", 8080)))
+def start(provider: str = "bore", port: int = 8080, **kwargs) -> dict:
+    """Start tunnel. provider: bore | localtunnel | cloudflared"""
     global _status, _url, _log
     with _lock:
         if _proc and _proc.poll() is None:

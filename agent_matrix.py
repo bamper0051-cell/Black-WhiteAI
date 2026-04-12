@@ -46,66 +46,6 @@ TOOL_INSTALL_PATTERNS = [
     r"(?:используй|запусти|применй)\s+[\"']?(\w[\w\-_]+)[\"']?\s+(?:для|чтобы|на|к)",
 ]
 
-# ── Справочник известных security/OSINT инструментов с GitHub URL ─────────────
-# Когда агент планирует шаг с именем инструмента из этого списка
-# и инструмент не найден в БД — он будет автоматически склонирован и установлен.
-KNOWN_GITHUB_TOOLS: dict = {
-    # ── Разведка / OSINT ──────────────────────────────────────────────────────
-    "red_hawk":       "https://github.com/Tuhinshubhra/RED_HAWK",
-    "redhawk":        "https://github.com/Tuhinshubhra/RED_HAWK",
-    "sherlock":       "https://github.com/sherlock-project/sherlock",
-    "theharvester":   "https://github.com/laramies/theHarvester",
-    "the_harvester":  "https://github.com/laramies/theHarvester",
-    "subfinder":      "https://github.com/projectdiscovery/subfinder",
-    "amass":          "https://github.com/owasp-amass/amass",
-    "dnsx":           "https://github.com/projectdiscovery/dnsx",
-    "httprobe":       "https://github.com/tomnomnom/httprobe",
-    "photon":         "https://github.com/s0md3v/Photon",
-    "osintgram":      "https://github.com/Datalux/Osintgram",
-    "holehe":         "https://github.com/megadose/holehe",
-    "maigret":        "https://github.com/soxoj/maigret",
-    "spiderfoot":     "https://github.com/smicallef/spiderfoot",
-    "maltego":        None,  # GUI-only, пропускаем
-
-    # ── Web / Scanning ────────────────────────────────────────────────────────
-    "nikto":          "https://github.com/sullo/nikto",
-    "sqlmap":         "https://github.com/sqlmapproject/sqlmap",
-    "wpscan":         "https://github.com/wpscanteam/wpscan",
-    "dirsearch":      "https://github.com/maurosoria/dirsearch",
-    "gobuster":       None,  # Go binary, нет pip
-    "ffuf":           None,  # Go binary
-    "nuclei":         None,  # Go binary
-    "wfuzz":          "https://github.com/xmendez/wfuzz",
-    "wafw00f":        "https://github.com/EnableSecurity/wafw00f",
-    "whatweb":        "https://github.com/urbanadventurer/WhatWeb",
-    "sslyze":         "https://github.com/nabla-c0d3/sslyze",
-    "commix":         "https://github.com/commixproject/commix",
-
-    # ── Network ───────────────────────────────────────────────────────────────
-    "masscan":        None,   # C binary
-    "rustscan":       None,   # Rust binary
-    "netdiscover":    None,   # C binary
-
-    # ── Password / Crypto ─────────────────────────────────────────────────────
-    "hashcat":        None,   # C binary
-    "john":           None,   # C binary
-    "hashid":         "https://github.com/psypanda/hashID",
-
-    # ── Exploit / Post-exploit ────────────────────────────────────────────────
-    "exploitdb":      "https://github.com/offensive-security/exploitdb",
-    "searchsploit":   "https://github.com/offensive-security/exploitdb",
-    "pwncat":         "https://github.com/calebstewart/pwncat",
-
-    # ── Social Engineering / Phishing ─────────────────────────────────────────
-    "setoolkit":      None,   # interactive
-    "gophish":        None,   # Go binary
-
-    # ── Python утилиты ────────────────────────────────────────────────────────
-    "requests_html":  None,   # pip only
-    "playwright":     None,   # pip only
-    "scrapy":         None,   # pip only
-}
-
 # ── Системный промт — Кодер + Тестер + OSINT + Security Analyst ──────────────
 MATRIX_SYSTEM = """Ты — AGENT MATRIX v2.0, универсальный AI-агент BlackBugsAI.
 Роли: Кодер · Тестер · OSINT · Security Analyst (авторизованные задачи).
@@ -497,19 +437,6 @@ def generate_tool(
     """
     def st(msg):
         if on_status: on_status(msg)
-
-    # ── KNOWN_GITHUB_TOOLS: автоустановка по имени ────────────────────────────
-    # Если инструмент известен — берём его GitHub URL из справочника
-    # без LLM-планирования и без ручного указания URL
-    name_key = name.lower().replace("-", "_").replace(" ", "_")
-    if not github_url and name_key in KNOWN_GITHUB_TOOLS:
-        known_url = KNOWN_GITHUB_TOOLS[name_key]
-        if known_url:
-            st(f"📚 {name!r} найден в справочнике инструментов → {known_url}")
-            github_url = known_url
-            install_mode = "github"
-        else:
-            st(f"ℹ️ {name!r} — бинарный инструмент, попытка через pip/LLM")
 
     # Определяем режим автоматически
     if install_mode == "auto":
@@ -1002,16 +929,9 @@ def run_matrix(
 
         elif not code and tool_name not in KNOWN_TOOLS:
             st(f"  🔨 Генерирую инструмент: {tool_name!r}...")
-            # Проверяем справочник известных инструментов
-            name_key = tool_name.lower().replace("-", "_")
-            auto_github_url = KNOWN_GITHUB_TOOLS.get(name_key, "")
-            if not auto_github_url:
-                auto_github_url = s_inputs.get("url", "") if "github.com" in str(s_inputs.get("url", "")) else ""
-            if auto_github_url is None:
-                auto_github_url = ""  # binary tool, skip github
+            github_url = s_inputs.get("url", "") if "github.com" in str(s_inputs.get("url", "")) else ""
             ok_gen, err_gen = generate_tool(
-                tool_name, desc, s_inputs, on_status=on_status,
-                github_url=auto_github_url
+                tool_name, desc, s_inputs, on_status=on_status, github_url=github_url
             )
             if ok_gen:
                 generated_tools.append(tool_name)

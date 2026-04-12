@@ -1,0 +1,16 @@
+BlackBugsAI rebuild report
+=========================
+
+What was fixed
+- Fixed syntax-breaking files: pars/config.py, pars.py
+- Polished Telegram menu layout and Agent menu
+- Reworded Agent Coder 2 screen and help screen
+- Kept existing execution flow intact to avoid breaking runtime behavior
+
+Clean-up for release zip
+- Excluded .env, *.db, desktop/.vs, duplicate legacy folder BlackBugsAI_v1.0
+- Left .env.example and source code intact
+
+Validation
+- Core files parsed successfully: bot.py, chat_agent.py, agent_core.py,
+  agent_tools_registry.py, admin_web.py, keyboards.py

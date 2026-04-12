@@ -1,0 +1,157 @@
+version: "3.8"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  BlackBugsAI v5 — docker-compose
+#
+#  ТУННЕЛИ (разделены — Fish и Admin НЕ конфликтуют):
+#    Admin Panel → bore / ngrok       (порт 8080, НЕ Cloudflare)
+#    Fish Pages  → Cloudflare tunnel  (порт 5000, только для фишинга)
+#
+#  ИСПОЛЬЗОВАНИЕ:
+#    Только бот:              docker compose up -d
+#    Бот + bore admin:        docker compose --profile admin-bore up -d
+#    Бот + ngrok admin:       docker compose --profile admin-ngrok up -d
+#    Бот + CF для фишинга:    docker compose --profile fish-cf up -d
+#    Всё вместе:              docker compose --profile admin-bore --profile fish-cf up -d
+#
+#  ПОЛУЧИТЬ URL ADMIN:   docker compose logs bore-admin | grep bore.pub
+#  ПОЛУЧИТЬ URL FISH:    docker compose logs cloudflare-fish | grep trycloudflare
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── Основной бот ─────────────────────────────────────────────────────────
+  bot:
+    build: .
+    container_name: blackbugs_v5
+    restart: unless-stopped
+    stop_grace_period: 15s
+    ports:
+      - "5000:5000"
+      - "8080:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ADMIN_WEB_TOKEN=${ADMIN_WEB_TOKEN:-changeme_secret_token}
+      - ADMIN_WEB_PORT=8080
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - TZ=${TZ:-UTC}
+      - BORE_SERVER=${BORE_SERVER:-bore.pub}
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./tools:/app/tools
+      - ./repos:/app/repos
+      - ./sandbox:/app/sandbox
+      - ./artifacts:/app/artifacts
+      - ./matrix_workspace:/app/matrix_workspace
+      - ./neo_workspace:/app/neo_workspace
+      - ./agent_projects:/app/agent_projects
+      - ./created_bots:/app/created_bots
+      - ./output:/app/output
+      - ./fish_uploads:/app/fish_uploads
+      - ./fish_pages:/app/fish_pages
+      - ./fish_logs:/app/fish_logs
+      - ./admin_web.py:/app/admin_web.py
+      - ./admin_panel.html:/app/admin_panel.html
+      - ./agent_matrix.py:/app/agent_matrix.py
+      - ./agent_neo.py:/app/agent_neo.py
+      - ./config.py:/app/config.py
+      - ./bot.py:/app/bot.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    networks:
+      - bbai
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  #  ADMIN PANEL TUNNELS  (выбери один — не Cloudflare)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  bore-admin:
+    image: alpine:3.19
+    container_name: blackbugs_bore_admin
+    profiles: ["admin-bore"]
+    restart: unless-stopped
+    command: >
+      sh -c "
+        apk add --no-cache curl tar grep 2>/dev/null &&
+        BORE_VER=$$(curl -fsSL https://api.github.com/repos/ekzhang/bore/releases/latest | grep tag_name | sed 's/.*\"v//;s/\".*//' | head -1) &&
+        echo \"Bore version: $${BORE_VER}\" &&
+        curl -fsSL https://github.com/ekzhang/bore/releases/download/v$${BORE_VER}/bore-v$${BORE_VER}-x86_64-unknown-linux-musl.tar.gz -o /tmp/bore.tar.gz &&
+        tar -xzf /tmp/bore.tar.gz -C /usr/local/bin/ &&
+        chmod +x /usr/local/bin/bore &&
+        echo '══════════════════════════════════════' &&
+        echo '  ADMIN TUNNEL: bore (not Cloudflare)' &&
+        echo '  Подключись к Admin Panel:' &&
+        echo '  Server URL = http://bore.pub:PORT' &&
+        echo '  (PORT будет в следующей строке)' &&
+        echo '══════════════════════════════════════' &&
+        bore local 8080 --to bore.pub
+      "
+    depends_on:
+      bot:
+        condition: service_healthy
+    networks:
+      - bbai
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "2"
+
+  ngrok-admin:
+    image: ngrok/ngrok:alpine
+    container_name: blackbugs_ngrok_admin
+    profiles: ["admin-ngrok"]
+    restart: unless-stopped
+    command: http bot:8080 --log=stdout --log-format=json
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    depends_on:
+      bot:
+        condition: service_healthy
+    ports:
+      - "4040:4040"
+    networks:
+      - bbai
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "2"
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  #  FISH TUNNEL — Cloudflare (только для фишинга, порт 5000)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  cloudflare-fish:
+    image: cloudflare/cloudflared:latest
+    container_name: blackbugs_cf_fish
+    profiles: ["fish-cf"]
+    restart: unless-stopped
+    command: tunnel --url http://bot:5000 --no-autoupdate
+    depends_on:
+      bot:
+        condition: service_healthy
+    networks:
+      - bbai
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+networks:
+  bbai:
+    driver: bridge
