@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _role     = session['role'];
       _baseUrl  = session['base_url'];
       _authMode = session['auth_mode'];
-      _urlCtrl.text = session['base_url'] ?? '';
+      _urlCtrl.text = prefs.getString('base_url') ?? '';
       _tokenCtrl.text = prefs.getString('admin_token') ?? '';
       _demoMode = prefs.getBool('demo_mode') ?? false;
     });
