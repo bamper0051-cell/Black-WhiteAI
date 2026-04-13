@@ -49,7 +49,7 @@ jobs:
 
       - name: Analyze code
         working-directory: android_app
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Build Debug APK
         working-directory: android_app
@@ -113,6 +113,13 @@ jobs:
         run: |
           TAG="${{ github.event.inputs.release_tag }}"
           NOTES="BlackBugsAI Android App ${TAG} - Neon-styled management app for BlackBugsAI multi-agent platform."
+
+          # Verify APK directories contain files before attempting to publish
+          if [ -z "$(ls -A release-apks/ 2>/dev/null)" ]; then
+            echo "::error::release-apks/ is empty — no APKs were produced."
+            exit 1
+          fi
+
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists, uploading to existing release"
             gh release upload "$TAG" release-apks/* debug-apks/* --clobber
@@ -120,5 +127,5 @@ jobs:
             gh release create "$TAG" \
               --title "BlackBugsAI Android App $TAG" \
               --notes "$NOTES" \
-              release-apks/* debug-apks/* || true
+              release-apks/* debug-apks/*
           fi
