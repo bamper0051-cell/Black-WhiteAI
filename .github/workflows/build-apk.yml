@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 name: Build BlackBugsAI APK
 
 on:
@@ -17,83 +16,19 @@ on:
 jobs:
   build-apk:
     name: Build Flutter APK
-=======
-name: Build Android APK
-
-on:
-  push:
-    branches: [ main, claude/project-setup-android-app-wyDHh, copilot/fix-github-actions-apk-build ]
-    branches: [ main, claude/project-setup-android-app-wyDHh, copilot/fix-github-actions-apk-build, claude/fix-all-bugs, copilot/fix-reference-commit-345c88a ]
-    paths:
-      - 'android_app/**'
-      - '.github/workflows/build-apk.yml'
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag (e.g. v1.0.0)'
-        required: false
-        default: 'latest'
-
-jobs:
-  build-apk:
-    name: Build Release APK
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-<<<<<<< HEAD
-      # 1 ── Checkout ────────────────────────────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      # 2 ── Java ────────────────────────────────────────────────────────────
       - name: Setup Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # v5.2.0
         with:
           distribution: temurin
           java-version: '17'
-
-      # 3 ── Flutter (official action, most reliable) ─────────────────────
-      - name: Setup Flutter 3.24.5
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.5'
-          channel: stable
-          cache: true
-
-      # 4 ── Verify Flutter ─────────────────────────────────────────────────
-      - name: Flutter version
-        run: flutter --version
-
-      # 5 ── Install deps ────────────────────────────────────────────────────
-      - name: Install Flutter dependencies
-        working-directory: android_app
-        run: flutter pub get
-
-      # 6 ── Analyze (non-fatal) ─────────────────────────────────────────────
-      - name: Analyze code
-        working-directory: android_app
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
-
-      # 7 ── local.properties ───────────────────────────────────────────────
-      - name: Generate local.properties
-        run: |
-          FLUTTER_SDK=$(which flutter | sed 's|/bin/flutter||')
-          echo "flutter.sdk=${FLUTTER_SDK}" > android_app/android/local.properties
-          echo "sdk.dir=$ANDROID_SDK_ROOT"  >> android_app/android/local.properties
-
-      # 8 ── Build Debug APK ─────────────────────────────────────────────────
-=======
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e5ce4786f42d4d7c9e14af13c83bf9212  # v6.0.2
-
-      - name: Setup Java 17
-        uses: actions/setup-java@be666c2f9e4024b35fe9eb2a56b5d6893ece8d13  # v5.2.0
-        with:
-          java-version: '17'
-          distribution: 'temurin'
 
       - name: Install Flutter 3.24.5
         run: |
@@ -102,30 +37,27 @@ jobs:
 
       - name: Generate local.properties
         run: |
-          FLUTTER_SDK="${HOME}/flutter"
-          echo "flutter.sdk=${FLUTTER_SDK}" > android_app/android/local.properties
+          echo "flutter.sdk=$HOME/flutter" > android_app/android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android_app/android/local.properties
 
-      - name: Verify Flutter installation
+      - name: Flutter version
         run: flutter --version
 
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         working-directory: android_app
         run: flutter pub get
 
       - name: Analyze code
         working-directory: android_app
-        run: flutter analyze --no-fatal-infos || true
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
       - name: Build Debug APK
         working-directory: android_app
         run: |
           flutter build apk --debug \
-<<<<<<< HEAD
             --build-name=1.1.0 \
             --build-number=${{ github.run_number }}
 
-      # 9 ── Build Release APK (universal) ───────────────────────────────────
       - name: Build Release APK (universal)
         working-directory: android_app
         run: |
@@ -133,33 +65,16 @@ jobs:
             --build-name=1.1.0 \
             --build-number=${{ github.run_number }}
 
-      # 10 ── Build Split APKs ────────────────────────────────────────────────
-=======
-            --build-name=1.0.0 \
-            --build-number=${{ github.run_number }}
-
-      - name: Build Release APK
-        working-directory: android_app
-        run: |
-          flutter build apk --release \
-            --build-name=1.0.0 \
-            --build-number=${{ github.run_number }}
-
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
       - name: Build Split APKs (arm64 + arm32 + x86_64)
         working-directory: android_app
         run: |
           flutter build apk --release --split-per-abi \
-<<<<<<< HEAD
             --build-name=1.1.0 \
             --build-number=${{ github.run_number }}
 
-      # 11 ── Collect into output folders ────────────────────────────────────
       - name: Collect APKs
         run: |
           mkdir -p release-apks debug-apks
-
-          # Release APKs
           cp android_app/build/app/outputs/flutter-apk/app-release.apk \
              release-apks/BlackBugsAI-universal.apk            || true
           cp android_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
@@ -168,147 +83,42 @@ jobs:
              release-apks/BlackBugsAI-arm32.apk                || true
           cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
              release-apks/BlackBugsAI-x86_64.apk               || true
-
-          # Debug APK
           cp android_app/build/app/outputs/flutter-apk/app-debug.apk \
              debug-apks/BlackBugsAI-debug.apk                  || true
-
           echo "=== Release APKs ===" && ls -lh release-apks/ 2>/dev/null
           echo "=== Debug APK ==="    && ls -lh debug-apks/   2>/dev/null
 
-      # 12 ── Upload Release APKs ──────────────────────────────────────────
       - name: Upload Release APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: BlackBugsAI-Release-APKs
           path: release-apks/
           retention-days: 30
           if-no-files-found: warn
 
-      # 13 ── Upload Debug APK ──────────────────────────────────────────────
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-=======
-            --build-name=1.0.0 \
-            --build-number=${{ github.run_number }}
-
-      - name: Collect APKs
-        run: |
-          mkdir -p release-apks debug-apks
-          cp android_app/build/app/outputs/flutter-apk/app-release.apk \
-             release-apks/BlackBugsAI-universal.apk
-          cp android_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-             release-apks/BlackBugsAI-arm64.apk    || true
-          cp android_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-             release-apks/BlackBugsAI-arm32.apk    || true
-          cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
-             release-apks/BlackBugsAI-x86_64.apk || true
-          ls -lh release-apks/
-
-      - name: Upload APK artifacts
-        uses: actions/upload-artifact@bbbca2dd87ba6bfe12b05c2f3404c5e21ef7c1f6  # v7
-             release-apks/BlackBugsAI-x86_64.apk  || true
-          cp android_app/build/app/outputs/flutter-apk/app-debug.apk \
-             debug-apks/BlackBugsAI-debug.apk      || true
-          echo "=== Release ===" && ls -lh release-apks/
-          echo "=== Debug ===" && ls -lh debug-apks/
-
-      - name: Upload Release APKs
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
-        with:
-          name: BlackBugsAI-APKs
-          path: release-apks/
-          retention-days: 30
-
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: BlackBugsAI-Debug-APK
           path: debug-apks/
           retention-days: 14
-<<<<<<< HEAD
           if-no-files-found: warn
 
-      # 14 ── Create GitHub Release (only on manual trigger with tag) ────────
       - name: Create GitHub Release
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.release_tag != ''
-=======
-
-      - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ github.event.inputs.release_tag }}"
-<<<<<<< HEAD
-          gh release create "$TAG" \
-            --title "BlackBugsAI Android App $TAG" \
-            --notes "## BlackBugsAI Android App $TAG
-
-Neon-styled management app for BlackBugsAI multi-agent platform.
-
-### Что нового
-- Добавлены агенты: ANDERSON · PYTHIA · TANKER · OPERATOR
-- Исправлена аутентификация (Bearer token + X-Admin-Token)
-- Исправлен settings_screen (дублированный dispose)
-- Шрифты через Google Fonts (не нужны файлы)
-- Demo mode работает без сервера
-
-### Скачать APK
-| Файл | Для кого |
-|---|---|
-| **BlackBugsAI-arm64.apk** | Большинство современных телефонов (рекомендуется) |
-| **BlackBugsAI-arm32.apk** | Старые устройства |
-| **BlackBugsAI-universal.apk** | Универсальный (больше размер) |
-| **BlackBugsAI-debug.apk** | Для отладки |
-
-### Установка
-1. Скачай APK под свою архитектуру
-2. Настройки Android → Безопасность → Разрешить установку из неизвестных источников
-3. Открой APK и установи
-
-### Подключение к серверу
-1. Запусти: \`docker compose up -d\`
-2. В приложении введи URL: \`http://<IP>:8080\`
-3. Введи ADMIN_WEB_TOKEN из \`.env\`" \
-            release-apks/* debug-apks/* || true
-=======
-          TAG="${TAG:-latest}"
-
-          # Check if release already exists
+          NOTES="BlackBugsAI Android App ${TAG} - Neon-styled management app for BlackBugsAI multi-agent platform."
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists, uploading to existing release"
-            gh release upload "$TAG" release-apks/* --clobber
+            gh release upload "$TAG" release-apks/* debug-apks/* --clobber
           else
-            echo "Creating new release $TAG"
             gh release create "$TAG" \
               --title "BlackBugsAI Android App $TAG" \
-              --notes "## BlackBugsAI Android App
-          gh release create "$TAG" \
-            --title "BlackBugsAI Android App $TAG" \
-            --notes "## BlackBugsAI Android App
-
-Neon-styled management app for BlackBugsAI multi-agent platform.
-
-### Download
-- **BlackBugsAI-arm64.apk** — для большинства современных Android (рекомендуется)
-- **BlackBugsAI-arm32.apk** — для старых устройств
-- **BlackBugsAI-universal.apk** — универсальный (больше размер)
-
-### Установка
-1. Скачай APK под свою архитектуру
-2. Включи \"Установка из неизвестных источников\" в настройках Android
-3. Открой APK и установи
-
-### Подключение
-1. Запусти \`docker-compose up -d\` на сервере
-2. Введи URL: \`http://<IP>:8080\`
-3. Введи \`ADMIN_TOKEN\` из \`.env\`" \
-              release-apks/*
+              --notes "$NOTES" \
+              release-apks/* debug-apks/* || true
           fi
-            release-apks/* || true
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
