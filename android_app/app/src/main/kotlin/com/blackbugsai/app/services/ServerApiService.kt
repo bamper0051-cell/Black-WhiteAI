@@ -254,34 +254,20 @@ class ServerApiService(val baseUrl: String, val token: String) {
     }
 
     suspend fun deleteNeoTool(toolName: String): Boolean = withContext(Dispatchers.IO) {
-        post("/api/neo/tools/$toolName/delete") != null
+        post("/api/neo/tool/delete", mapOf("name" to toolName)) != null
     }
 
     // ── Agent task execution ──────────────────────────────────────────────────
 
     /**
-     * Run a task through the appropriate agent API with a 120-second timeout.
-     * matrix/smith/coder3 → POST /api/matrix/run {"task": task}
-     * neo              → POST /api/workflow/execute {"nodes":[{"id":"1","task":task}],"agent":"neo"}
+     * Run a task through the unified agent API with a 120-second timeout.
+     * All agents (matrix/neo/smith) → POST /api/agent/run {"task": task, "agent": agentId}
      */
     suspend fun runAgentTask(agentId: String, task: String): AgentResult? = withContext(Dispatchers.IO) {
-        val matrixAgents = setOf("matrix", "smith", "coder3")
-        val j: JsonObject? = if (agentId.lowercase() in matrixAgents) {
-            postWithTimeout("/api/matrix/run", mapOf("task" to task), 120_000)
-        } else {
-            // "neo" and any other agent: use workflow/execute with node structure
-            val body = buildJsonObject {
-                put("nodes", buildJsonArray {
-                    add(buildJsonObject {
-                        put("id", "1")
-                        put("task", task)
-                    })
-                })
-                put("agent", agentId)
-            }
-            postJsonObject("/api/workflow/execute", body, 120_000)
-        }
-        j ?: return@withContext null
+        // Use the unified /api/agent/run endpoint for all agents
+        val j = postWithTimeout("/api/agent/run", mapOf("task" to task, "agent" to agentId), 120_000)
+            ?: return@withContext null
+
         AgentResult(
             ok     = j["ok"]?.jsonPrimitive?.booleanOrNull ?: false,
             result = j["result"]?.jsonPrimitive?.contentOrNull ?: "",
