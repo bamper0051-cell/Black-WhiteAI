@@ -1,0 +1,492 @@
+[2026-03-09 02:32:19] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 5, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "WebKit built-in PDF, Chromium document , x3jwYMG, Chromium PDF Viewer, PDF Viewer, Microsoft Edge PDF Viewer, x3bVKkaN", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-09 02:32:19] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-09 02:33:25] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 5, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "WebKit built-in PDF, Chromium document , x3jwYMG, Chromium PDF Viewer, PDF Viewer, Microsoft Edge PDF Viewer, x3bVKkaN", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-09 02:33:25] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-09 23:17:38] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-09 23:17:58] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-09 23:19:18] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-09 23:21:39] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-09 23:21:48] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-09 23:22:09] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:11:24] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:11:24] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "1%", "chargingTime": 213208, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 01:17:01] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:17:01] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 10, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "6lSoc1i, Microsoft Edge PDF Viewer, Chromium PDF Viewer, PDF Viewer, Web Portable Document Format extension, 8e2jwgvf, WebKit built-in PDF", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 01:24:49] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "17%", "chargingTime": 1034627, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 01:24:49] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:24:50] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:25:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:25:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 250, "saveData": false}, "battery": {"charging": true, "level": "17%", "chargingTime": 8945041, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 01:28:12] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:28:12] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 3, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "WebKit built-in PDF, JMl5cWLF, Microsoft Edge PDF Viewer, Brave PDF Plugin, LkaNlx3, PDF Viewer, Chromium PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 01:28:34] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 01:28:34] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "18%", "chargingTime": null, "dischargingTime": 727920}}}
+--------------------------------------------------
+[2026-03-10 02:33:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:33:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "13%", "chargingTime": null, "dischargingTime": 357596}}}
+--------------------------------------------------
+[2026-03-10 02:33:47] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:35:58] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": false, "level": "12%", "chargingTime": null, "dischargingTime": 371825}}}
+--------------------------------------------------
+[2026-03-10 02:36:01] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"system_info": {"screen": "400x400", "availScreen": "400x400", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)", "platform": "Linux x86_64", "language": "en-US", "languages": "en-US", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 16, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:40:22] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:40:36] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:46:52] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:46:55] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 150, "saveData": false}, "battery": {"charging": true, "level": "15%", "chargingTime": 653622, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:46:57] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"system_info": {"screen": "400x400", "availScreen": "400x400", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)", "platform": "Linux x86_64", "language": "en-US", "languages": "en-US", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 127, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.7, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:48:28] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "15%", "chargingTime": 3606958, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:48:30] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "15%", "chargingTime": 3606958, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:48:33] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:48:33] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "15%", "chargingTime": 3606958, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:48:36] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:48:36] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "15%", "chargingTime": 3606958, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:49:55] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:49:55] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 3691003, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:49:57] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:49:57] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 3691003, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:51:29] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:51:29] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 10318266, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:51:33] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:51:33] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 200, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 10318266, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:52:07] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:52:07] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 10318266, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 02:52:10] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 02:52:10] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.5, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "16%", "chargingTime": 10318266, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 03:02:27] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "17%", "chargingTime": null, "dischargingTime": 617702}}}
+--------------------------------------------------
+[2026-03-10 03:08:13] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 03:08:13] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 0, "saveData": false}, "battery": {"charging": false, "level": "15%", "chargingTime": null, "dischargingTime": 246348}}}
+--------------------------------------------------
+[2026-03-10 03:31:52] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.65, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "7.000000000000001%", "chargingTime": null, "dischargingTime": 106519}}}
+--------------------------------------------------
+[2026-03-10 03:41:57] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "4%", "chargingTime": null, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 03:43:07] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "4%", "chargingTime": 691457, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 03:43:29] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "4%", "chargingTime": null, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 04:14:07] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 1.75, "rtt": 100, "saveData": false}, "battery": {"charging": true, "level": "11%", "chargingTime": 1996916, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 07:19:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "_ga_9NDTNG6K4R=GS2.1.s1773119985$o1$g0$t1773119985$j60$l0$h0; _ga=GA1.1.520013991.1773119986"}
+--------------------------------------------------
+[2026-03-10 07:19:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": true, "level": "9%", "chargingTime": 4689609, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 07:19:45] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 07:22:08] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "_gid=GA1.3.1917641195.1773119986; _ga_9NDTNG6K4R=GS2.1.s1773119985$o1$g1$t1773120128$j60$l0$h0; _ga=GA1.3.520013991.1773119986; _gat_gtag_UA_130487518_4=1"}
+--------------------------------------------------
+[2026-03-10 07:22:08] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 07:22:08] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": true, "level": "10%", "chargingTime": 40440000, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 07:22:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 07:22:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "_gid=GA1.3.1917641195.1773119986; _ga=GA1.3.520013991.1773119986; _gat_gtag_UA_130487518_4=1; _ga_9NDTNG6K4R=GS2.1.s1773119985$o1$g1$t1773120137$j51$l0$h0"}
+--------------------------------------------------
+[2026-03-10 07:22:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": true, "level": "9%", "chargingTime": null, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 08:32:27] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 08:32:28] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 5.25, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "35%", "chargingTime": null, "dischargingTime": 1597888}}}
+--------------------------------------------------
+[2026-03-10 08:32:30] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-10 08:32:31] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"system_info": {"screen": "400x400", "availScreen": "400x400", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)", "platform": "Linux x86_64", "language": "en-US", "languages": "en-US", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 113, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.6, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-10 08:38:20] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 50, "saveData": false}, "battery": {"charging": false, "level": "34%", "chargingTime": null, "dischargingTime": 2594682}}}
+--------------------------------------------------
+[2026-03-10 08:38:20] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "_ga_9NDTNG6K4R=GS2.1.s1773124700$o1$g0$t1773124700$j60$l0$h0; _ga=GA1.1.2049326929.1773124700"}
+--------------------------------------------------
+[2026-03-10 08:38:20] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 09:41:02] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 09:41:02] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 7, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "Chromium PDF Viewer, Microsoft Edge PDF Viewer, PDF Viewer, lx3jwg3, WebKit built-in PDF, 7dt9mTJr, Chromium Portable Document Format Renderer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-13 10:28:01] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 10:28:01] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.8, "rtt": 0, "saveData": false}, "battery": {"charging": false, "level": "72%", "chargingTime": null, "dischargingTime": 7091717}}}
+--------------------------------------------------
+[2026-03-13 10:30:15] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {"client/favorites": "[]", "client/profile": "null", "client/stainless-definitions-sentences-evening.trycloudflare.com-cart": "{\"readOnly\":{\"cart\":[],\"cutlery\":null,\"comment\":null}}"}}
+--------------------------------------------------
+[2026-03-13 10:30:15] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "language=es"}
+--------------------------------------------------
+[2026-03-13 10:30:15] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.8, "rtt": 0, "saveData": false}, "battery": {"charging": false, "level": "71%", "chargingTime": null, "dischargingTime": 10513155}}}
+--------------------------------------------------
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": false, "level": "70%", "chargingTime": null, "dischargingTime": 6152657}}}
+--------------------------------------------------
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 100, "saveData": false}, "battery": {"charging": false, "level": "70%", "chargingTime": null, "dischargingTime": 6152657}}}
+--------------------------------------------------
+[2026-03-13 10:42:56] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "language=es; _ga_9NDTNG6K4R=GS2.1.s1773391374$o1$g0$t1773391374$j60$l0$h0; _ga=GA1.3.394105265.1773391375; _gid=GA1.3.1093125532.1773391375; _gat_gtag_UA_130487518_4=1"}
+--------------------------------------------------
+[2026-03-13 10:42:56] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {"client/favorites": "[]", "client/profile": "null", "client/stainless-definitions-sentences-evening.trycloudflare.com-cart": "{\"readOnly\":{\"cart\":[],\"cutlery\":null,\"comment\":null}}"}}
+--------------------------------------------------
+[2026-03-13 10:42:56] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x735", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/29.0 Chrome/136.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "en-US", "languages": "en-US,ru-RU,ru,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.8, "rtt": 0, "saveData": false}, "battery": {"charging": false, "level": "67%", "chargingTime": null, "dischargingTime": 6360976}}}
+--------------------------------------------------
+[2026-03-13 10:43:26] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "language=es; _ga_9NDTNG6K4R=GS2.1.s1773391405$o1$g0$t1773391405$j60$l0$h0; _ga=GA1.1.94467597.1773391405"}
+--------------------------------------------------
+[2026-03-13 10:43:26] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {"client/favorites": "[]", "client/profile": "null", "client/stainless-definitions-sentences-evening.trycloudflare.com-cart": "{\"readOnly\":{\"cart\":[],\"cutlery\":null,\"comment\":null}}"}}
+--------------------------------------------------
+[2026-03-13 10:43:26] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 2.25, "rtt": 100, "saveData": false}, "battery": {"charging": false, "level": "66%", "chargingTime": null, "dischargingTime": 5829669}}}
+--------------------------------------------------
+[2026-03-13 10:43:39] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 10:43:46] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"system_info": {"screen": "400x400", "availScreen": "400x400", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)", "platform": "Linux x86_64", "language": "en-US", "languages": "en-US", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 241, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 9.7, "rtt": 0, "saveData": false}, "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-13 10:53:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"cookies": "_ga_9NDTNG6K4R=GS2.1.s1773391998$o1$g0$t1773391998$j60$l0$h0; _ga=GA1.3.1272320808.1773391998; _gid=GA1.3.905122666.1773391998; _gat_gtag_UA_130487518_4=1"}
+--------------------------------------------------
+[2026-03-13 10:53:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-13 10:53:18] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 3.9, "rtt": 100, "saveData": false}, "battery": {"charging": false, "level": "60%", "chargingTime": null, "dischargingTime": 5198205}}}
+--------------------------------------------------
+[2026-03-14 04:21:38] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"system_info": {"screen": "339x735", "availScreen": "339x662", "colorDepth": 24, "pixelDepth": 24, "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36", "platform": "Linux armv81", "language": "ru", "languages": "ru,en-US,en", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 8, "maxTouchPoints": 5, "vendor": "Google Inc.", "plugins": "", "connection": {"effectiveType": "4g", "downlink": 10, "rtt": 150, "saveData": false}, "battery": {"charging": false, "level": "92%", "chargingTime": null, "dischargingTime": 18176640}}}
+--------------------------------------------------
+[2026-03-14 04:21:38] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-14 04:21:41] IP: 127.0.0.1 | OS: Android
+UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-14 04:23:13] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 7, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "Microsoft Edge PDF Viewer, Chromium PDF Viewer, portable-document-format extension, PDF Viewer, WebKit built-in PDF, 057d1a0D, iwgvXTo", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-14 04:23:13] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 19:44:06] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 19:44:06] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 11, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "gYzCJEC, WebKit built-in PDF, Chromium portable-document-format plug-in, 1e2bNteP, Microsoft Edge PDF Viewer, Chromium PDF Viewer, PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-16 19:44:16] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp]"}
+--------------------------------------------------
+[2026-03-16 19:44:21] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][AudioVolumeUp][Alt]"}
+--------------------------------------------------
+[2026-03-16 19:45:13] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 19:45:13] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 11, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "gYzCJEC, WebKit built-in PDF, Chromium portable-document-format plug-in, 1e2bNteP, Microsoft Edge PDF Viewer, Chromium PDF Viewer, PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-16 19:47:47] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 2, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "WebKit built-in PDF, Microsoft Edge PDF Viewer, PDF Viewer, 6hvf2bV, 0HqdOuf2, Browser PDF and PS Renderer, Chromium PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-16 19:47:47] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 19:47:52] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Control]"}
+--------------------------------------------------
+[2026-03-16 19:47:57] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "123123123123123123123123123123123123412312312312312312"}
+--------------------------------------------------
+[2026-03-16 19:48:06] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-16 20:58:45] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 6, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "Microsoft Edge PDF Viewer, Chromium PDF Viewer, IjZUp78m, Hmy4cOm, Web com.adobe.pdf Viewer, WebKit built-in PDF, PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-16 20:58:45] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 20:59:00] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "dsfdsfdsfdsfdsfdsf"}
+--------------------------------------------------
+[2026-03-16 20:59:05] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "dsgdegefgfopigjopadgjofgjop"}
+--------------------------------------------------
+[2026-03-16 20:59:10] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-16 21:24:07] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"system_info": {"screen": "1280x800", "availScreen": "1280x800", "colorDepth": 32, "pixelDepth": 32, "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36", "platform": "Win32", "language": "ru-RU", "languages": "ru-RU", "cookiesEnabled": true, "doNotTrack": null, "hardwareConcurrency": 6, "maxTouchPoints": 0, "vendor": "Google Inc.", "plugins": "Microsoft Edge PDF Viewer, Chromium PDF Viewer, IjZUp78m, Hmy4cOm, Web com.adobe.pdf Viewer, WebKit built-in PDF, PDF Viewer", "battery": {"charging": true, "level": "100%", "chargingTime": 0, "dischargingTime": null}}}
+--------------------------------------------------
+[2026-03-16 21:24:07] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"localStorage": {}}
+--------------------------------------------------
+[2026-03-16 21:24:17] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-16 21:24:37] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]"}
+--------------------------------------------------
+[2026-03-16 21:24:42] IP: 127.0.0.1 | OS: Windows
+UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+Data: {"keylogger": "[Alt]fdasfdsafdsf"}
+--------------------------------------------------

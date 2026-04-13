@@ -1,0 +1,23 @@
+# АВТОМУВИ v2.1 — зависимости для Windows
+# python -m pip install -r requirements_windows.txt
+
+requests
+feedparser
+beautifulsoup4
+edge-tts
+python-dotenv
+schedule
+anthropic
+
+# Фишинг-модуль
+flask
+qrcode[pil]
+folium
+pandas
+
+# Windows: python-magic-bin вместо python-magic
+# (содержит нужные DLL, не требует отдельного libmagic)
+python-magic-bin
+
+# Windows: waitress как WSGI-сервер (убирает Flask dev warning)
+waitress

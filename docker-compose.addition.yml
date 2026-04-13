@@ -1,0 +1,13 @@
+
+services:
+  redis:
+    image: redis:7
+    restart: always
+
+  worker:
+    build: .
+    command: python extensions/worker.py
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis

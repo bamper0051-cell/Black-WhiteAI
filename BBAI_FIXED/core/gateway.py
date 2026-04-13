@@ -1,0 +1,127 @@
+"""
+core/gateway.py — Message Gateway
+Routes: User message → detect agent/mode → create Task → push to Queue
+"""
+from __future__ import annotations
+import re, time, os
+from typing import Optional, Callable, Dict, List
+from dataclasses import dataclass
+
+# Lazy imports to avoid circular deps
+_queue = None
+_observer = None
+
+
+@dataclass
+class RouteResult:
+    agent: str
+    mode: str
+    priority: int = 5
+    reason: str = ""
+
+
+# ── Keywords for agent detection ──────────────────────────────────────────────
+
+_AGENT_KEYWORDS = {
+    "neo":      (["agent neo", "нео", "/neo"], 10),
+    "matrix":   (["agent matrix", "матрикс", "/matrix", "pentest", "пентест", "nmap", "nuclei", "sqlmap"], 10),
+    "smith":    (["agent smith", "смит", "/smith", "агент_смит"], 10),
+    "tanker":   (["tanker", "танкер", "/tanker", "red team", "атака"], 8),
+    "anderson": (["anderson", "андерсон", "/anderson", "vuln", "уязвимост"], 8),
+    "pythia":   (["pythia", "пифия", "/pythia"], 8),
+    "operator": (["operator", "оператор", "/operator", "оркестр"], 9),
+}
+
+_MODE_KEYWORDS = {
+    "code":    ["код", "напиши", "скрипт", "python", "программ", "функци", "класс", "модуль"],
+    "osint":   ["osint", "username", "sherlock", "профиль", "найди человека", "whois", "dns"],
+    "pentest": ["сканируй", "scan", "nmap", "pentest", "пентест", "уязвимост", "exploit", "порт"],
+    "project": ["проект", "project", "структур", "scaffold", "несколько файлов"],
+    "review":  ["ревью", "review", "проверь код", "найди ошибки", "анализ кода"],
+    "sandbox": ["запусти", "execute", "sandbox", "выполни"],
+    "test":    ["тест", "test", "pytest", "coverage"],
+}
+
+
+class Gateway:
+    """Routes incoming tasks to appropriate agent and queue."""
+
+    def __init__(self, queue=None, observer=None):
+        self._queue = queue
+        self._observer = observer
+        self._overrides: Dict[int, str] = {}  # chat_id → forced agent
+
+    def set_agent(self, chat_id: int, agent: str):
+        """Force specific agent for chat."""
+        self._overrides[chat_id] = agent
+
+    def clear_agent(self, chat_id: int):
+        self._overrides.pop(chat_id, None)
+
+    def route(self, chat_id: int, text: str, files: list = None,
+              privilege: str = "user", forced_agent: str = "") -> RouteResult:
+        """Detect which agent should handle this task."""
+        text_lower = text.lower().strip()
+
+        # 1. Explicit override
+        if forced_agent:
+            return RouteResult(agent=forced_agent, mode=self._detect_mode(text_lower),
+                               reason="explicit")
+
+        # 2. Chat-level override
+        if chat_id in self._overrides:
+            return RouteResult(agent=self._overrides[chat_id],
+                               mode=self._detect_mode(text_lower), reason="session")
+
+        # 3. Keyword detection
+        best_agent = "pythia"  # default
+        best_score = 0
+        for agent, (keywords, priority) in _AGENT_KEYWORDS.items():
+            for kw in keywords:
+                if kw in text_lower:
+                    if priority > best_score:
+                        best_agent = agent
+                        best_score = priority
+                    break
+
+        # 4. Access control
+        restricted = {"neo": ["god", "owner"], "matrix": ["god", "owner"],
+                      "smith": ["god", "owner", "adm"], "operator": ["god", "owner"]}
+        if best_agent in restricted and privilege not in restricted[best_agent]:
+            if privilege in ("vip", "adm"):
+                best_agent = "pythia"
+            else:
+                best_agent = "tanker"  # public agent
+
+        mode = self._detect_mode(text_lower)
+        return RouteResult(agent=best_agent, mode=mode, priority=best_score or 5,
+                           reason="auto")
+
+    def _detect_mode(self, text: str) -> str:
+        scores = {}
+        for mode, keywords in _MODE_KEYWORDS.items():
+            for kw in keywords:
+                if kw in text:
+                    scores[mode] = scores.get(mode, 0) + 1
+        if scores:
+            return max(scores, key=scores.get)
+        return "auto"
+
+    def submit(self, chat_id: int, text: str, files: list = None,
+               privilege: str = "user", forced_agent: str = "",
+               on_status: Callable = None) -> Optional[str]:
+        """Route and submit task to queue. Returns task_id."""
+        route = self.route(chat_id, text, files, privilege, forced_agent)
+
+        if self._queue:
+            from core.queue_manager import Task
+            task = Task(
+                chat_id=chat_id, text=text, files=files or [],
+                agent=route.agent, mode=route.mode,
+                priority=route.priority, on_status=on_status,
+            )
+            self._queue.push(task)
+            if self._observer:
+                self._observer.on_task_submitted(task)
+            return task.task_id
+        return None

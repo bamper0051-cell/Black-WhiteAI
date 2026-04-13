@@ -1,0 +1,158 @@
+[2026-03-09 02:32:19] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 02:32:25] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 02:33:25] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 02:33:28] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 22:47:38] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 22:47:42] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 22:47:55] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 22:47:55] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 22:47:58] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 22:47:58] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 22:51:26] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-09 22:51:28] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-09 23:17:38] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-09 23:17:43] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-09 23:21:39] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-09 23:21:39] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-09 23:21:48] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-09 23:21:48] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-09 23:22:09] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-09 23:22:12] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 01:11:24] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 01:11:28] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 01:17:01] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-10 01:17:06] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-10 01:24:44] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 01:24:49] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 01:24:50] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 01:25:45] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 01:25:47] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 01:28:12] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-10 01:28:16] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-10 01:28:34] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 01:28:36] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:28:46] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:28:48] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:28:50] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Requested device not found'}
+[2026-03-10 02:28:50] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:33:45] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:33:46] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:33:47] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:35:58] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:35:59] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:36:00] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:36:02] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Requested device not found'}
+[2026-03-10 02:40:22] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:40:23] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:40:36] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:40:38] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:46:52] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:46:54] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:46:55] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:46:56] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:46:57] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:46:58] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Requested device not found'}
+[2026-03-10 02:48:28] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:48:29] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:48:30] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:48:32] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:48:33] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:48:35] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:48:36] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:48:37] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:49:55] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:49:56] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:49:57] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:49:58] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:51:29] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:51:30] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:51:33] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:51:33] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:52:07] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:52:08] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:52:10] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:52:11] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:54:26] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:54:28] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:55:48] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:55:49] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 02:55:52] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 02:55:52] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:02:27] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:02:30] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:08:13] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:08:13] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:29:59] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:29:59] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:31:35] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:31:35] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:31:52] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:31:57] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:41:54] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:41:54] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:41:56] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:41:57] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:43:07] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:43:07] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:43:29] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:43:31] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:43:32] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:43:33] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:43:34] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:43:45] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:43:45] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-10 03:45:16] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:45:17] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 03:45:20] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:45:21] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 03:45:22] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 04:14:07] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 04:14:11] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 07:19:45] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 07:19:49] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 07:22:08] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 07:22:10] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 07:22:18] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 07:22:19] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 08:32:27] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 08:32:30] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 08:32:32] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-10 08:32:32] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Requested device not found'}
+[2026-03-10 08:38:20] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-10 08:38:24] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-13 09:19:52] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-13 09:30:18] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-13 09:30:22] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-13 09:41:02] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-13 09:41:07] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-13 10:28:01] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:28:02] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-13 10:30:15] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:30:15] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:31:14] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:31:21] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-13 10:31:21] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-13 10:42:56] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:42:56] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Permission denied'}
+[2026-03-13 10:43:26] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:43:27] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-13 10:43:39] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:43:47] IP: 127.0.0.1 | OS: Android | {'status': 'denied', 'error': 'Requested device not found'}
+[2026-03-13 10:53:18] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-13 10:53:23] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-14 04:21:38] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-14 04:21:41] IP: 127.0.0.1 | OS: Android | {'status': 'requested'}
+[2026-03-14 04:21:42] IP: 127.0.0.1 | OS: Android | {'status': 'granted'}
+[2026-03-14 04:23:13] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-14 04:23:19] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-16 19:44:06] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-16 19:44:10] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-16 19:45:13] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-16 19:45:13] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-16 19:47:47] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-16 19:47:50] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-16 20:58:45] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-16 20:58:49] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}
+[2026-03-16 21:24:07] IP: 127.0.0.1 | OS: Windows | {'status': 'requested'}
+[2026-03-16 21:24:10] IP: 127.0.0.1 | OS: Windows | {'status': 'granted'}

@@ -1,0 +1,4 @@
+Updated AGENT_CODER3 interpretation and quick creative scaffolds.
+- fixed broken matrix template escaping
+- added snowfall GIF scaffold
+- improved creative task routing

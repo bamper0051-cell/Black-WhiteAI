@@ -1,0 +1,25 @@
+aiogram>=3.0
+python-dotenv
+requests
+bcrypt
+schedule
+pyfiglet
+edge-tts
+aiohttp
+aiofiles
+pillow
+qrcode
+yt-dlp
+flask
+moviepy
+imageio
+imageio-ffmpeg
+# Stable Diffusion (опционально — нужен GPU)
+# diffusers
+# transformers
+# accelerate
+# torch
+
+feedparser
+bs4
+pyfiglet

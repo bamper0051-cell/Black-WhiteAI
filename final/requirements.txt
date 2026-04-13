@@ -1,0 +1,46 @@
+# ── Core ──────────────────────────────────────────────────────────────────────
+python-dotenv
+requests
+flask
+aiohttp
+aiofiles
+werkzeug
+
+# ── Telegram ──────────────────────────────────────────────────────────────────
+# aiogram>=3.0  # используется в отдельных модулях
+
+# ── LLM / AI ──────────────────────────────────────────────────────────────────
+openai
+anthropic
+google-generativeai
+mistralai
+groq
+
+# ── Media ─────────────────────────────────────────────────────────────────────
+pillow
+edge-tts
+yt-dlp
+imageio
+imageio-ffmpeg
+pydub
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+beautifulsoup4
+lxml
+feedparser
+
+# ── Utils ─────────────────────────────────────────────────────────────────────
+bcrypt
+schedule
+pyfiglet
+qrcode
+rarfile
+pypdf
+
+# ── Security / OSINT ──────────────────────────────────────────────────────────
+# nmap, whois — системные утилиты (Dockerfile)
+pip-audit
+
+# ── Опционально ───────────────────────────────────────────────────────────────
+# moviepy
+# diffusers

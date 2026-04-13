@@ -1,0 +1,5 @@
+AGENT_CODER3 v2 updated
+- added interpretation/planning/tool-selection pipeline
+- added observations/validation/reporting
+- improved quick/project/review/sandbox/autofix modes
+- packages workspace artifacts into zip bundles

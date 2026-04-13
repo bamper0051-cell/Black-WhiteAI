@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АВТОМУВИ — AI Telegram Bot Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141422;
+    --accent: #5b4fff;
+    --accent2: #ff4f7b;
+    --accent3: #4fffb0;
+    --text: #e8e6ff;
+    --muted: #6b6890;
+    --border: rgba(91,79,255,0.2);
+    --card: rgba(20,20,34,0.8);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(91,79,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,79,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 600px; height: 600px; background: rgba(91,79,255,0.12); top: -200px; left: -200px; }
+  .blob-2 { width: 500px; height: 500px; background: rgba(255,79,123,0.08); bottom: 10%; right: -150px; }
+  .blob-3 { width: 400px; height: 400px; background: rgba(79,255,176,0.06); top: 50%; left: 30%; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 20px 0;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  nav .inner { display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.05em; }
+  .logo span { color: var(--accent); }
+  nav ul { list-style: none; display: flex; gap: 32px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+  nav a:hover { color: var(--text); }
+  .btn-nav {
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: opacity 0.2s;
+  }
+  .btn-nav:hover { opacity: 0.85; color: #fff; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 0 80px;
+  }
+  .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(91,79,255,0.12);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .hero-badge::before { content: '●'; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 58px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  h1 .grad {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-desc { color: var(--muted); font-size: 16px; line-height: 1.8; margin-bottom: 40px; max-width: 480px; }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.2s, opacity 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, background 0.2s;
+    display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); background: rgba(91,79,255,0.08); }
+
+  /* Terminal mockup */
+  .terminal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+  .term-bar {
+    background: var(--bg3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28ca41; }
+  .term-title { flex: 1; text-align: center; font-size: 11px; color: var(--muted); }
+  .term-body { padding: 20px; font-size: 12px; line-height: 1.9; }
+  .c-purple { color: #9b8fff; }
+  .c-green { color: var(--accent3); }
+  .c-yellow { color: #ffd869; }
+  .c-red { color: var(--accent2); }
+  .c-muted { color: var(--muted); }
+  .cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent); vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* STATS */
+  .stats {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  /* SECTION */
+  section { padding: 100px 0; }
+  .section-tag { color: var(--accent); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .section-sub { color: var(--muted); font-size: 15px; max-width: 560px; margin-bottom: 60px; }
+
+  /* FEATURES GRID */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .feat-card {
+    background: var(--card);
+    padding: 32px 28px;
+    transition: background 0.3s;
+    backdrop-filter: blur(10px);
+  }
+  .feat-card:hover { background: rgba(30,28,50,0.9); }
+  .feat-icon {
+    font-size: 24px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .feat-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .feat-desc { color: var(--muted); font-size: 12px; line-height: 1.8; }
+
+  /* TECH STACK */
+  .tech-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; }
+  .tech-tag {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .tech-tag:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ARCHITECTURE */
+  .arch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .arch-diagram {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    font-size: 12px;
+  }
+  .arch-node {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .arch-node .icon { font-size: 16px; }
+  .arch-node .label { color: var(--text); font-size: 12px; }
+  .arch-node .sub { color: var(--muted); font-size: 11px; }
+  .arch-connector { text-align: center; color: var(--muted); margin: 4px 0; font-size: 16px; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .price-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 28px;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+  }
+  .price-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .price-card.featured {
+    border-color: var(--accent);
+    background: rgba(91,79,255,0.08);
+  }
+  .price-badge {
+    position: absolute;
+    top: -12px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .price-tier { color: var(--muted); font-size: 12px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .price-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .price-amount sup { font-size: 20px; vertical-align: top; margin-top: 10px; display: inline-block; }
+  .price-period { color: var(--muted); font-size: 12px; margin-bottom: 28px; }
+  .price-features { list-style: none; margin-bottom: 32px; }
+  .price-features li { padding: 8px 0; color: var(--muted); font-size: 12px; border-bottom: 1px solid rgba(91,79,255,0.08); }
+  .price-features li::before { content: '✓ '; color: var(--accent3); }
+  .price-features li.disabled { opacity: 0.35; }
+  .price-features li.disabled::before { content: '✗ '; color: var(--muted); }
+  .btn-buy {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    display: block;
+    transition: 0.2s;
+    cursor: pointer;
+    border: none;
+    font-family: 'Space Mono', monospace;
+  }
+  .btn-buy-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-buy-outline:hover { border-color: var(--accent); background: rgba(91,79,255,0.1); }
+  .btn-buy-filled { background: var(--accent); color: #fff; }
+  .btn-buy-filled:hover { opacity: 0.9; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo">АВТО<span>МУВИ</span></div>
+    <ul>
+      <li><a href="#features">Возможности</a></li>
+      <li><a href="#architecture">Архитектура</a></li>
+      <li><a href="#pricing">Цены</a></li>
+    </ul>
+    <a href="#pricing" class="btn-nav">Купить исходник</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">v4.4 — production ready</div>
+        <h1>
+          AI-платформа<br>
+          в <span class="grad">Telegram</span><br>
+          на стероидах
+        </h1>
+        <p class="hero-desc">
+          Полноценный автономный агент с LLM, TTS, генерацией видео/изображений,
+          веб-панелью администратора, системой авторизации и самообучением.
+          45+ LLM-провайдеров. Работает из коробки.
+        </p>
+        <div class="hero-actions">
+          <a href="#pricing" class="btn-primary">Получить исходник →</a>
+          <a href="#features" class="btn-secondary">Все возможности</a>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="term-bar">
+          <span class="dot dot-r"></span>
+          <span class="dot dot-y"></span>
+          <span class="dot dot-g"></span>
+          <span class="term-title">automuvie v4.4 — bot.py</span>
+        </div>
+        <div class="term-body">
+          <div><span class="c-green">✅</span> <span class="c-muted">LLM:</span> <span class="c-yellow">mistral / codestral</span></div>
+          <div><span class="c-green">✅</span> <span class="c-muted">TTS:</span> <span class="c-yellow">edge-tts / ElevenLabs</span></div>
+          <div><span class="c-green">✅</span> <span class="c-muted">Auth:</span> <span class="c-yellow">капча + регистрация</span></div>
+          <div><span class="c-green">✅</span> <span class="c-muted">Fish Flask:</span> <span class="c-yellow">порт 5000</span></div>
+          <div><span class="c-green">✅</span> <span class="c-muted">Admin panel:</span> <span class="c-yellow">loaded</span></div>
+          <div><span class="c-green">✅</span> <span class="c-muted">Agent tools:</span> <span class="c-yellow">12 tools ready</span></div>
+          <div>&nbsp;</div>
+          <div><span class="c-purple">🤖 Polling запущен.</span> <span class="c-muted">Отправь /menu боту.</span></div>
+          <div><span class="c-muted">Uptime: </span><span class="c-green">0ч 0м</span> <span class="c-muted">│</span> <span class="c-muted">Providers: </span><span class="c-yellow">45+</span></div>
+          <div>&nbsp;</div>
+          <div><span class="c-muted">$</span> <span class="c-green">python bot.py</span><span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div><div class="stat-num">45+</div><div class="stat-label">LLM провайдеров</div></div>
+      <div><div class="stat-num">12</div><div class="stat-label">Инструментов агента</div></div>
+      <div><div class="stat-num">6000+</div><div class="stat-label">Строк кода</div></div>
+      <div><div class="stat-num">∞</div><div class="stat-label">Автономность</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-tag">// возможности</div>
+    <h2>Всё что нужно —<br>уже внутри</h2>
+    <p class="section-sub">Никаких сборок и интеграций. Одна команда и бот работает со всем функционалом.</p>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🧠</span>
+        <div class="feat-title">Автономный ИИ-агент</div>
+        <div class="feat-desc">Работает в цикле: LLM → инструменты → анализ результата → следующий шаг. До 5 раундов без участия человека. Может писать и запускать код сам.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔧</span>
+        <div class="feat-title">12 встроенных инструментов</div>
+        <div class="feat-desc">TTS, генерация видео/изображений, sandbox для кода, создание новых ботов, веб-поиск, скачивание страниц, управление процессами.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🎙</span>
+        <div class="feat-title">TTS + Видео</div>
+        <div class="feat-desc">edge-tts бесплатно или ElevenLabs. Сборка видео из картинок + аудио через ffmpeg. Скачивание YouTube в MP3/MP4.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔑</span>
+        <div class="feat-title">Авторизация с капчей</div>
+        <div class="feat-desc">Математическая капча на входе, регистрация/вход в аккаунт, bcrypt-хеши паролей, сессии, система привилегий (user/vip/admin/owner).</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">👑</span>
+        <div class="feat-title">Панель администратора</div>
+        <div class="feat-desc">Управление пользователями, рассылки, shell-команды, просмотр процессов, изменение .env в реальном времени, история команд.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">45+ LLM провайдеров</div>
+        <div class="feat-desc">Groq, Gemini, OpenRouter, Cerebras, SambaNova, DeepSeek, Mistral, OpenAI, Claude и ещё 36. Переключение в 1 клик, авто-конфиг.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🎨</span>
+        <div class="feat-title">Генерация изображений</div>
+        <div class="feat-desc">Pollinations (бесплатно), DALL-E 3, Stability AI, HuggingFace. Авто-выбор лучшего провайдера.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🤖</span>
+        <div class="feat-title">Самоулучшение</div>
+        <div class="feat-desc">Агент пишет новые модули, устанавливает зависимости и даёт инструкцию по интеграции. Создаёт новых ботов по описанию.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🐳</span>
+        <div class="feat-title">Docker-ready</div>
+        <div class="feat-desc">Dockerfile и requirements.txt включены. Один docker run и бот работает в изоляции с автоперезапуском.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture" style="background: var(--bg2); margin: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-tag">// архитектура</div>
+    <h2>Модульная структура</h2>
+    <p class="section-sub">Каждый модуль независим. Можно использовать отдельно или заменить любую часть.</p>
+
+    <div class="arch-grid">
+      <div class="arch-diagram">
+        <div class="arch-node">
+          <span class="icon">🤖</span>
+          <div><div class="label">bot.py</div><div class="sub">Главный роутер, polling, гейт авторизации</div></div>
+        </div>
+        <div class="arch-connector">↓</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="arch-node">
+            <span class="icon">🔑</span>
+            <div><div class="label">auth_module</div><div class="sub">Капча, регистрация, сессии</div></div>
+          </div>
+          <div class="arch-node">
+            <span class="icon">👑</span>
+            <div><div class="label">admin_module</div><div class="sub">Управление, shell, процессы</div></div>
+          </div>
+          <div class="arch-node">
+            <span class="icon">🧠</span>
+            <div><div class="label">chat_agent</div><div class="sub">LLM, история, кодер</div></div>
+          </div>
+          <div class="arch-node">
+            <span class="icon">🔧</span>
+            <div><div class="label">agent_tools</div><div class="sub">TTS, видео, создание ботов</div></div>
+          </div>
+          <div class="arch-node">
+            <span class="icon">🎨</span>
+            <div><div class="label">image_gen</div><div class="sub">4 провайдера изображений</div></div>
+          </div>
+          <div class="arch-node">
+            <span class="icon">🌐</span>
+            <div><div class="label">fish_web</div><div class="sub">Flask сервер + туннели</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="margin-bottom:32px">
+          <div class="section-tag" style="margin-bottom:8px">// стек технологий</div>
+          <div class="tech-list">
+            <span class="tech-tag">Python 3.11+</span>
+            <span class="tech-tag">aiogram 3.x</span>
+            <span class="tech-tag">SQLite3</span>
+            <span class="tech-tag">bcrypt</span>
+            <span class="tech-tag">Flask</span>
+            <span class="tech-tag">edge-tts</span>
+            <span class="tech-tag">ffmpeg</span>
+            <span class="tech-tag">yt-dlp</span>
+            <span class="tech-tag">Pillow</span>
+            <span class="tech-tag">requests</span>
+            <span class="tech-tag">schedule</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">Cloudflare Tunnel</span>
+            <span class="tech-tag">bore.pub</span>
+            <span class="tech-tag">ngrok</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-tag" style="margin-bottom:8px">// платформы</div>
+          <div class="tech-list">
+            <span class="tech-tag">Windows 10/11</span>
+            <span class="tech-tag">Linux Ubuntu</span>
+            <span class="tech-tag">Android Termux</span>
+            <span class="tech-tag">Docker Container</span>
+            <span class="tech-tag">VPS / Cloud</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-tag">// цены</div>
+    <h2>Выбери свой вариант</h2>
+    <p class="section-sub">Полный исходный код без ограничений. Одноразовая покупка — ваш навсегда.</p>
+
+    <div class="pricing-grid">
+      <!-- Basic -->
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount"><sup>$</sup>299</div>
+        <div class="price-period">единоразово</div>
+        <ul class="price-features">
+          <li>Полный исходный код</li>
+          <li>bot.py + все модули</li>
+          <li>45+ LLM провайдеров</li>
+          <li>Авторизация с капчей</li>
+          <li>Dockerfile + requirements</li>
+          <li class="disabled">Веб-панель администратора</li>
+          <li class="disabled">Приоритетная поддержка</li>
+          <li class="disabled">Обновления 6 месяцев</li>
+        </ul>
+        <button class="btn-buy btn-buy-outline">Выбрать</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card featured">
+        <span class="price-badge">★ Популярный</span>
+        <div class="price-tier">Professional</div>
+        <div class="price-amount"><sup>$</sup>599</div>
+        <div class="price-period">единоразово</div>
+        <ul class="price-features">
+          <li>Всё из Starter</li>
+          <li>Агент с 12 инструментами</li>
+          <li>Веб-панель администратора</li>
+          <li>Генерация видео / TTS</li>
+          <li>Самоулучшение бота</li>
+          <li>Поддержка 3 месяца</li>
+          <li class="disabled">Белый лейбл</li>
+          <li class="disabled">Обновления 12 месяцев</li>
+        </ul>
+        <button class="btn-buy btn-buy-filled">Выбрать</button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount"><sup>$</sup>1200</div>
+        <div class="price-period">единоразово</div>
+        <ul class="price-features">
+          <li>Всё из Professional</li>
+          <li>Белый лейбл (ваш бренд)</li>
+          <li>Кастомизация под задачи</li>
+          <li>Обновления 12 месяцев</li>
+          <li>Поддержка 6 месяцев</li>
+          <li>Установка и настройка</li>
+          <li>Документация на заказ</li>
+          <li>NDA по запросу</li>
+        </ul>
+        <button class="btn-buy btn-buy-outline">Выбрать</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:40px;color:var(--muted);font-size:12px">
+      💬 Оплата: Telegram / Crypto / PayPal &nbsp;│&nbsp; Код передаётся после оплаты &nbsp;│&nbsp; Исходный код — MIT License
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="logo">АВТО<span>МУВИ</span></div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">Telegram</a>
+        <a href="#">Документация</a>
+      </div>
+      <div>© 2026 АВТОМУВИ. Все права защищены.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Animate stats on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feat-card, .price-card, .stat-num').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

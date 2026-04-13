@@ -47,7 +47,19 @@ def install_log_capture():
 def require_token(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+<<<<<<< HEAD
+        auth_header = (request.headers.get('Authorization') or '').strip()
+        bearer = ''
+        if auth_header.lower().startswith('bearer '):
+            bearer = auth_header[7:].strip()
+        elif auth_header.lower().startswith('token '):
+            bearer = auth_header[6:].strip()
         token = (request.headers.get('X-Admin-Token') or
+                 request.headers.get('X-Api-Key') or
+                 bearer or
+=======
+        token = (request.headers.get('X-Admin-Token') or
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                  request.args.get('token') or
                  (request.get_json(silent=True) or {}).get('token', ''))
         if token != ADMIN_WEB_TOKEN:
@@ -59,8 +71,13 @@ def require_token(f):
 @app.after_request
 def add_cors(resp):
     resp.headers['Access-Control-Allow-Origin']  = '*'
+<<<<<<< HEAD
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, Authorization, X-Api-Key, Accept, Origin'
+    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, PUT, OPTIONS'
+=======
     resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token'
     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     return resp
 
 @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
@@ -68,18 +85,113 @@ def add_cors(resp):
 def options_handler(path=''):
     return '', 204
 
+<<<<<<< HEAD
+=======
+# ── Web Auth (логин/пароль для мобильного приложения) ────────────────────────
+import sqlite3 as _sqlite3, hashlib as _hashlib, secrets as _secrets
+
+_WEB_AUTH_DB = os.path.join(BASE, 'web_users.db')
+
+def _init_web_auth():
+    with _sqlite3.connect(_WEB_AUTH_DB) as c:
+        c.execute('''CREATE TABLE IF NOT EXISTS web_users (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            pw_hash  TEXT NOT NULL,
+            role     TEXT DEFAULT 'user',
+            token    TEXT,
+            created  TEXT
+        )''')
+        # Создаём admin-аккаунт из ADMIN_WEB_TOKEN если не существует
+        existing = c.execute("SELECT id FROM web_users WHERE username='admin'").fetchone()
+        if not existing:
+            ph = _hashlib.sha256(ADMIN_WEB_TOKEN.encode()).hexdigest()
+            c.execute("INSERT INTO web_users (username,pw_hash,role,created) VALUES (?,?,?,?)",
+                      ('admin', ph, 'admin', datetime.now().isoformat()))
+
+_init_web_auth()
+
+def _pw_hash(pw: str) -> str:
+    return _hashlib.sha256(pw.encode()).hexdigest()
+
+@app.route('/api/auth/register', methods=['POST'])
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    if len(username) < 3:
+        return jsonify({'error': 'username too short (min 3)'}), 400
+    if len(password) < 6:
+        return jsonify({'error': 'password too short (min 6)'}), 400
+    token = _secrets.token_hex(24)
+    try:
+        with _sqlite3.connect(_WEB_AUTH_DB) as c:
+            c.execute("INSERT INTO web_users (username,pw_hash,role,token,created) VALUES (?,?,?,?,?)",
+                      (username, _pw_hash(password), 'user', token, datetime.now().isoformat()))
+        return jsonify({'ok': True, 'username': username, 'token': token, 'role': 'user'}), 201
+    except _sqlite3.IntegrityError:
+        return jsonify({'error': 'username already taken'}), 409
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    if not username or not password:
+        return jsonify({'error': 'username and password required'}), 400
+    with _sqlite3.connect(_WEB_AUTH_DB) as c:
+        c.row_factory = _sqlite3.Row
+        row = c.execute("SELECT * FROM web_users WHERE username=?", (username,)).fetchone()
+    if not row or row['pw_hash'] != _pw_hash(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+    # Выдаём токен (admin получает ADMIN_WEB_TOKEN, обычные — свой)
+    api_token = ADMIN_WEB_TOKEN if row['role'] == 'admin' else row['token']
+    if not api_token:
+        api_token = _secrets.token_hex(24)
+        with _sqlite3.connect(_WEB_AUTH_DB) as c:
+            c.execute("UPDATE web_users SET token=? WHERE username=?", (api_token, username))
+    return jsonify({'ok': True, 'username': username, 'role': row['role'], 'token': api_token}), 200
+
+@app.route('/api/auth/me')
+@require_token
+def api_auth_me():
+    return jsonify({'ok': True, 'token_valid': True, 'server_version': '1.0'}), 200
+
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 # ── Health (без токена — для Docker healthcheck) ───────────────────────────────
 @app.route('/ping')
 def ping():
     """Самый простой эндпоинт — без токена, без зависимостей."""
     return jsonify({'ok': True, 'pong': True, 'port': ADMIN_WEB_PORT}), 200
 
+<<<<<<< HEAD
+
+@app.route('/api/mobile/bootstrap')
+def api_mobile_bootstrap():
+    return jsonify({
+        'ok': True,
+        'base_url': request.host_url.rstrip('/'),
+        'panel_url': request.host_url.rstrip('/') + '/panel',
+        'health_url': request.host_url.rstrip('/') + '/health',
+        'auth': {'required': True, 'headers': ['X-Admin-Token', 'Authorization: Bearer <token>', 'X-Api-Key']},
+        'cors': True,
+    })
+
 @app.route('/health')
+=======
+@app.route('/health')
+@app.route('/healthz')
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 def health():
     try:
         uptime = int(time.time() - _start_time)
         h, r = divmod(uptime, 3600); m, s = divmod(r, 60)
+<<<<<<< HEAD
         # Проверяем БД
+=======
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         import sqlite3
         db_ok = True
         try:
@@ -95,6 +207,20 @@ def health():
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 503
 
+<<<<<<< HEAD
+=======
+@app.route('/readyz')
+def readyz():
+    """Kubernetes readiness probe — passes once DB is reachable."""
+    import sqlite3
+    try:
+        with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
+            c.execute('SELECT 1')
+        return jsonify({'ready': True}), 200
+    except Exception as e:
+        return jsonify({'ready': False, 'error': str(e)}), 503
+
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 # ── Status ────────────────────────────────────────────────────────────────────
 @app.route('/api/status')
 @require_token
@@ -652,6 +778,53 @@ def api_tools():
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e), 'tools': []})
 
+<<<<<<< HEAD
+@app.route('/api/agents')
+@require_token
+def api_agents_list():
+    """Список всех агентов с их статусом и метаданными."""
+    try:
+        from agents import AGENT_INFO
+        agents_out = []
+        for name, info in AGENT_INFO.items():
+            agents_out.append({
+                'id': name,
+                'name': info.get('name', name.upper()),
+                'emoji': info.get('emoji', '🤖'),
+                'description': info.get('desc', ''),
+                'modes': info.get('modes', ['auto']),
+                'access': info.get('access', ['user']),
+                'status': 'online',
+                'tasksCompleted': 0,
+                'tasksFailed': 0,
+            })
+        return jsonify({'ok': True, 'agents': agents_out})
+    except Exception as e:
+        # Fallback: вернуть статичный список если agents/ не доступен
+        return jsonify({'ok': True, 'agents': [
+            {'id': 'smith',    'name': 'АГЕНТ СМИТ',  'emoji': '🕵️', 'description': 'Autofix pipeline + security audit', 'status': 'online', 'modes': ['auto','code','autofix','security'], 'access': ['god','adm'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'neo',      'name': 'AGENT NEO',   'emoji': '🧠', 'description': 'Self-tool gen, OSINT, ZIP artifacts', 'status': 'online', 'modes': ['auto'], 'access': ['god','adm','vip'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'matrix',   'name': 'AGENT MATRIX','emoji': '🟥', 'description': 'Coder + OSINT + Security Analyst', 'status': 'online', 'modes': ['auto'], 'access': ['god','adm','vip'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'anderson', 'name': 'MR. ANDERSON', 'emoji': '🔍', 'description': 'Анализ уязвимостей, code fix, review', 'status': 'online', 'modes': ['auto','vuln_scan','code_fix','review'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'pythia',   'name': 'AGENT PYTHIA', 'emoji': '💻', 'description': 'Кодер: quick/project/review/sandbox', 'status': 'online', 'modes': ['auto','quick','autofix','project','review'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'tanker',   'name': 'AGENT TANKER', 'emoji': '🛡', 'description': 'Red team: multitool, двухстадийный цикл', 'status': 'online', 'modes': ['auto','code','multitool','analyze'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
+            {'id': 'operator', 'name': 'OPERATOR',     'emoji': '🎯', 'description': 'Мета-агент: оркестрирует всех остальных', 'status': 'online', 'modes': ['auto','orchestrate'], 'access': ['god','owner'], 'tasksCompleted': 0, 'tasksFailed': 0},
+        ]})
+
+
+@app.route('/api/agent/run', methods=['POST'])
+@require_token
+def api_agent_run():
+    """Запустить задачу через выбранного агента.
+    Поддерживаемые агенты: smith, neo, matrix, anderson, pythia, tanker, operator
+    """
+    import traceback
+    data       = request.get_json(silent=True) or {}
+    task       = data.get('task', '').strip()
+    agent      = data.get('agent', 'smith').lower()
+    mode       = data.get('mode', 'auto')
+    file_path  = data.get('file_path', '')
+=======
 @app.route('/api/agent/run', methods=['POST'])
 @require_token
 def api_agent_run():
@@ -659,6 +832,7 @@ def api_agent_run():
     task       = data.get('task', '').strip()
     agent      = data.get('agent', 'smith').lower()
     file_path  = data.get('file_path', '')   # путь к загруженному файлу
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     if not task:
         return jsonify({'ok': False, 'error': 'task required'}), 400
 
@@ -672,6 +846,106 @@ def api_agent_run():
 
     steps = []
 
+<<<<<<< HEAD
+    def _on_status(m):
+        steps.append({'type': 'status', 'text': str(m), 'ok': True})
+
+    def _result_to_json(result):
+        """Универсальный конвертер AgentResult → JSON."""
+        if result is None:
+            return {'ok': False, 'error': 'No result', 'steps': steps}
+        answer = getattr(result, 'answer', '') or str(result)
+        return {
+            'ok':     getattr(result, 'ok', bool(answer)),
+            'final':  answer[:3000],
+            'result': answer[:3000],
+            'steps':  steps,
+            'error':  getattr(result, 'error', ''),
+            'files':  getattr(result, 'files', []),
+            'zip_path': getattr(result, 'zip_path', ''),
+            'generated_tools': getattr(result, 'generated_tools', []),
+            'agent':  getattr(result, 'agent', agent),
+            'mode':   getattr(result, 'mode', mode),
+            'duration': getattr(result, 'duration', 0),
+        }
+
+    # ── MATRIX ──────────────────────────────────────────────────────────────
+    if agent == 'matrix':
+        try:
+            from agent_matrix import run_matrix
+            result = run_matrix(task=task, chat_id='admin_panel',
+                                attached_files=attached_files or None,
+                                on_status=_on_status)
+            return jsonify(_result_to_json(result))
+        except Exception as e:
+            return jsonify({'ok': False, 'error': str(e),
+                            'trace': traceback.format_exc()[-600:], 'steps': steps})
+
+    # ── NEO ──────────────────────────────────────────────────────────────────
+    if agent == 'neo':
+        try:
+            from agent_neo import run_neo
+            result = run_neo(task=task, chat_id='admin_panel',
+                             attached_files=attached_files or None,
+                             on_status=_on_status)
+            return jsonify(_result_to_json(result))
+        except Exception as e:
+            return jsonify({'ok': False, 'error': str(e),
+                            'trace': traceback.format_exc()[-600:], 'steps': steps})
+
+    # ── Новые агенты через agents/ ────────────────────────────────────────
+    if agent in ('anderson', 'pythia', 'tanker', 'operator'):
+        try:
+            from agents import create_agent
+            ag = create_agent(agent)
+            if ag is None:
+                raise ImportError(f"Agent '{agent}' not found in agents/")
+            result = ag.execute(
+                task=task,
+                chat_id='admin_panel',
+                files=attached_files or None,
+                mode=mode,
+                on_status=_on_status,
+            )
+            return jsonify(_result_to_json(result))
+        except Exception as e:
+            return jsonify({'ok': False, 'error': str(e),
+                            'trace': traceback.format_exc()[-600:], 'steps': steps})
+
+    # ── SMITH (default + explicit) ────────────────────────────────────────
+    # Сначала пробуем agents/smith.py, затем fallback на agent_tools_registry
+    if agent == 'smith':
+        try:
+            from agents import create_agent
+            ag = create_agent('smith')
+            if ag:
+                result = ag.execute(task=task, chat_id='admin_panel',
+                                    files=attached_files or None,
+                                    mode=mode, on_status=_on_status)
+                return jsonify(_result_to_json(result))
+        except Exception:
+            pass  # fallback below
+
+    # Fallback через agent_tools_registry (старый SMITH)
+    try:
+        from agent_tools_registry import run_agent_with_tools
+        final, results = run_agent_with_tools(
+            chat_id=None, user_request=task, on_status=_on_status,
+        )
+        final = final or '✅ Выполнено'
+        for r in (results or []):
+            steps.append({'type': 'tool', 'tool': str(r.get('tool', '')),
+                          'ok': bool(r.get('ok')),
+                          'result': str(r.get('result', ''))[:300]})
+        arts = [line.strip() for r in (results or [])
+                for line in str(r.get('result', '')).splitlines()
+                if line.strip() and os.path.isfile(line.strip())]
+        return jsonify({'ok': True, 'final': str(final), 'result': str(final),
+                        'steps': steps, 'artifacts': arts})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e),
+                        'trace': traceback.format_exc()[-500:], 'steps': steps})
+=======
     # ── MATRIX ──
     if agent == 'matrix':
         try:
@@ -740,6 +1014,7 @@ def api_agent_run():
                     arts.append(line)
         return jsonify({'ok': True, 'final': str(final), 'steps': steps,
                         'result': str(final), 'artifacts': arts})
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     except Exception as e:
         import traceback
         return jsonify({'ok': False, 'error': str(e),
@@ -1134,6 +1409,8 @@ def _find_free_port(start_port, attempts=5):
             continue
     return None
 
+<<<<<<< HEAD
+=======
 
 # ════════════════════════════════════════════════════════════════════════════
 #  MODULE APIs  — Learning / Memory / Skills / Tasks / Backup / Models / etc
@@ -1452,6 +1729,7 @@ def api_workflow_execute():
     return jsonify({'ok': True, 'results': results, 'log': steps_log[-20:]})
 
 
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 def start_admin_web():
     global _web_started
     if _web_started:
@@ -1483,3 +1761,16 @@ def start_admin_web():
     t = threading.Thread(target=_run, daemon=True, name='admin-web')
     t.start()
     return t
+<<<<<<< HEAD
+=======
+
+
+if __name__ == '__main__':
+    import logging
+    logging.getLogger('werkzeug').setLevel(logging.WARNING)
+    port = int(os.environ.get('ADMIN_WEB_PORT', 8080))
+    print(f"  🌐 Admin Panel (standalone): http://0.0.0.0:{port}/panel", flush=True)
+    print(f"  🔑 Token: {ADMIN_WEB_TOKEN[:8]}...", flush=True)
+    install_log_capture()
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True, use_reloader=False)
+>>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999

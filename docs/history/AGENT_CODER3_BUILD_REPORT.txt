@@ -1,0 +1,7 @@
+AGENT_CODER3 build:
+ - added agent_coder3.py
+ - added coder3 package (engine/planner_adapter/tools_adapter/modes/autofix/reporting/session_state/prompts)
+ - patched keyboards.py with button agent_code3_start
+ - patched bot.py with commands /agent_coder3 and /coder3
+ - patched callback handlers for agent_code3_start and coder3:*
+ - patched wait-state handler for coder3_input:*

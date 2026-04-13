@@ -1,0 +1,14 @@
+AGENT_CODER3 Interpretation/Router fix
+
+Changes:
+- Improved intent classification in coder3/planner_adapter.py
+- Added creative_code detection for animation/matrix/media-like code requests
+- Prevented explanatory questions like "Что такое traceback?" from being misrouted into autofix
+- Added creative-code specific planning/tool selection hints
+- Improved quick mode template selection in coder3/modes.py
+- Added runnable terminal Matrix animation scaffold for requests like "Нарисуй анимацию матрицы"
+
+Validation:
+- planner_adapter.py compiles
+- modes.py compiles
+- Sample task routing checks passed

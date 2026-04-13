@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⬛ BlackBugsAI v5</title>
+<style>
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--card:#16161f;--brd:#2a2a3a;
+  --acc:#7c3aed;--ac2:#06b6d4;--gr:#10b981;--re:#ef4444;--ye:#f59e0b;
+  --tx:#e2e8f0;--mu:#64748b;--fn:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);font-size:13px;overflow:hidden;height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh}
+#sb{width:56px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--brd);
+    display:flex;flex-direction:column;align-items:center;padding:8px 0 8px;gap:2px}
+#mn{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#tb{height:46px;background:var(--bg2);border-bottom:1px solid var(--brd);
+    display:flex;align-items:center;gap:8px;padding:0 14px;flex-shrink:0}
+#ct{flex:1;overflow-y:auto;padding:16px}
+#ct.builder-mode{padding:0;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── SIDEBAR ITEMS ── */
+.si{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:18px;cursor:pointer;color:var(--mu);transition:all .12s;position:relative;flex-shrink:0}
+.si:hover{background:var(--bg3);color:var(--tx)}
+.si.act{background:rgba(124,58,237,.2);color:var(--acc)}
+.si .tt{display:none;position:absolute;left:50px;top:50%;transform:translateY(-50%);
+        background:var(--card);border:1px solid var(--brd);padding:4px 9px;border-radius:5px;
+        font-size:10px;white-space:nowrap;z-index:999;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.si:hover .tt{display:block}
+.ssep{width:28px;height:1px;background:var(--brd);margin:3px 0}
+
+/* ── TOPBAR ── */
+.tb-ttl{font-weight:700;font-size:13px;flex:1}
+.btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:var(--fn);
+     font-size:11px;font-weight:600;background:var(--acc);color:#fff;transition:opacity .12s}
+.btn:hover{opacity:.82}.btn.s{background:var(--bg3);color:var(--tx);border:1px solid var(--brd)}
+.btn.g{background:rgba(16,185,129,.15);color:var(--gr);border:1px solid rgba(16,185,129,.3)}
+.btn.r{background:rgba(239,68,68,.12);color:var(--re);border:1px solid rgba(239,68,68,.3)}
+.btn.sm{padding:3px 9px;font-size:10px}.btn:disabled{opacity:.35;cursor:default}
+.bdg{padding:2px 8px;border-radius:99px;font-size:10px;background:rgba(124,58,237,.2);color:var(--acc)}
+.bdg.g{background:rgba(16,185,129,.15);color:var(--gr)}.bdg.r{background:rgba(239,68,68,.15);color:var(--re)}
+.bdg.y{background:rgba(245,158,11,.15);color:var(--ye)}
+
+/* ── TABS ── */
+.tab{display:none}.tab.act{display:block}
+#tab-builder.act{display:flex;flex-direction:column;flex:1;overflow:hidden}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:14px;margin-bottom:12px}
+.ct{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:9px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:9px}
+.stat{text-align:center}.sv{font-size:24px;font-weight:700;color:var(--acc)}.sl{font-size:9px;color:var(--mu);margin-top:2px}
+.log{background:#050508;border:1px solid var(--brd);border-radius:6px;padding:8px;font-size:11px;overflow-y:auto;line-height:1.65}
+.li{color:#94a3b8}.lok{color:var(--gr)}.lw{color:var(--ye)}.le{color:var(--re)}.ls{color:var(--ac2)}
+.pb{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.pf{height:100%;background:linear-gradient(90deg,var(--acc),var(--ac2));width:0%;transition:width .3s;animation:pb 1.4s infinite}
+@keyframes pb{0%,100%{opacity:1}50%{opacity:.5}}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dg{background:var(--gr);box-shadow:0 0 5px var(--gr)}.dr{background:var(--re)}.dy{background:var(--ye)}
+.pulse{animation:bl 1s infinite}@keyframes bl{0%,100%{opacity:1}50%{opacity:.2}}
+.code-a{background:#050508;border:1px solid var(--brd);border-radius:6px;padding:9px;font-size:11px;
+         line-height:1.7;resize:vertical;color:#a5f3fc;width:100%;min-height:150px;font-family:var(--fn)}
+.fl{display:flex;gap:7px;align-items:center}.f1{flex:1}.ml{margin-left:auto}
+.mt8{margin-top:8px}.mt12{margin-top:12px}
+.tc{background:var(--bg2);border:1px solid var(--brd);border-radius:7px;padding:8px 11px;
+    display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pex{cursor:pointer;padding:8px;background:var(--bg2);border-radius:6px;border:1px solid var(--brd);transition:border-color .12s}
+.pex:hover{border-color:var(--acc)}
+.empty{color:var(--mu);text-align:center;padding:22px;font-size:11px}
+input,textarea,select{background:var(--bg2);border:1px solid var(--brd);color:var(--tx);
+    padding:6px 9px;border-radius:6px;font-family:var(--fn);font-size:12px;width:100%;outline:none;transition:border-color .12s}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}textarea{resize:vertical;min-height:70px}
+.lbl{font-size:9px;color:var(--mu);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ── PIPELINE BUILDER ── */
+#btb{height:44px;background:var(--bg2);border-bottom:1px solid var(--brd);
+     display:flex;align-items:center;gap:5px;padding:0 10px;flex-shrink:0;overflow-x:auto}
+.chip{padding:4px 10px;border-radius:18px;background:var(--bg3);border:1px solid var(--brd);
+      cursor:pointer;font-size:11px;color:var(--mu);display:flex;align-items:center;gap:4px;
+      transition:all .12s;white-space:nowrap;flex-shrink:0}
+.chip:hover{border-color:var(--acc);color:var(--tx);background:rgba(124,58,237,.08)}
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg);display:flex}
+#cw{flex:1;position:relative;overflow:hidden;cursor:default}
+#cw.panning{cursor:grabbing}
+#edges-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#nl{position:absolute;top:0;left:0}
+#tsvg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+
+/* ── NODE ── */
+.node{position:absolute;width:190px;background:var(--card);border:2px solid var(--brd);
+      border-radius:10px;cursor:grab;user-select:none;transition:border-color .15s,box-shadow .15s;z-index:2}
+.node:hover{border-color:var(--acc);z-index:3}
+.node.sel{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,58,237,.2);z-index:4}
+.node.run{border-color:var(--ac2);animation:nd 1s infinite}
+.node.ok{border-color:var(--gr);box-shadow:0 0 8px rgba(16,185,129,.3)}
+.node.err{border-color:var(--re);box-shadow:0 0 8px rgba(239,68,68,.3)}
+@keyframes nd{0%,100%{box-shadow:0 0 12px rgba(6,182,212,.4)}50%{box-shadow:0 0 20px rgba(6,182,212,.7)}}
+.nhdr{padding:8px 10px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px;border-radius:8px 8px 0 0}
+.nico{font-size:16px;flex-shrink:0}.nlbl{font-size:12px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ndel{font-size:11px;color:var(--mu);cursor:pointer;padding:1px 5px;border-radius:3px;opacity:0;transition:opacity .1s}
+.node:hover .ndel{opacity:1}.ndel:hover{background:rgba(239,68,68,.15);color:var(--re)}
+.nbody{padding:7px 10px;font-size:10px;color:var(--mu);line-height:1.5}
+.ntag{font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(124,58,237,.12);color:var(--acc);margin-top:3px;display:inline-block}
+.nbar{height:3px;border-radius:0 0 8px 8px;background:var(--brd);transition:background .3s}
+.nbar.run{background:var(--ac2)}.nbar.ok{background:var(--gr)}.nbar.err{background:var(--re)}
+.port{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--bg3);
+      border:2px solid var(--brd);cursor:crosshair;z-index:5;transition:transform .12s,background .12s}
+.port:hover,.port.hi{background:var(--acc);border-color:var(--acc)}
+.port.in{left:-6px;top:50%;transform:translateY(-50%)}
+.port.out{right:-6px;top:50%;transform:translateY(-50%)}
+.port.in:hover{transform:translateY(-50%) scale(1.4)}
+.port.out:hover{transform:translateY(-50%) scale(1.4)}
+
+/* ── SIDE PANEL (node editor) ── */
+#sp{width:0;background:var(--bg2);border-left:1px solid var(--brd);overflow:hidden;
+    transition:width .2s;flex-shrink:0;display:flex;flex-direction:column}
+#sp.open{width:280px}
+.sphdr{padding:10px 12px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px;font-weight:700;font-size:12px;flex-shrink:0}
+.spb{flex:1;overflow-y:auto;padding:12px}
+.sf{margin-bottom:10px}
+
+/* ── EXEC LOG ── */
+#ep{height:0;background:var(--bg2);border-top:1px solid var(--brd);overflow:hidden;
+    transition:height .2s;flex-shrink:0;display:flex;flex-direction:column}
+#ep.open{height:185px}
+.ephdr{padding:6px 12px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;flex-shrink:0}
+.epl{overflow-y:auto;padding:7px 11px;font-size:10.5px;line-height:1.7;flex:1}
+
+/* ── ZOOM/MINIMAP ── */
+#zc{position:absolute;bottom:12px;right:12px;display:flex;flex-direction:column;gap:4px}
+.zb{width:28px;height:28px;background:rgba(17,17,24,.9);border:1px solid var(--brd);border-radius:5px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+    color:var(--mu);transition:all .12s}
+.zb:hover{color:var(--tx);background:var(--bg3)}
+#mm{position:absolute;bottom:12px;right:48px;width:140px;height:85px;
+    background:rgba(10,10,15,.9);border:1px solid var(--brd);border-radius:6px;overflow:hidden}
+#mm-lbl{position:absolute;top:2px;left:5px;font-size:8px;color:var(--mu)}
+
+/* ── CONTEXT MENU ── */
+#ctx{position:fixed;background:var(--card);border:1px solid var(--brd);border-radius:8px;
+     padding:4px;z-index:900;min-width:148px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.ci{padding:6px 11px;cursor:pointer;border-radius:5px;font-size:11px;display:flex;align-items:center;gap:7px;color:var(--mu)}
+.ci:hover{background:var(--bg3);color:var(--tx)}.ci.r:hover{background:rgba(239,68,68,.1);color:var(--re)}
+.csep{height:1px;background:var(--brd);margin:3px 0}
+
+/* ── MARKETPLACE / LEARNING ── */
+.pc{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:11px;margin-bottom:8px;transition:border-color .12s}
+.pc:hover{border-color:var(--acc)}
+.pt2{font-weight:700;font-size:12px;margin-bottom:3px}
+.pm{font-size:9px;color:var(--mu);display:flex;gap:9px;flex-wrap:wrap;margin-top:4px}
+.pnt{font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(124,58,237,.12);color:var(--acc)}
+.evo{height:3px;background:var(--bg3);border-radius:2px;margin-top:3px}
+.evof{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gr),var(--ye),var(--re))}
+
+/* ── TUNNEL STATUS CARD ── */
+.tun-card{border:2px solid var(--brd);border-radius:8px;padding:10px 13px;cursor:pointer;transition:all .15s;background:var(--bg2)}
+.tun-card:hover{border-color:var(--acc)}.tun-card.sel{border-color:var(--acc);background:rgba(124,58,237,.06)}
+.tun-card.act-tun{border-color:var(--gr);background:rgba(16,185,129,.06)}
+.url-display{background:#050508;border:1px dashed var(--brd);border-radius:7px;padding:10px;
+             font-size:12px;color:var(--mu);text-align:center;cursor:pointer;transition:all .15s;word-break:break-all}
+.url-display.live{border-color:var(--gr);color:var(--gr);font-weight:700}
+.url-display:hover{border-color:var(--acc)}
+
+/* ── CONNECT MODAL ── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:800;display:flex;align-items:center;justify-content:center}
+.mb{background:var(--card);border:1px solid var(--brd);border-radius:13px;padding:24px;width:420px;max-width:96vw}
+.mb h2{font-size:15px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- CONNECT -->
+<div id="mo-conn" class="mo">
+  <div class="mb">
+    <h2>⬛ BlackBugsAI v5 — Admin Panel</h2>
+    <div style="margin-bottom:11px">
+      <label class="lbl">SERVER URL</label>
+      <input id="cu" placeholder="http://IP:8080  ·  http://bore.pub:PORT  ·  https://xxx.loca.lt">
+    </div>
+    <div style="margin-bottom:17px">
+      <label class="lbl">ADMIN TOKEN (ADMIN_WEB_TOKEN из .env)</label>
+      <input id="ct" type="password" placeholder="your_token_here">
+    </div>
+    <div class="fl"><button class="btn" onclick="conn()">🔌 Connect</button>
+      <span id="cerr" style="color:var(--re);font-size:10px;flex:1;text-align:right"></span></div>
+    <div style="margin-top:11px;font-size:9px;color:var(--mu)">
+      Local: <code>http://localhost:8080</code> &nbsp;·&nbsp;
+      bore: <code>http://bore.pub:PORT</code> &nbsp;·&nbsp;
+      GCP: <code>http://EXTERNAL_IP:8080</code>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx">
+  <div class="ci" onclick="cxRun()">▶ Run node</div>
+  <div class="ci" onclick="cxEdit()">✏️ Edit</div>
+  <div class="ci" onclick="cxDupe()">⎘ Duplicate</div>
+  <div class="csep"></div>
+  <div class="ci r" onclick="cxDel()">🗑 Delete</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div id="sb">
+    <div class="si" style="color:var(--acc);font-size:20px;cursor:default;margin-bottom:2px">⬛<div class="tt">BlackBugsAI v5</div></div>
+    <div class="si act" data-t="builder" onclick="nav('builder')">🔀<div class="tt">Pipeline Builder</div></div>
+    <div class="si" data-t="matrix" onclick="nav('matrix')">🧠<div class="tt">Agent Matrix</div></div>
+    <div class="si" data-t="tools" onclick="nav('tools')">🔧<div class="tt">Tools Registry</div></div>
+    <div class="si" data-t="gen" onclick="nav('gen')">✨<div class="tt">Tool Generator</div></div>
+    <div class="si" data-t="market" onclick="nav('market')">🏪<div class="tt">Marketplace</div></div>
+    <div class="si" data-t="learn" onclick="nav('learn')">🧬<div class="tt">Learning Loop</div></div>
+    <div class="ssep"></div>
+    <div class="si" data-t="dash" onclick="nav('dash')">📊<div class="tt">Dashboard</div></div>
+    <div class="si" data-t="users" onclick="nav('users')">👥<div class="tt">Users</div></div>
+    <div class="si" data-t="sh" onclick="nav('sh')">💻<div class="tt">Shell</div></div>
+    <div class="si" data-t="tunnel" onclick="nav('tunnel')">🌐<div class="tt">Tunnel Access</div></div>
+    <div class="si" data-t="pentest" onclick="nav('pentest')">🛡️<div class="tt">Pentest</div></div>
+    <div class="ssep"></div>
+    <div class="si" data-t="logs" onclick="nav('logs')">📋<div class="tt">Logs</div></div>
+    <div class="ssep" style="margin-top:auto"></div>
+    <div class="si" onclick="disconnect()" style="margin-top:auto">✕<div class="tt">Disconnect</div></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mn">
+    <!-- TOPBAR -->
+    <div id="tb">
+      <div class="tb-ttl" id="pg-ttl">🔀 Pipeline Builder</div>
+      <span id="tb-up" class="bdg">--</span>
+      <span id="tun-ind" class="bdg" style="cursor:pointer" onclick="nav('tunnel')">🌐 --</span>
+      <span id="fish-ind" class="bdg y" style="display:none">🐟 fish</span>
+      <span class="bdg g">● Online</span>
+      <button class="btn s sm" onclick="gRef()">↻</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="ct" class="builder-mode">
+
+      <!-- ═══ PIPELINE BUILDER ═══════════════════════════════════════════ -->
+      <div id="tab-builder" class="tab act">
+        <div id="btb">
+          <div class="chip" onclick="aN('python_eval')"><span>🐍</span>Python</div>
+          <div class="chip" onclick="aN('shell_cmd')"><span>💻</span>Shell</div>
+          <div class="chip" onclick="aN('web_scrape')"><span>🌐</span>Scrape</div>
+          <div class="chip" onclick="aN('http_get')"><span>🔗</span>HTTP</div>
+          <div class="chip" onclick="aN('osint_domain')"><span>🔍</span>OSINT</div>
+          <div class="chip" onclick="aN('port_scan')"><span>🛡️</span>Scan</div>
+          <div class="chip" onclick="aN('file_write')"><span>📄</span>File</div>
+          <div class="chip" onclick="aN('matrix_create_tool')"><span>✨</span>AI Tool</div>
+          <div class="chip" onclick="promptAddNode()"><span>➕</span>Custom</div>
+          <div style="margin-left:auto;display:flex;gap:5px;flex-shrink:0">
+            <button class="btn s sm" onclick="clearCanvas()">🗑 Clear</button>
+            <button class="btn s sm" onclick="savePip()">💾 Save</button>
+            <button class="btn s sm" onclick="loadPipDialog()">📂 Open</button>
+            <button class="btn g sm" id="rpb" onclick="runPipeline()">▶ Run</button>
+          </div>
+        </div>
+        <div id="canvas-wrap">
+          <div id="cw"
+               onmousedown="cMD(event)" onmousemove="cMM(event)" onmouseup="cMU(event)"
+               ondblclick="cDC(event)" oncontextmenu="cCX(event)" onwheel="cWH(event)">
+            <svg id="edges-svg">
+              <defs>
+                <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#4a4a6a"/>
+                </marker>
+              </defs>
+            </svg>
+            <div id="nl"></div>
+            <svg id="tsvg"><path id="te" fill="none" stroke="var(--acc)" stroke-width="2" stroke-dasharray="6,3" d=""/></svg>
+            <div id="zc">
+              <div class="zb" onclick="zoom(1.13)" title="Zoom In">＋</div>
+              <div class="zb" onclick="zoom(.88)" title="Zoom Out">－</div>
+              <div class="zb" onclick="rv()" title="Reset view">⌂</div>
+              <div class="zb" id="zlb" style="font-size:9px;color:var(--mu);cursor:default">100%</div>
+            </div>
+            <div id="mm"><div id="mm-lbl">overview</div><canvas id="mmc" width="140" height="85"></canvas></div>
+          </div>
+          <div id="sp">
+            <div class="sphdr"><span id="sp-ttl">Node</span><button class="btn s sm ml" onclick="closeSP()">✕</button></div>
+            <div class="spb" id="sp-body"><div class="empty">Select a node</div></div>
+          </div>
+        </div>
+        <div id="ep">
+          <div class="ephdr">
+            <div class="dot dy pulse" id="ep-dot"></div>
+            <span id="ep-status">Ready</span>
+            <div class="bdg ml" id="ep-bdg">—</div>
+            <button class="btn s sm" style="margin-left:7px" onclick="$('ep').classList.toggle('open')">✕</button>
+          </div>
+          <div class="epl" id="ep-log"></div>
+        </div>
+      </div>
+
+      <!-- ═══ AGENT MATRIX ══════════════════════════════════════════════ -->
+      <div id="tab-matrix" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="ct">🧠 Run Matrix Task (live SSE)</div>
+          <textarea id="mx-task" rows="4" placeholder="Задача для AGENT MATRIX...&#10;Примеры:&#10;• Найди топ-10 новостей HackerNews и сохрани в JSON&#10;• Создай Python утилиту для конвертации изображений&#10;• Установи https://github.com/sherlock-project/sherlock и найди username elonmusk"></textarea>
+          <div class="fl mt8">
+            <button class="btn" id="mx-btn" onclick="runMatrix()">▶ Запустить</button>
+            <button class="btn s sm" onclick="clearMx()">Очистить</button>
+            <span id="mx-st" class="bdg" style="display:none">running...</span>
+          </div>
+          <div id="mx-prog" style="display:none;margin-top:11px">
+            <div class="pb"><div class="pf" id="mx-pb"></div></div>
+            <div class="log" id="mx-log" style="height:200px"></div>
+          </div>
+          <div id="mx-res" style="display:none" class="mt12">
+            <div class="card" style="border-color:var(--gr)">
+              <div class="ct" style="color:var(--gr)">✅ Result</div>
+              <div id="mx-ans" style="white-space:pre-wrap;font-size:12px;line-height:1.7"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TOOLS ══════════════════════════════════════════════════════ -->
+      <div id="tab-tools" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="fl" style="margin-bottom:9px">
+            <input id="ts-q" placeholder="🔍 Search tools..." style="max-width:250px" oninput="rT()">
+            <button class="btn s sm" onclick="loadTools()">↻</button>
+            <button class="btn sm" onclick="nav('gen')">+ New</button>
+            <button class="btn g sm" onclick="warmup()">⚡ Warmup</button>
+            <span id="ts-cnt" class="bdg ml"></span>
+          </div>
+          <div id="tlist"><div class="empty">Loading...</div></div>
+        </div>
+        <div id="ted" style="display:none">
+          <div class="card" style="border-color:var(--acc)">
+            <div class="fl" style="margin-bottom:8px"><div class="ct f1" id="te-ttl">Editor</div><button class="btn s sm" onclick="closeEd()">✕</button></div>
+            <textarea class="code-a" id="te-code" rows="16"></textarea>
+            <div class="fl mt8">
+              <button class="btn" onclick="saveTool()">💾 Save</button>
+              <button class="btn g sm" onclick="testTool()">🧪 Test</button>
+              <button class="btn s sm" onclick="addToolToCanvas()">+🔀 Builder</button>
+              <button class="btn r sm" onclick="delToolEd()">🗑</button>
+            </div>
+            <div class="log mt8" id="te-out" style="display:none;height:90px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ GENERATOR ══════════════════════════════════════════════════ -->
+      <div id="tab-gen" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="g2">
+          <div class="card">
+            <div class="ct">✨ AI Tool Generator (SSE live, auto-continues)</div>
+            <div class="sf"><label class="lbl">TOOL NAME</label><input id="gn-n" placeholder="my_awesome_tool"></div>
+            <div class="sf"><label class="lbl">DESCRIPTION (be specific!)</label>
+              <textarea id="gn-d" rows="5" placeholder="Скачивает видео с YouTube по URL используя yt-dlp через subprocess.&#10;Принимает inputs['url'] (string) и inputs['quality'] ('best'/'720p'/'480p').&#10;Сохраняет mp4 файл в output_dir.&#10;Возвращает путь к файлу в 'files'."></textarea></div>
+            <div class="sf"><label class="lbl">EXAMPLE INPUTS (JSON)</label><input id="gn-i" value="{}"></div>
+            <button class="btn" id="gn-btn" onclick="genTool()">🤖 Generate</button>
+            <div id="gn-pr" style="display:none;margin-top:10px">
+              <div class="pb"><div class="pf" id="gn-pb"></div></div>
+              <div class="log" id="gn-log" style="height:200px"></div>
+            </div>
+            <div id="gn-res" style="display:none;margin-top:7px"></div>
+          </div>
+          <div class="card">
+            <div class="ct">📦 GitHub Install (auto wrapper + usage guide)</div>
+            <div class="sf"><label class="lbl">GITHUB URL</label><input id="gh-url" placeholder="https://github.com/author/repo"></div>
+            <div class="sf"><label class="lbl">TOOL NAME (auto from repo)</label><input id="gh-n"></div>
+            <div class="sf"><label class="lbl">DESCRIPTION</label><input id="gh-d"></div>
+            <button class="btn" id="gh-btn" onclick="installGH()">📥 Install</button>
+            <div id="gh-pr" style="display:none;margin-top:10px">
+              <div class="pb"><div class="pf" id="gh-pb"></div></div>
+              <div class="log" id="gh-log" style="height:200px"></div>
+            </div>
+            <div id="gh-res" style="display:none;margin-top:7px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">💡 Prompt Examples — click to fill</div>
+          <div class="g3" style="gap:7px">
+            <div class="pex" onclick="fEx(this)" data-n="youtube_dl" data-d="Скачивает видео с YouTube по URL используя yt-dlp через subprocess. Принимает inputs['url'] и inputs['quality'] ('best'/'720p'). Сохраняет mp4 в output_dir. Возвращает путь к скачанному файлу." data-i='{"url":"https://youtu.be/dQw4w9WgXcQ","quality":"best"}'><div style="font-weight:700;font-size:11px">📹 YouTube DL</div><div style="font-size:9px;color:var(--mu)">yt-dlp</div></div>
+            <div class="pex" onclick="fEx(this)" data-n="dns_whois" data-d="Полный DNS и WHOIS анализ домена. Принимает inputs['domain']. Делает запросы A/MX/NS/TXT записей через socket и subprocess whois. Возвращает структурированный отчёт." data-i='{"domain":"example.com"}'><div style="font-weight:700;font-size:11px">🔍 DNS WHOIS</div><div style="font-size:9px;color:var(--mu)">domain analysis</div></div>
+            <div class="pex" onclick="fEx(this)" data-n="pdf_extractor" data-d="Извлекает весь текст из PDF файла используя pypdf. Принимает inputs['path'] — путь к файлу. Возвращает текст страницами." data-i='{"path":"/tmp/doc.pdf"}'><div style="font-weight:700;font-size:11px">📄 PDF Reader</div><div style="font-size:9px;color:var(--mu)">pypdf</div></div>
+            <div class="pex" onclick="fEx(this)" data-n="crypto_price" data-d="Получает цену криптовалюты с CoinGecko API через urllib. Принимает inputs['coin'] (bitcoin/ethereum/etc). Возвращает цену USD, изменение 24h, market cap." data-i='{"coin":"bitcoin"}'><div style="font-weight:700;font-size:11px">💰 Crypto</div><div style="font-size:9px;color:var(--mu)">CoinGecko</div></div>
+            <div class="pex" onclick="fEx(this)" data-n="tg_sender" data-d="Отправляет сообщение в Telegram через Bot API используя urllib.request. Принимает inputs['bot_token'], inputs['chat_id'], inputs['text'], inputs['parse_mode'] (HTML). Возвращает message_id." data-i='{"bot_token":"123:ABC","chat_id":"123456","text":"Hello!","parse_mode":"HTML"}'><div style="font-weight:700;font-size:11px">📨 TG Send</div><div style="font-size:9px;color:var(--mu)">Bot API</div></div>
+            <div class="pex" onclick="fEx(this)" data-n="news_parser" data-d="Парсит RSS ленту новостного сайта используя feedparser или urllib+xml.etree. Принимает inputs['url'] RSS фида. Возвращает последние 10 новостей: заголовок, дата, ссылка, описание." data-i='{"url":"https://feeds.bbci.co.uk/news/rss.xml"}'><div style="font-weight:700;font-size:11px">📰 RSS Parser</div><div style="font-size:9px;color:var(--mu)">news feed</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MARKETPLACE ══════════════════════════════════════════════ -->
+      <div id="tab-market" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="fl" style="margin-bottom:12px">
+          <div style="font-size:14px;font-weight:700">🏪 Pipeline Marketplace</div>
+          <button class="btn s sm ml" onclick="loadMarket()">↻</button>
+          <button class="btn sm" onclick="shareCurrentPip()">📤 Share current</button>
+        </div>
+        <div style="font-size:10px;font-weight:700;margin-bottom:7px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em">MY PIPELINES</div>
+        <div id="mk-local" class="g2"><div class="empty">Loading...</div></div>
+        <div style="font-size:10px;font-weight:700;margin-top:14px;margin-bottom:7px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em">SHARED (PUBLIC)</div>
+        <div id="mk-shared" class="g2"><div class="empty">...</div></div>
+      </div>
+
+      <!-- ═══ LEARNING LOOP ════════════════════════════════════════════ -->
+      <div id="tab-learn" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="fl" style="margin-bottom:12px">
+          <div style="font-size:14px;font-weight:700">🧬 Skill Evolution & Learning Loop</div>
+          <button class="btn s sm ml" onclick="loadLearn()">↻</button>
+        </div>
+        <div class="g2" style="margin-bottom:14px">
+          <div class="card stat"><div class="sv" id="lrn-tot">—</div><div class="sl">Total tools</div></div>
+          <div class="card stat"><div class="sv" id="lrn-evo">—</div><div class="sl">Need evolution</div></div>
+        </div>
+        <div class="card">
+          <div class="ct" style="color:var(--re)">⚠️ Candidates for evolution (fail rate ≥ 30%)</div>
+          <div id="lrn-cand"><div class="empty">Loading...</div></div>
+        </div>
+        <div class="card">
+          <div class="ct" style="color:var(--gr)">✅ Healthy tools</div>
+          <div id="lrn-heal"><div class="empty">...</div></div>
+        </div>
+      </div>
+
+      <!-- ═══ DASHBOARD ════════════════════════════════════════════════ -->
+      <div id="tab-dash" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="g4" style="margin-bottom:12px">
+          <div class="card stat"><div class="sv" id="d-tools">—</div><div class="sl">🔧 Tools</div></div>
+          <div class="card stat"><div class="sv" id="d-users">—</div><div class="sl">👥 Users</div></div>
+          <div class="card stat"><div class="sv" id="d-cpu">—</div><div class="sl">⚡ CPU</div></div>
+          <div class="card stat"><div class="sv" id="d-ram">—</div><div class="sl">🧠 RAM</div></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="ct">System Info</div><div id="d-sys" style="font-size:11px;line-height:2;color:var(--mu)">...</div></div>
+          <div class="card"><div class="ct">Matrix Stats</div><div id="d-mx" style="font-size:11px;line-height:2;color:var(--mu)">...</div></div>
+        </div>
+        <div class="card"><div class="ct fl">Live Logs<button class="btn s sm ml" onclick="loadLogs()">↻</button></div><div id="d-logs" class="log" style="height:180px">...</div></div>
+      </div>
+
+      <!-- ═══ USERS ══════════════════════════════════════════════════════ -->
+      <div id="tab-users" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="fl" style="margin-bottom:9px">
+            <input id="us-q" placeholder="🔍 ID / username..." style="max-width:220px" oninput="rU()">
+            <button class="btn s sm" onclick="loadUsers()">↻</button>
+            <button class="btn sm" onclick="bcast()">📢 Broadcast</button>
+          </div>
+          <table style="width:100%;border-collapse:collapse" id="us-tbl">
+            <thead><tr>
+              <th style="padding:6px 8px;text-align:left;font-size:9px;color:var(--mu);border-bottom:1px solid var(--brd);text-transform:uppercase">ID</th>
+              <th style="padding:6px 8px;text-align:left;font-size:9px;color:var(--mu);border-bottom:1px solid var(--brd);text-transform:uppercase">Username</th>
+              <th style="padding:6px 8px;text-align:left;font-size:9px;color:var(--mu);border-bottom:1px solid var(--brd);text-transform:uppercase">Role</th>
+              <th style="padding:6px 8px;text-align:left;font-size:9px;color:var(--mu);border-bottom:1px solid var(--brd);text-transform:uppercase">Status</th>
+              <th style="padding:6px 8px;text-align:left;font-size:9px;color:var(--mu);border-bottom:1px solid var(--brd);text-transform:uppercase">Actions</th>
+            </tr></thead>
+            <tbody id="us-body"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ SHELL ═════════════════════════════════════════════════════ -->
+      <div id="tab-sh" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="ct">💻 Terminal</div>
+          <div id="sh-out" class="log" style="height:370px;margin-bottom:7px"><span class="ls">$ BlackBugsAI Shell Ready</span></div>
+          <div class="fl">
+            <span style="color:var(--gr);flex-shrink:0">$&nbsp;</span>
+            <input id="sh-in" placeholder="command..." onkeydown="shKey(event)" style="font-size:13px">
+            <button class="btn sm" onclick="shRun()">▶</button>
+          </div>
+          <div class="fl mt8" style="flex-wrap:wrap">
+            <button class="btn s sm" onclick="shCmd('df -h')">df</button>
+            <button class="btn s sm" onclick="shCmd('free -m')">RAM</button>
+            <button class="btn s sm" onclick="shCmd(\"ps aux --sort=-%cpu|head -10\")">PS</button>
+            <button class="btn s sm" onclick="shCmd('ls -la /app/')">ls /app</button>
+            <button class="btn s sm" onclick="shCmd('which bore cloudflared lt ngrok 2>&1')">tunnels</button>
+            <button class="btn s sm" onclick="shCmd('docker ps 2>/dev/null||echo not-docker')">docker</button>
+            <button class="btn s sm" onclick="shCmd('python3 -c \"from agent_matrix import get_stats; import json; print(json.dumps(get_stats(),indent=2))\"')">matrix stats</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TUNNEL ════════════════════════════════════════════════════ -->
+      <div id="tab-tunnel" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <!-- Current status -->
+        <div class="card">
+          <div class="ct fl">🌐 Admin Panel Tunnel Status
+            <button class="btn s sm ml" onclick="pollTunnel()">↻ Refresh</button>
+          </div>
+          <div id="tun-url" class="url-display" onclick="copyTunUrl()">No tunnel running</div>
+          <div class="fl mt8" style="font-size:11px;gap:12px">
+            <span id="tun-st"><span class="dot dr" style="margin-right:4px"></span>stopped</span>
+            <span id="tun-prov" style="color:var(--mu)"></span>
+            <span id="fish-tun-st" style="color:var(--mu)"></span>
+            <button class="btn s sm" id="tun-cp-btn" style="display:none" onclick="copyTunUrl()">📋 Copy URL</button>
+          </div>
+          <div class="log mt8" id="tun-log-box" style="height:110px;display:none"></div>
+          <button class="btn s sm mt8" onclick="toggleTunLog()">📋 Toggle log</button>
+        </div>
+
+        <!-- Why not Cloudflare for admin -->
+        <div class="card" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+          <div class="ct" style="color:var(--ye)">⚠️ Conflict-free tunnel strategy</div>
+          <div style="font-size:11px;line-height:1.9;color:var(--mu)">
+            Fish module uses <strong style="color:var(--tx)">Cloudflare</strong> on port <strong style="color:var(--tx)">5000</strong>.<br>
+            Admin panel uses <strong style="color:var(--tx)">bore.pub</strong> on port <strong style="color:var(--tx)">8080</strong> — different provider, no conflict.<br>
+            If ports conflict, <strong style="color:var(--tx)">auto-detection</strong> picks a free port automatically.
+          </div>
+        </div>
+
+        <!-- Provider selector -->
+        <div class="card">
+          <div class="ct">Choose Provider for Admin Panel</div>
+          <div id="tun-providers" class="g2" style="gap:9px;margin-bottom:12px">
+            <div class="tun-card sel" id="tp-bore" data-p="bore" onclick="selProv(this)">
+              <div style="font-weight:700;font-size:12px;margin-bottom:4px">⚡ bore.pub <span class="bdg">Recommended</span></div>
+              <div style="font-size:9px;color:var(--mu)">Pre-installed in Docker · No account · Auto finds free port · No Cloudflare conflict</div>
+              <div style="font-size:9px;color:var(--ac2);margin-top:3px">URL: <code>http://bore.pub:XXXXX/panel</code></div>
+            </div>
+            <div class="tun-card" id="tp-cloudflared" data-p="cloudflared" onclick="selProv(this)">
+              <div style="font-weight:700;font-size:12px;margin-bottom:4px">☁️ Cloudflare <span class="bdg y">Use only if fish is off</span></div>
+              <div style="font-size:9px;color:var(--mu)">HTTPS · Pre-installed · May conflict if fish also uses Cloudflare</div>
+            </div>
+            <div class="tun-card" id="tp-localtunnel" data-p="localtunnel" onclick="selProv(this)">
+              <div style="font-weight:700;font-size:12px;margin-bottom:4px">🔗 localtunnel.me</div>
+              <div style="font-size:9px;color:var(--mu)">HTTPS · Needs npm · No Cloudflare conflict</div>
+            </div>
+          </div>
+          <div id="bore-opts" style="margin-bottom:11px">
+            <label class="lbl">BORE SERVER</label>
+            <input id="bore-srv" value="bore.pub" style="max-width:200px">
+          </div>
+          <div class="fl">
+            <button class="btn" id="tun-start-btn" onclick="startTunnel()">▶ Start Tunnel</button>
+            <button class="btn r sm" id="tun-stop-btn" onclick="stopTunnel()" style="display:none">⏹ Stop</button>
+          </div>
+          <div class="log mt8" id="tun-start-log" style="display:none;height:130px"></div>
+        </div>
+
+        <!-- GCP guide -->
+        <div class="card">
+          <div class="ct">🚀 GCP / Docker Deploy</div>
+          <div class="log" style="height:auto;padding:9px;font-size:10px;line-height:1.7">
+# bore admin + cloudflare fish (no conflict):
+docker compose --profile admin-bore --profile fish-cf up -d
+# Get admin URL:  docker compose logs bore-admin | grep bore.pub
+# Get fish URL:   docker compose logs cloudflare-fish | grep trycloudflare
+
+# OR open GCP port directly (no tunnel needed):
+gcloud compute firewall-rules create allow-8080 \
+  --allow tcp:8080 --source-ranges 0.0.0.0/0
+# Access: http://EXTERNAL_IP:8080/panel</div>
+        </div>
+      </div>
+
+      <!-- ═══ PENTEST ═══════════════════════════════════════════════════ -->
+      <div id="tab-pentest" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="ct fl">🛡️ Pentest Tools Status <button class="btn s sm ml" onclick="loadPentest()">↻ Check</button></div>
+          <div id="pt-list" class="g3"><div class="empty">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- ═══ LOGS ════════════════════════════════════════════════════ -->
+      <div id="tab-logs" class="tab" style="padding:16px;overflow-y:auto;flex:1">
+        <div class="card">
+          <div class="fl" style="margin-bottom:8px;flex-wrap:wrap">
+            <select id="lg-lvl" onchange="rLogs()" style="max-width:110px">
+              <option value="">All</option><option value="ERROR">❌ ERROR</option>
+              <option value="WARN">⚠️ WARN</option><option value="INFO">INFO</option>
+            </select>
+            <input id="lg-q" placeholder="🔍 filter..." style="max-width:185px" oninput="rLogs()">
+            <button class="btn s sm" onclick="loadLogs()">↻</button>
+            <label class="fl" style="font-size:10px;cursor:pointer;gap:4px"><input type="checkbox" id="lg-auto" checked>Auto</label>
+            <button class="btn r sm ml" onclick="_aL=[];rLogs()">🗑 Clear</button>
+          </div>
+          <div id="lg-box" class="log" style="height:calc(100vh - 185px)">...</div>
+        </div>
+      </div>
+
+    </div><!-- /ct -->
+  </div><!-- /mn -->
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let CFG={url:'',token:''};
+let _aT=[],_aU=[],_aL=[];
+let _lT=null,_dT=null,_tT=null;
+let _shH=[],_shI=-1,_edT=null;
+let _selProv='bore';
+
+// Canvas
+let N=[],E=[];
+let sc=1,ox=0,oy=0;
+let drag=null,pan=null,conn=null,selN=null,selE=null,ctxT=null;
+let _nId=1,_pipId=null;
+
+const NM={
+  python_eval:{i:'🐍',c:'#7c3aed',l:'Python Eval'},
+  shell_cmd:{i:'💻',c:'#06b6d4',l:'Shell'},
+  web_scrape:{i:'🌐',c:'#059669',l:'Scraper'},
+  http_get:{i:'🔗',c:'#0284c7',l:'HTTP GET'},
+  osint_domain:{i:'🔍',c:'#7c3aed',l:'OSINT Domain'},
+  osint_username:{i:'👤',c:'#7c3aed',l:'OSINT User'},
+  port_scan:{i:'🛡️',c:'#dc2626',l:'Port Scan'},
+  ssl_check:{i:'🔒',c:'#059669',l:'SSL Check'},
+  file_read:{i:'📖',c:'#9333ea',l:'File Read'},
+  file_write:{i:'📄',c:'#9333ea',l:'File Write'},
+  zip_files:{i:'📦',c:'#d97706',l:'ZIP'},
+  matrix_create_tool:{i:'✨',c:'#7c3aed',l:'AI Tool Gen'},
+  github_install:{i:'🐙',c:'#374151',l:'GitHub Install'},
+  pip_install:{i:'📦',c:'#d97706',l:'pip Install'},
+  deps_audit:{i:'🔐',c:'#dc2626',l:'Deps Audit'},
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════════════
+window.onload=()=>{
+  const s=localStorage.getItem('bbai_v5');
+  if(s){try{const p=JSON.parse(s);$('cu').value=p.url||'';$('ct').value=p.token||'';}catch(e){}}
+  if(!$('cu').value) $('cu').value=location.origin;
+  $('ct').addEventListener('keydown',e=>{if(e.key==='Enter') conn();});
+  window.addEventListener('resize',()=>{rE();mm();});
+  document.addEventListener('keydown',gKey);
+  document.addEventListener('click',hideCX);
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════════════════════════════════
+async function api(path,opts={}){
+  const{method='GET',body,raw=false}=opts;
+  const h={'X-Admin-Token':CFG.token};
+  if(body) h['Content-Type']='application/json';
+  const r=await fetch(CFG.url+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  if(raw) return r;
+  if(!r.ok) throw new Error(r.status+' '+r.statusText);
+  return r.json();
+}
+
+function toast(msg,t='ok'){
+  const el=document.createElement('div');el.textContent=msg;
+  Object.assign(el.style,{position:'fixed',bottom:'14px',right:'14px',zIndex:999,
+    background:t==='e'?'rgba(239,68,68,.93)':t==='w'?'rgba(245,158,11,.93)':'rgba(16,185,129,.93)',
+    color:'#fff',padding:'7px 14px',borderRadius:'7px',fontFamily:'monospace',fontSize:'12px',
+    boxShadow:'0 3px 16px rgba(0,0,0,.4)',transition:'opacity .3s'});
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},2500);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CONNECT / DISCONNECT
+// ═══════════════════════════════════════════════════════════════════════════
+async function conn(){
+  const url=$('cu').value.trim().replace(/\/$/,'');
+  const token=$('ct').value.trim();
+  if(!url||!token){$('cerr').textContent='Fill both fields';return;}
+  CFG={url,token};
+  try{
+    const r=await api('/ping');if(!r.pong) throw new Error('bad response');
+    localStorage.setItem('bbai_v5',JSON.stringify(CFG));
+    $('mo-conn').style.display='none';$('app').style.display='flex';
+    gRef();startTimers();nav('builder');
+  }catch(e){$('cerr').textContent='Error: '+e.message;setTimeout(()=>$('cerr').textContent='',4000);}
+}
+
+function disconnect(){
+  clearInterval(_lT);clearInterval(_dT);clearInterval(_tT);
+  $('app').style.display='none';$('mo-conn').style.display='flex';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+const TITLES={
+  builder:'🔀 Pipeline Builder',matrix:'🧠 Agent Matrix',tools:'🔧 Tools Registry',
+  gen:'✨ Tool Generator',market:'🏪 Marketplace',learn:'🧬 Learning Loop',
+  dash:'📊 Dashboard',users:'👥 Users',sh:'💻 Shell',
+  tunnel:'🌐 Tunnel Access',pentest:'🛡️ Pentest',logs:'📋 Logs',
+};
+
+function nav(t){
+  // Toggle builder-mode class on #ct
+  $('ct').classList.toggle('builder-mode', t==='builder');
+
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('act'));
+  document.querySelectorAll('.si').forEach(el=>el.classList.remove('act'));
+
+  const tab=$('tab-'+t);if(tab) tab.classList.add('act');
+  const si=document.querySelector('[data-t="'+t+'"]');if(si) si.classList.add('act');
+  $('pg-ttl').textContent=TITLES[t]||t;
+
+  // Lazy loads
+  if(t==='tools') loadTools();
+  if(t==='users') loadUsers();
+  if(t==='pentest') loadPentest();
+  if(t==='market') loadMarket();
+  if(t==='learn') loadLearn();
+  if(t==='tunnel'){pollTunnel();loadTunProviders();}
+  if(t==='logs') loadLogs();
+  if(t==='dash') loadDash();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadDash(){
+  try{
+    const[st,mx]=await Promise.all([
+      api('/api/status').catch(()=>null),
+      api('/api/matrix/stats').catch(()=>null),
+    ]);
+    if(st){
+      $('d-cpu').textContent=(st.cpu_percent||0)+'%';
+      $('d-ram').textContent=(st.memory?.percent||0)+'%';
+      $('d-users').textContent=st.users_count||'—';
+      $('tb-up').textContent='⏱ '+(st.uptime_str||'—');
+      const s=st.system||{};
+      $('d-sys').innerHTML=[
+        `<div>🖥️ ${esc(s.platform||'—')} | ${esc(s.hostname||'—')}</div>`,
+        `<div>🐍 Python ${esc(s.python_version||'—')}</div>`,
+        `<div>💾 ${esc(s.disk_used||'—')} / ${esc(s.disk_total||'—')}</div>`,
+        `<div>⏱ Uptime: ${esc(st.uptime_str||'—')}</div>`,
+      ].join('');
+    }
+    if(mx){
+      $('d-tools').textContent=mx.total||0;
+      $('d-mx').innerHTML=[
+        `<div>🔧 Total: <b>${mx.total||0}</b></div>`,
+        `<div>📦 Builtin: ${mx.builtin||0}</div>`,
+        `<div>✨ Custom: ${mx.custom||0}</div>`,
+        `<div style="color:var(--mu);font-size:10px">${esc(mx.tools_db||'')}</div>`,
+      ].join('');
+    }
+  }catch(e){}
+}
+
+function gRef(){loadDash();loadLogs();}
+
+function startTimers(){
+  _dT=setInterval(loadDash,15000);
+  _lT=setInterval(()=>{if($('lg-auto')?.checked) loadLogs();},5000);
+  _tT=setInterval(pollTunnel,9000);
+  loadDash();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  LOGS
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadLogs(){
+  try{const d=await api('/api/logs?limit=200');_aL=d.logs||d||[];rLogs();}catch(e){}
+}
+function rLogs(){
+  const lvl=$('lg-lvl')?.value||'';
+  const q=($('lg-q')?.value||'').toLowerCase();
+  const lines=_aL.filter(l=>(!lvl||l.level===lvl)&&(!q||l.text.toLowerCase().includes(q)));
+  const html=lines.map(l=>`<div class="${l.level==='ERROR'?'le':l.level==='WARN'?'lw':'li'}">[${l.ts}] ${esc(l.text)}</div>`).join('');
+  [$('lg-box'),$('d-logs')].forEach(el=>{
+    if(el){el.innerHTML=html||'<div class="empty">No logs</div>';el.scrollTop=el.scrollHeight;}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TOOLS
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadTools(){
+  try{const d=await api('/api/matrix/tools');_aT=Array.isArray(d)?d:(d.tools||[]);rT();}
+  catch(e){$('tlist').innerHTML=`<div class="empty">Error: ${esc(e.message)}</div>`;}
+}
+function rT(){
+  const q=($('ts-q')?.value||'').toLowerCase();
+  const lst=_aT.filter(t=>!q||t.name.toLowerCase().includes(q)||(t.description||'').toLowerCase().includes(q));
+  $('ts-cnt').textContent=lst.length+'/'+_aT.length;
+  if(!lst.length){$('tlist').innerHTML='<div class="empty">No tools</div>';return;}
+  $('tlist').innerHTML=lst.map(t=>`
+    <div class="tc">
+      <div style="flex:1">
+        <div class="fl">
+          <b>${esc(t.name)}</b>
+          <span class="bdg ${t.builtin?'':'g'}" style="margin-left:5px">${t.builtin?'📦 builtin':'✨ custom'}</span>
+          ${t.used_count?`<span class="bdg" style="margin-left:4px">${t.used_count}×</span>`:''}
+          ${(t.version||1)>1?`<span class="bdg y" style="margin-left:4px">v${t.version}</span>`:''}
+        </div>
+        <div style="font-size:9px;color:var(--mu);margin-top:1px">${esc((t.description||'').slice(0,80))}</div>
+      </div>
+      <button class="btn s sm" onclick="editTool('${esc(t.name)}')">✏️</button>
+      <button class="btn s sm" onclick="addToolToCanvas('${esc(t.name)}')">+🔀</button>
+      <button class="btn r sm" onclick="delTool('${esc(t.name)}')">🗑</button>
+    </div>`).join('');
+}
+async function editTool(name){
+  _edT=name;
+  try{
+    const d=await api('/api/matrix/tools/'+name+'/code');
+    $('te-ttl').textContent='✏️ '+name;
+    $('te-code').value=d.code||'';
+    $('ted').style.display='block';
+    $('te-out').style.display='none';
+    $('ted').scrollIntoView({behavior:'smooth'});
+  }catch(e){toast('❌ '+e.message,'e');}
+}
+function closeEd(){$('ted').style.display='none';_edT=null;}
+async function saveTool(){
+  if(!_edT) return;
+  try{await api('/api/matrix/tools/'+_edT+'/code',{method:'PUT',body:{code:$('te-code').value}});toast('✅ Saved');}
+  catch(e){toast('❌ '+e.message,'e');}
+}
+async function testTool(){
+  if(!_edT) return;
+  const o=$('te-out');o.style.display='block';o.innerHTML='<div class="ls">🧪 Testing...</div>';
+  try{
+    const r=await api('/api/matrix/tools/test',{method:'POST',body:{name:_edT,inputs:{}}});
+    o.innerHTML=`<div class="${r.ok?'lok':'le'}">${esc(r.output||r.error||'(no output)')}</div>`;
+  }catch(e){o.innerHTML=`<div class="le">${esc(e.message)}</div>`;}
+}
+function addToolToCanvas(name){
+  aN(name||_edT||'python_eval');
+  nav('builder');
+  toast('✅ Added to builder');
+}
+async function delToolEd(){
+  if(!_edT||!confirm(`Delete "${_edT}"?`)) return;
+  await delTool(_edT);closeEd();
+}
+async function delTool(name){
+  if(!confirm(`Delete "${name}"?`)) return;
+  try{await api('/api/matrix/tools/'+name,{method:'DELETE'});toast('🗑 Deleted');loadTools();}
+  catch(e){toast('❌ '+e.message,'e');}
+}
+async function warmup(){
+  try{const r=await api('/api/matrix/warmup',{method:'POST'});toast('✅ +'+r.registered+' / skip='+r.skipped);loadTools();}
+  catch(e){toast('❌ '+e.message,'e');}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SSE HELPER
+// ═══════════════════════════════════════════════════════════════════════════
+async function sseStream(endpoint,body,logEl,pbEl,resEl,btn,btnText){
+  let pct=5;logEl.innerHTML='';pbEl.style.width='5%';resEl.style.display='none';
+  const addLog=(msg,cls='ls')=>{
+    logEl.innerHTML+=`<div class="${cls}">${esc(msg)}</div>`;
+    logEl.scrollTop=logEl.scrollHeight;
+    pct=Math.min(92,pct+9);pbEl.style.width=pct+'%';
+  };
+  try{
+    const r=await api(endpoint,{method:'POST',body,raw:true});
+    const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done) break;
+      buf+=dec.decode(value);
+      const parts=buf.split('\n\n');buf=parts.pop();
+      for(const part of parts){
+        const line=part.replace(/^data: /,'').trim();if(!line) continue;
+        try{
+          const ev=JSON.parse(line);
+          if(ev.type==='status') addLog(ev.msg);
+          else if(ev.type==='result'){
+            pbEl.style.width='100%';resEl.style.display='block';
+            if(ev.ok){
+              addLog('✅ Done!','lok');
+              resEl.innerHTML=`<div class="bdg g">✅ "${esc(ev.name||body.name||body.tool_name||'tool')}" created!</div>`;
+              loadTools();
+            }else{
+              addLog('❌ '+(ev.error||'Error'),'le');
+              resEl.innerHTML=`<div class="bdg r">❌ ${esc(ev.error||'Failed')}</div>`;
+            }
+          }
+        }catch(err){}
+      }
+    }
+  }catch(e){addLog('❌ '+e.message,'le');}
+  finally{btn.disabled=false;btn.textContent=btnText;}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TOOL GENERATOR
+// ═══════════════════════════════════════════════════════════════════════════
+function fEx(el){$('gn-n').value=el.dataset.n||'';$('gn-d').value=el.dataset.d||'';$('gn-i').value=el.dataset.i||'{}';}
+async function genTool(){
+  const name=$('gn-n').value.trim(),desc=$('gn-d').value.trim();
+  let inp={};try{inp=JSON.parse($('gn-i').value||'{}');}catch(e){}
+  if(!name||!desc){toast('⚠️ Fill name and description','w');return;}
+  const btn=$('gn-btn');btn.disabled=true;btn.textContent='⏳ Generating...';
+  $('gn-pr').style.display='block';
+  await sseStream('/api/matrix/tools/generate',{name,description:desc,inputs:inp},$('gn-log'),$('gn-pb'),$('gn-res'),btn,'🤖 Generate');
+}
+async function installGH(){
+  const url=$('gh-url').value.trim(),name=$('gh-n').value.trim(),desc=$('gh-d').value.trim();
+  if(!url){toast('⚠️ Enter GitHub URL','w');return;}
+  const btn=$('gh-btn');btn.disabled=true;btn.textContent='⏳ Installing...';
+  $('gh-pr').style.display='block';
+  await sseStream('/api/matrix/tools/github',{url,name,description:desc},$('gh-log'),$('gh-pb'),$('gh-res'),btn,'📥 Install');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  AGENT MATRIX
+// ═══════════════════════════════════════════════════════════════════════════
+async function runMatrix(){
+  const task=$('mx-task').value.trim();if(!task) return;
+  const btn=$('mx-btn');btn.disabled=true;btn.textContent='⏳ Running...';
+  $('mx-prog').style.display='block';$('mx-res').style.display='none';
+  $('mx-log').innerHTML='';$('mx-pb').style.width='3%';$('mx-st').style.display='inline';
+  let pct=3;
+  const addLog=(msg,cls='ls')=>{
+    $('mx-log').innerHTML+=`<div class="${cls}">${esc(msg)}</div>`;
+    $('mx-log').scrollTop=$('mx-log').scrollHeight;
+    pct=Math.min(95,pct+4);$('mx-pb').style.width=pct+'%';
+  };
+  try{
+    const r=await api('/api/matrix/run/stream',{method:'POST',body:{task},raw:true});
+    const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done) break;
+      buf+=dec.decode(value);const parts=buf.split('\n\n');buf=parts.pop();
+      for(const p of parts){
+        const line=p.replace(/^data: /,'').trim();if(!line) continue;
+        try{
+          const ev=JSON.parse(line);
+          if(ev.type==='status') addLog(ev.msg);
+          else if(ev.type==='result'){
+            $('mx-pb').style.width='100%';$('mx-res').style.display='block';
+            const a=$('mx-ans');a.textContent=ev.answer||ev.error||'Done';
+            a.style.color=ev.ok?'var(--tx)':'var(--re)';
+            if(ev.generated_tools?.length) addLog('🔧 Created: '+ev.generated_tools.join(', '),'lok');
+            if(ev.zip_path) addLog('📦 ZIP: '+ev.zip_path,'lok');
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){addLog('❌ '+e.message,'le');}
+  finally{btn.disabled=false;btn.textContent='▶ Запустить';$('mx-st').style.display='none';}
+}
+function clearMx(){$('mx-log').innerHTML='';$('mx-prog').style.display='none';$('mx-res').style.display='none';}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  USERS
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadUsers(){try{const d=await api('/api/users');_aU=d.users||d||[];rU();}catch(e){}}
+function rU(){
+  const q=($('us-q')?.value||'').toLowerCase();
+  const lst=_aU.filter(u=>!q||String(u.id).includes(q)||(u.username||'').toLowerCase().includes(q));
+  if(!lst.length){$('us-body').innerHTML='<tr><td colspan="5" class="empty">No users</td></tr>';return;}
+  $('us-body').innerHTML=lst.map(u=>`
+    <tr>
+      <td style="padding:6px 8px">${u.id}</td>
+      <td style="padding:6px 8px">@${esc(u.username||'—')}</td>
+      <td style="padding:6px 8px"><span class="bdg">${esc(u.privilege||'user')}</span></td>
+      <td style="padding:6px 8px">${u.is_banned?'<span class="bdg r">🔴 banned</span>':'<span class="bdg g">✅</span>'}</td>
+      <td style="padding:6px 8px">
+        <div class="fl" style="gap:4px">
+          <button class="btn s sm" onclick="msgUser(${u.id})">✉️</button>
+          ${u.is_banned
+            ?`<button class="btn g sm" onclick="uAct(${u.id},'unban')">✅</button>`
+            :`<button class="btn r sm" onclick="uAct(${u.id},'ban')">🔴</button>`}
+          <button class="btn r sm" onclick="uAct(${u.id},'kick')">👢</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+async function uAct(uid,a){try{await api('/api/users/'+uid+'/'+a,{method:'POST'});toast('✅ '+a);loadUsers();}catch(e){toast('❌ '+e.message,'e');}}
+async function msgUser(uid){const t=prompt('Message to '+uid+':');if(!t)return;try{await api('/api/msg/user',{method:'POST',body:{user_id:uid,text:t}});toast('✅');}catch(e){toast('❌ '+e.message,'e');}}
+async function bcast(){const t=prompt('Broadcast to all:');if(!t)return;try{const r=await api('/api/msg/broadcast',{method:'POST',body:{text:t}});toast('✅ '+r.sent+'x');}catch(e){toast('❌ '+e.message,'e');}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SHELL
+// ═══════════════════════════════════════════════════════════════════════════
+function shKey(e){
+  if(e.key==='Enter') shRun();
+  else if(e.key==='ArrowUp'){_shI=Math.min(_shI+1,_shH.length-1);$('sh-in').value=_shH[_shH.length-1-_shI]||'';}
+  else if(e.key==='ArrowDown'){_shI=Math.max(_shI-1,-1);$('sh-in').value=_shI<0?'':(_shH[_shH.length-1-_shI]||'');}
+}
+async function shRun(){
+  const inp=$('sh-in');const cmd=inp.value.trim();if(!cmd) return;
+  _shH.push(cmd);_shI=-1;inp.value='';
+  shAdd(`<span class="lok">$ ${esc(cmd)}</span>`);shCmd(cmd);
+}
+async function shCmd(cmd){
+  try{
+    const r=await api('/api/shell',{method:'POST',body:{cmd}});
+    const o=r.output||r.stdout||r.result||'';
+    const e=r.stderr||r.error||'';
+    if(o) shAdd(`<span class="li">${esc(o)}</span>`);
+    if(e) shAdd(`<span class="le">${esc(e)}</span>`);
+    if(!o&&!e) shAdd('<span class="lw">(no output)</span>');
+  }catch(e){shAdd(`<span class="le">❌ ${esc(e.message)}</span>`);}
+}
+function shAdd(h){const o=$('sh-out');o.innerHTML+='<div>'+h+'</div>';o.scrollTop=o.scrollHeight;}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PENTEST
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadPentest(){
+  $('pt-list').innerHTML='<div class="empty">Checking...</div>';
+  try{
+    const d=await api('/api/matrix/pentest-tools');
+    $('pt-list').innerHTML=Object.entries(d).map(([t,i])=>`
+      <div class="card" style="background:var(--bg2);padding:10px">
+        <div class="fl"><span class="dot ${i.installed?'dg':'dr'}"></span><b>${esc(t)}</b>
+          <span class="bdg ${i.installed?'g':'r'}" style="margin-left:auto">${i.installed?'✅':'❌'}</span>
+        </div>
+        ${i.version?`<div style="font-size:9px;color:var(--mu);margin-top:2px">${esc(i.version)}</div>`:''}
+      </div>`).join('');
+  }catch(e){$('pt-list').innerHTML=`<div class="empty">Error: ${esc(e.message)}</div>`;}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MARKETPLACE
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadMarket(){
+  try{
+    const d=await api('/api/pipelines');const ps=d.pipelines||[];
+    renderPipList($('mk-local'),ps.filter(p=>!p.shared),'local');
+    renderPipList($('mk-shared'),ps.filter(p=>p.shared),'shared');
+  }catch(e){$('mk-local').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+}
+function renderPipList(el,ps,type){
+  if(!ps.length){el.innerHTML='<div class="empty">No pipelines</div>';return;}
+  el.innerHTML=ps.map(p=>`
+    <div class="pc">
+      <div class="pt2">${esc(p.name)}</div>
+      <div style="font-size:10px;color:var(--mu)">${esc(p.description||'')}</div>
+      <div class="pm">
+        <span>📍 ${p.node_count||0} nodes</span>
+        <span>▶ ${p.runs||0} runs</span>
+        <span>📁 ${esc(p.category||'general')}</span>
+        ${p.author&&p.author!=='local'?`<span>👤 ${esc(p.author)}</span>`:''}
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
+        ${(p.nodes||[]).slice(0,6).map(n=>`<span class="pnt">${esc(n.data?.label||n.data?.tool||n.type||'?')}</span>`).join('')}
+      </div>
+      <div class="fl mt8" style="gap:4px">
+        <button class="btn g sm" onclick="loadPipById('${esc(p.id)}')">📂 Open</button>
+        <button class="btn s sm" onclick="runPipById('${esc(p.id)}')">▶ Run</button>
+        ${type==='local'?`<button class="btn s sm" onclick="sharePip('${esc(p.id)}')">📤 Share</button>`:''}
+        <button class="btn r sm" onclick="delPip('${esc(p.id)}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+async function savePip(){
+  if(!N.length){toast('⚠️ Canvas is empty','w');return;}
+  const name=prompt('Pipeline name:')||'Untitled';
+  if(!_pipId) _pipId=Date.now().toString(36);
+  try{await api('/api/pipelines',{method:'POST',body:{id:_pipId,name,nodes:N,edges:E}});toast('✅ Saved: '+name);}
+  catch(e){toast('❌ '+e.message,'e');}
+}
+async function loadPipDialog(){
+  try{
+    const d=await api('/api/pipelines');const ps=d.pipelines||[];
+    if(!ps.length){toast('⚠️ No saved pipelines','w');return;}
+    const names=ps.map((p,i)=>`${i+1}. ${p.name} (${p.node_count||0} nodes)`).join('\n');
+    const idx=prompt('Select:\n'+names+'\nEnter number:')-1;
+    if(idx>=0&&idx<ps.length) loadPipById(ps[idx].id);
+  }catch(e){toast('❌ '+e.message,'e');}
+}
+async function loadPipById(id){
+  try{
+    const p=await api('/api/pipelines/'+id);
+    N=p.nodes||[];E=p.edges||[];_pipId=id;
+    rN();rE();mm();nav('builder');toast('📂 '+p.name);
+  }catch(e){toast('❌ '+e.message,'e');}
+}
+async function runPipById(id){
+  nav('builder');$('ep').classList.add('open');eLg('▶ Running pipeline '+id+'...','ls');mAN('run');
+  try{
+    const r=await api('/api/pipelines/'+id+'/run',{method:'POST',body:{},raw:true});
+    const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done) break;
+      buf+=dec.decode(value);const parts=buf.split('\n\n');buf=parts.pop();
+      for(const p of parts){
+        const line=p.replace(/^data: /,'').trim();if(!line) continue;
+        try{const ev=JSON.parse(line);
+          if(ev.type==='status') eLg(ev.msg,'ls');
+          else if(ev.type==='result'){mAN(ev.ok?'ok':'err');eLg(ev.answer||ev.error||'Done',ev.ok?'lok':'le');}
+        }catch(e){}
+      }
+    }
+  }catch(e){eLg('❌ '+e.message,'le');mAN('err');}
+}
+async function sharePip(id){try{await api('/api/pipelines/'+id+'/share',{method:'POST'});toast('📤 Shared!');loadMarket();}catch(e){toast('❌ '+e.message,'e');}}
+async function shareCurrentPip(){if(!_pipId){toast('⚠️ Save pipeline first','w');return;}await sharePip(_pipId);}
+async function delPip(id){if(!confirm('Delete pipeline?'))return;try{await api('/api/pipelines/'+id,{method:'DELETE'});toast('🗑');loadMarket();}catch(e){toast('❌ '+e.message,'e');}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  LEARNING LOOP
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadLearn(){
+  try{
+    const d=await api('/api/matrix/learning/report');
+    const cs=d.candidates_for_evolution||[];const hs=d.healthy_tools||[];
+    $('lrn-tot').textContent=d.total_tools||0;$('lrn-evo').textContent=cs.length;
+    $('lrn-cand').innerHTML=cs.length?cs.map(t=>`
+      <div class="card" style="background:var(--bg2);margin-bottom:7px">
+        <div class="fl">
+          <b>${esc(t.name)}</b>
+          <span class="bdg r" style="margin-left:7px">fail ${t.fail_rate}%</span>
+          <span class="bdg y" style="margin-left:4px">v${t.version||1}</span>
+        </div>
+        <div style="font-size:9px;color:var(--mu);margin-top:3px">Runs: ${t.total} | Fails: ${t.fails} | Avg: ${t.avg_ms}ms</div>
+        <div class="evo"><div class="evof" style="width:${t.fail_rate}%"></div></div>
+        ${t.last_error?`<div style="font-size:9px;color:var(--re);margin-top:2px">${esc(t.last_error.slice(0,80))}</div>`:''}
+        <button class="btn g sm mt8" onclick="evolveTool(this,'${esc(t.name)}')">🧬 Evolve</button>
+      </div>`).join(''):'<div class="empty">No candidates 🎉</div>';
+    $('lrn-heal').innerHTML=hs.slice(0,10).map(t=>`
+      <div class="tc">
+        <div style="flex:1">
+          <b>${esc(t.name)}</b>
+          <div style="font-size:9px;color:var(--mu)">✅ ${t.total} runs · ${100-t.fail_rate}% ok · avg ${t.avg_ms}ms</div>
+        </div>
+        <span class="bdg g" style="font-size:9px">v${t.version||1}</span>
+      </div>`).join('')||'<div class="empty">...</div>';
+  }catch(e){$('lrn-cand').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+}
+async function evolveTool(btn,name){
+  btn.disabled=true;btn.textContent='🔄 Evolving...';
+  const logEl=document.createElement('div');logEl.className='log';logEl.style.height='110px';logEl.style.marginTop='7px';
+  btn.parentElement.appendChild(logEl);
+  const addL=(m,c='ls')=>{logEl.innerHTML+=`<div class="${c}">${esc(m)}</div>`;logEl.scrollTop=logEl.scrollHeight;};
+  try{
+    const r=await api('/api/matrix/learning/evolve/'+name,{method:'POST',raw:true});
+    const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done) break;
+      buf+=dec.decode(value);const parts=buf.split('\n\n');buf=parts.pop();
+      for(const p of parts){
+        const line=p.replace(/^data: /,'').trim();if(!line) continue;
+        try{const ev=JSON.parse(line);
+          if(ev.type==='status') addL(ev.msg);
+          else if(ev.type==='result'){addL(ev.ok?'✅ Done!':'❌ '+ev.error,ev.ok?'lok':'le');if(ev.ok) setTimeout(loadLearn,1200);}
+        }catch(e){}
+      }
+    }
+  }catch(e){addL('❌ '+e.message,'le');}
+  finally{btn.disabled=false;btn.textContent='🧬 Evolve';}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TUNNEL
+// ═══════════════════════════════════════════════════════════════════════════
+function selProv(el){
+  _selProv=el.dataset.p;
+  document.querySelectorAll('.tun-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  $('bore-opts').style.display=_selProv==='bore'?'block':'none';
+}
+async function loadTunProviders(){
+  try{
+    const d=await api('/api/tunnel/providers');
+    const provs=d.providers||[];
+    provs.forEach(p=>{
+      const el=$('tp-'+p.id);if(!el) return;
+      if(!p.available) el.style.opacity='0.5';
+      if(p.recommended) el.style.borderColor='var(--acc)';
+    });
+    // Show fish tunnel status
+    const status=await api('/api/tunnel/status').catch(()=>null);
+    if(status?.fish_provider){
+      $('fish-ind').style.display='inline';
+      $('fish-ind').textContent='🐟 fish→'+status.fish_provider;
+    }
+  }catch(e){}
+}
+async function pollTunnel(){
+  try{
+    const d=await api('/api/tunnel/status');
+    const url=d.url||'',status=d.status||'stopped';
+    const urlEl=$('tun-url');
+    if(url){
+      urlEl.textContent=url+'/panel';urlEl.className='url-display live';
+      urlEl.onclick=()=>{window.open(url+'/panel','_blank');};
+      $('tun-cp-btn').style.display='inline-block';
+    }else{
+      urlEl.textContent='No tunnel running';urlEl.className='url-display';urlEl.onclick=null;
+      $('tun-cp-btn').style.display='none';
+    }
+    const stEl=$('tun-st');
+    const dotCls=status==='running'?'dg':status==='starting'?'dy':'dr';
+    stEl.innerHTML=`<span class="dot ${dotCls}" style="margin-right:5px"></span>${status}`;
+    $('tun-prov').textContent=d.provider?'via '+d.provider:'';
+    if(d.fish_provider) $('fish-tun-st').textContent='fish→'+d.fish_provider;
+
+    const ind=$('tun-ind');
+    if(status==='running'){ind.className='bdg g';ind.textContent='🌐 '+d.provider;}
+    else if(status==='starting'){ind.className='bdg y';ind.textContent='🌐 ...';}
+    else{ind.className='bdg';ind.textContent='🌐 off';}
+
+    document.querySelectorAll('.tun-card').forEach(c=>c.classList.remove('act-tun'));
+    if(status==='running'&&d.provider){
+      const ac=$('tp-'+d.provider);if(ac) ac.classList.add('act-tun');
+    }
+    $('tun-start-btn').style.display=status==='running'?'none':'inline-block';
+    $('tun-stop-btn').style.display=status==='running'?'inline-block':'none';
+    if(d.log?.length){
+      const lel=$('tun-log-box');
+      lel.innerHTML=d.log.map(l=>`<div class="ls">${esc(l)}</div>`).join('');
+      lel.scrollTop=lel.scrollHeight;
+    }
+  }catch(e){}
+}
+async function startTunnel(){
+  const btn=$('tun-start-btn');btn.disabled=true;btn.textContent='⏳ Starting...';
+  $('tun-start-log').style.display='block';
+  $('tun-start-log').innerHTML=`<div class="ls">▶ Starting ${_selProv} tunnel (auto-port)...</div>`;
+  try{
+    const body={provider:_selProv,port:0};// port:0 = auto
+    if(_selProv==='bore') body.server=$('bore-srv').value.trim()||'bore.pub';
+    const r=await api('/api/tunnel/start',{method:'POST',body});
+    $('tun-start-log').innerHTML+=`<div class="${r.ok?'lok':'le'}">${esc(r.url||r.error||'...')}</div>`;
+    (r.log||[]).forEach(l=>$('tun-start-log').innerHTML+=`<div class="ls">${esc(l)}</div>`);
+    $('tun-start-log').scrollTop=$('tun-start-log').scrollHeight;
+    pollTunnel();
+    if(r.url) toast('✅ Tunnel: '+r.url);
+    else if(!r.ok) toast('❌ '+(r.error||'Failed'),'e');
+  }catch(e){$('tun-start-log').innerHTML+=`<div class="le">❌ ${esc(e.message)}</div>`;toast('❌ '+e.message,'e');}
+  finally{btn.disabled=false;btn.textContent='▶ Start Tunnel';}
+}
+async function stopTunnel(){
+  try{await api('/api/tunnel/stop',{method:'POST'});toast('⏹ Stopped');pollTunnel();}
+  catch(e){toast('❌ '+e.message,'e');}
+}
+function copyTunUrl(){
+  const t=$('tun-url').textContent;
+  if(t&&t!=='No tunnel running') navigator.clipboard.writeText(t).then(()=>toast('📋 Copied!'));
+}
+function toggleTunLog(){
+  const el=$('tun-log-box');el.style.display=el.style.display==='none'?'block':'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   ██████╗ █████╗ ███╗  ██╗██╗   ██╗ █████╗ ███████╗
+//  ██╔════╝██╔══██╗████╗ ██║██║   ██║██╔══██╗██╔════╝
+//  ██║     ███████║██╔██╗██║██║   ██║███████║███████╗
+//  ██║     ██╔══██║██║╚████║╚██╗ ██╔╝██╔══██║╚════██║
+//  ╚██████╗██║  ██║██║ ╚███║ ╚████╔╝ ██║  ██║███████║
+// VISUAL PIPELINE BUILDER
+// ═══════════════════════════════════════════════════════════════════════════
+
+function mkId(){return 'n'+(++_nId);}
+
+function aN(tool,x,y){
+  const m=NM[tool]||{i:'⚙️',c:'var(--acc)',l:tool};
+  const node={
+    id:mkId(),
+    x:x!==undefined?x:50+Math.random()*300,
+    y:y!==undefined?y:50+Math.random()*180,
+    tool,label:m.l,inputs:{},status:'idle'
+  };
+  N.push(node);mkEl(node);rE();mm();selNode(node.id);
+  return node;
+}
+function promptAddNode(){const t=prompt('Tool name:');if(t) aN(t.trim());}
+
+function mkEl(node){
+  const layer=$('nl');
+  let el=document.getElementById('nd-'+node.id);
+  if(!el){
+    el=document.createElement('div');el.id='nd-'+node.id;el.className='node';
+    el.innerHTML=`
+      <div class="nhdr">
+        <span class="nico" id="ni-${node.id}"></span>
+        <span class="nlbl" id="nl-${node.id}"></span>
+        <span class="ndel" onclick="rmNode('${node.id}')">✕</span>
+      </div>
+      <div class="nbody" id="nb-${node.id}"></div>
+      <div class="nbar" id="ns-${node.id}"></div>
+      <div class="port in" id="pi-${node.id}" title="Input"></div>
+      <div class="port out" id="po-${node.id}" title="Output (drag to connect)"></div>`;
+    layer.appendChild(el);
+
+    el.addEventListener('mousedown',e=>{
+      if(e.target.classList.contains('port')) return;
+      e.stopPropagation();
+      drag={id:node.id,sx:e.clientX,sy:e.clientY,nx0:node.x,ny0:node.y};
+      selNode(node.id);e.preventDefault();
+    });
+    el.addEventListener('click',e=>{if(!e.target.classList.contains('port')) selNode(node.id);});
+    el.addEventListener('dblclick',e=>{e.stopPropagation();selNode(node.id);openSP(node.id);});
+    el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();ctxT={type:'node',id:node.id};showCX(e.clientX,e.clientY);});
+
+    // Connection drag from output port
+    document.getElementById('po-'+node.id).addEventListener('mousedown',e=>{
+      e.stopPropagation();
+      conn={from:node.id};
+      document.getElementById('po-'+node.id).classList.add('hi');
+      e.preventDefault();
+    });
+    // Accept connection on input port
+    document.getElementById('pi-'+node.id).addEventListener('mouseup',e=>{
+      if(conn&&conn.from!==node.id){
+        // Avoid duplicate edges
+        const exists=E.some(ed=>ed.src===conn.from&&ed.tgt===node.id);
+        if(!exists) E.push({id:'e'+(E.length+1),src:conn.from,tgt:node.id});
+        conn=null;$('te').setAttribute('d','');rE();mm();
+      }
+    });
+  }
+
+  // Update content
+  const m=NM[node.tool]||{i:'⚙️',c:'var(--acc)',l:node.tool};
+  document.getElementById('ni-'+node.id).textContent=m.i;
+  document.getElementById('nl-'+node.id).textContent=node.label||m.l;
+  const nb=document.getElementById('nb-'+node.id);
+  const ik=Object.keys(node.inputs||{}).slice(0,3);
+  nb.innerHTML=(ik.length
+    ?ik.map(k=>`<div>${esc(k)}: <span style="color:var(--tx)">${esc(String(node.inputs[k]).slice(0,18))}</span></div>`).join('')
+    :'<div style="color:var(--mu)">No inputs</div>'
+  )+`<div class="ntag">${esc(node.tool)}</div>`;
+  el.querySelector('.nhdr').style.background=m.c+'18';
+
+  // Status
+  const ns=document.getElementById('ns-'+node.id);
+  ns.className='nbar'+(node.status==='run'?' run':node.status==='ok'?' ok':node.status==='err'?' err':'');
+  el.className='node'+(node.status==='run'?' run':node.status==='ok'?' ok':node.status==='err'?' err':'');
+  if(selN===node.id) el.classList.add('sel');
+
+  // Position with transform
+  el.style.transform=`translate(${Math.round(node.x+ox)}px,${Math.round(node.y+oy)}px) scale(${sc})`;
+  el.style.transformOrigin='0 0';
+}
+
+function rN(){N.forEach(n=>mkEl(n));}
+
+function rmNode(id){
+  N=N.filter(n=>n.id!==id);
+  E=E.filter(e=>e.src!==id&&e.tgt!==id);
+  const el=document.getElementById('nd-'+id);if(el) el.remove();
+  if(selN===id){selN=null;closeSP();}
+  rE();mm();
+}
+
+function clearCanvas(){
+  if(!N.length||confirm('Clear canvas?')){
+    N=[];E=[];_pipId=null;
+    $('nl').innerHTML='';
+    const svg=$('edges-svg');
+    svg.innerHTML=`<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4a4a6a"/></marker></defs>`;
+    mm();closeSP();
+  }
+}
+
+function selNode(id){
+  selN=id;selE=null;
+  N.forEach(n=>{const el=document.getElementById('nd-'+n.id);if(el) el.classList.toggle('sel',n.id===id);});
+}
+
+// ── EDGES ──────────────────────────────────────────────────────────────────
+function pp(nid,port){
+  const n=N.find(x=>x.id===nid);if(!n) return{x:0,y:0};
+  return port==='out'?{x:n.x+ox+190,y:n.y+oy+28}:{x:n.x+ox,y:n.y+oy+28};
+}
+function cub(x1,y1,x2,y2){const d=Math.abs(x2-x1)*0.5;return`M${x1},${y1} C${x1+d},${y1} ${x2-d},${y2} ${x2},${y2}`;}
+
+function rE(){
+  const svg=$('edges-svg');
+  const defs=svg.querySelector('defs');
+  svg.innerHTML='';
+  if(defs) svg.appendChild(defs);
+  else svg.innerHTML=`<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4a4a6a"/></marker></defs>`;
+
+  E.forEach(e=>{
+    const s=N.find(n=>n.id===e.src),t=N.find(n=>n.id===e.tgt);if(!s||!t) return;
+    const p1=pp(e.src,'out'),p2=pp(e.tgt,'in');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',cub(p1.x,p1.y,p2.x,p2.y));
+    const run=s.status==='run'||t.status==='run';
+    const done=s.status==='ok'&&t.status==='ok';
+    let cls='edge-path';
+    if(run){cls+=' running';path.setAttribute('stroke','var(--ac2)');path.setAttribute('stroke-dasharray','8,4');}
+    else if(done) path.setAttribute('stroke','var(--gr)');
+    else path.setAttribute('stroke','var(--brd)');
+    if(e.id===selE){path.setAttribute('stroke','var(--acc)');path.setAttribute('stroke-width','2.5');}
+    path.setAttribute('fill','none');path.setAttribute('stroke-width','2');
+    path.setAttribute('marker-end','url(#arr)');
+    path.dataset.id=e.id;
+    path.style.pointerEvents='stroke';path.style.cursor='pointer';
+    path.addEventListener('click',()=>{selE=e.id;rE();});
+    path.addEventListener('contextmenu',ev=>{ev.preventDefault();ctxT={type:'edge',id:e.id};showCX(ev.clientX,ev.clientY);});
+    svg.appendChild(path);
+  });
+}
+
+// ── CANVAS EVENTS ──────────────────────────────────────────────────────────
+function cMD(e){
+  const isCanvas=e.target===e.currentTarget||['cw','nl','edges-svg'].includes(e.target.id)||e.target.tagName==='svg';
+  if(isCanvas){
+    if(conn){conn=null;$('te').setAttribute('d','');}
+    pan={sx:e.clientX,sy:e.clientY,ox0:ox,oy0:oy};
+    $('cw').classList.add('panning');
+    selN=null;selE=null;closeSP();hideCX();
+    N.forEach(n=>{const el=document.getElementById('nd-'+n.id);if(el) el.classList.remove('sel');});
+  }
+}
+function cMM(e){
+  if(drag){
+    const n=N.find(x=>x.id===drag.id);
+    if(n){n.x=drag.nx0+(e.clientX-drag.sx);n.y=drag.ny0+(e.clientY-drag.sy);mkEl(n);rE();}
+  }
+  if(pan){ox=pan.ox0+(e.clientX-pan.sx);oy=pan.oy0+(e.clientY-pan.sy);rN();rE();mm();}
+  if(conn){
+    const n=N.find(x=>x.id===conn.from);if(!n) return;
+    const p1=pp(conn.from,'out');
+    const rect=$('cw').getBoundingClientRect();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    $('te').setAttribute('d',cub(p1.x,p1.y,mx,my));
+  }
+}
+function cMU(e){
+  if(drag){drag=null;}
+  if(pan){pan=null;$('cw').classList.remove('panning');}
+  if(conn){
+    // Release port highlight
+    const po=document.getElementById('po-'+conn.from);if(po) po.classList.remove('hi');
+    conn=null;$('te').setAttribute('d','');
+  }
+  mm();
+}
+function cDC(e){
+  if(['cw','nl'].includes(e.target.id)||e.target===e.currentTarget){
+    const r=$('cw').getBoundingClientRect();
+    const x=e.clientX-r.left-ox,y=e.clientY-r.top-oy;
+    const t=prompt('Tool name (double-click to add node):','python_eval');
+    if(t) aN(t.trim(),x,y);
+  }
+}
+function cCX(e){
+  e.preventDefault();
+  if(['cw','nl'].includes(e.target.id)||e.target===e.currentTarget){
+    ctxT={type:'canvas',x:e.clientX-$('cw').getBoundingClientRect().left-ox,
+                         y:e.clientY-$('cw').getBoundingClientRect().top-oy};
+    showCX(e.clientX,e.clientY);
+  }
+}
+function cWH(e){
+  e.preventDefault();
+  zoom(e.deltaY<0?1.12:0.89,e.clientX,e.clientY);
+}
+
+function zoom(f,cx,cy){
+  const wrap=$('cw'),r=wrap.getBoundingClientRect();
+  const px=cx?cx-r.left:r.width/2,py=cy?cy-r.top:r.height/2;
+  const ns=Math.max(0.15,Math.min(3,sc*f));
+  ox=((ox-px)*ns/sc)+px;oy=((oy-py)*ns/sc)+py;sc=ns;
+  $('zlb').textContent=Math.round(sc*100)+'%';
+  rN();rE();mm();
+}
+function rv(){
+  if(!N.length){ox=0;oy=0;sc=1;}
+  else{
+    const xs=N.map(n=>n.x),ys=N.map(n=>n.y);
+    ox=-(Math.min(...xs))+40;oy=-(Math.min(...ys))+40;sc=1;
+  }
+  $('zlb').textContent='100%';rN();rE();mm();
+}
+
+// ── SIDE PANEL ────────────────────────────────────────────────────────────
+function openSP(nodeId){
+  const node=N.find(n=>n.id===nodeId);if(!node) return;
+  const m=NM[node.tool]||{i:'⚙️',l:node.tool};
+  $('sp-ttl').textContent=m.i+' '+node.label;
+  $('sp-body').innerHTML=`
+    <div class="sf"><label class="lbl">LABEL</label>
+      <input id="spL" value="${esc(node.label)}" oninput="updN('label',this.value)"></div>
+    <div class="sf"><label class="lbl">TOOL</label>
+      <input id="spT" value="${esc(node.tool)}" oninput="updN('tool',this.value)"></div>
+    <div class="sf"><label class="lbl">INPUTS (JSON)</label>
+      <textarea id="spI" rows="6" oninput="updNI(this.value)">${esc(JSON.stringify(node.inputs||{},null,2))}</textarea></div>
+    <div class="sf"><label class="lbl">STATUS</label>
+      <div class="bdg ${node.status==='ok'?'g':node.status==='err'?'r':''}" id="sp-st">${node.status}</div></div>
+    <button class="btn g sm mt8" onclick="runSN('${nodeId}')">▶ Run this node</button>
+    <button class="btn s sm" onclick="addToolToCanvas('${esc(node.tool)}')">⎘ Duplicate</button>
+    <button class="btn r sm" onclick="rmNode('${nodeId}');closeSP()">🗑 Delete</button>`;
+  $('sp').classList.add('open');
+}
+function closeSP(){$('sp').classList.remove('open');}
+function updN(prop,val){if(!selN) return;const n=N.find(x=>x.id===selN);if(n){n[prop]=val;mkEl(n);}}
+function updNI(val){if(!selN) return;const n=N.find(x=>x.id===selN);if(!n) return;try{n.inputs=JSON.parse(val||'{}');mkEl(n);}catch(e){}}
+
+// ── RUN SINGLE NODE ────────────────────────────────────────────────────────
+async function runSN(nodeId){
+  const node=N.find(n=>n.id===nodeId);if(!node) return;
+  eLg('▶ Running: '+node.label,'ls');$('ep').classList.add('open');
+  node.status='run';mkEl(node);rE();
+  $('ep-dot').style.background='var(--ac2)';$('ep-status').textContent='Running: '+node.label;
+  try{
+    const r=await api('/api/matrix/tools/test',{method:'POST',body:{name:node.tool,inputs:node.inputs||{}}});
+    node.status=r.ok?'ok':'err';
+    eLg((r.ok?'✅ ':'❌ ')+(r.output||r.error||'').slice(0,200),r.ok?'lok':'le');
+    $('ep-bdg').textContent=r.ok?'✅ OK':'❌ Error';
+  }catch(e){node.status='err';eLg('❌ '+e.message,'le');}
+  mkEl(node);rE();mm();$('ep-dot').style.background='var(--brd)';$('ep-status').textContent='Done';
+  if(selN===nodeId){const st=$('sp-st');if(st) st.textContent=node.status;}
+}
+
+// ── RUN FULL PIPELINE ──────────────────────────────────────────────────────
+async function runPipeline(){
+  if(!N.length){toast('⚠️ Add nodes first','w');return;}
+  $('ep').classList.add('open');eLg('🧠 Running pipeline...','ls');
+  $('ep-dot').style.background='var(--ac2)';$('ep-status').textContent='Running';
+
+  // Topological sort
+  const adj={};N.forEach(n=>{adj[n.id]=[];});
+  const ind={};N.forEach(n=>{ind[n.id]=0;});
+  E.forEach(e=>{if(adj[e.src]) adj[e.src].push(e.tgt);if(ind[e.tgt]!==undefined) ind[e.tgt]++;});
+  let q=N.filter(n=>ind[n.id]===0);const order=[];
+  while(q.length){const n=q.shift();order.push(n);(adj[n.id]||[]).forEach(tid=>{if(--ind[tid]===0) q.push(N.find(x=>x.id===tid));});}
+  const sorted=order.length===N.length?order:[...N];
+
+  N.forEach(n=>{n.status='idle';mkEl(n);});rE();
+
+  const outs={};
+  for(const node of sorted){
+    eLg(`⚙️ ${node.label} [${node.tool}]`,'ls');
+    node.status='run';mkEl(node);rE();
+
+    // Merge upstream outputs
+    const deps=E.filter(e=>e.tgt===node.id).map(e=>e.src);
+    let merged={...node.inputs||{}};
+    deps.forEach(sid=>{const o=outs[sid];if(o){if(o.files?.length) merged.path=o.files[0];if(o.output) merged.prev_output=o.output.slice(0,500);}});
+
+    try{
+      const r=await api('/api/matrix/tools/test',{method:'POST',body:{name:node.tool,inputs:merged}});
+      node.status=r.ok?'ok':'err';outs[node.id]=r;
+      eLg(`  ${r.ok?'✅':'❌'} ${(r.output||r.error||'').slice(0,120)}`,r.ok?'lok':'le');
+    }catch(e){node.status='err';eLg('  ❌ '+e.message,'le');}
+
+    mkEl(node);rE();
+    if(node.status==='err') break;
+  }
+
+  mm();
+  const allOk=N.every(n=>n.status==='ok'||n.status==='idle');
+  $('ep-dot').style.background=allOk?'var(--gr)':'var(--re)';
+  $('ep-status').textContent='Done';
+  $('ep-bdg').textContent=allOk?'✅ Success':'⚠️ Errors';
+  eLg(allOk?'✅ Pipeline complete':'⚠️ Pipeline finished with errors',allOk?'lok':'lw');
+}
+
+function mAN(st){N.forEach(n=>{n.status=st;mkEl(n);});rE();}
+
+// ── EXEC LOG HELPERS ──────────────────────────────────────────────────────
+function eLg(msg,cls='li'){
+  const ep=$('ep-log');ep.innerHTML+=`<div class="${cls}">${esc(msg)}</div>`;ep.scrollTop=ep.scrollHeight;
+}
+
+// ── MINIMAP ────────────────────────────────────────────────────────────────
+function mm(){
+  const canvas=$('mmc');const ctx=canvas.getContext('2d');
+  const W=140,H=85;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a0a0f';ctx.fillRect(0,0,W,H);
+  if(!N.length) return;
+  const xs=N.map(n=>n.x),ys=N.map(n=>n.y);
+  const minX=Math.min(...xs)-20,minY=Math.min(...ys)-20;
+  const maxX=Math.max(...xs)+210,maxY=Math.max(...ys)+70;
+  const scX=W/(maxX-minX+1),scY=H/(maxY-minY+1),s=Math.min(scX,scY,.9);
+  E.forEach(e=>{
+    const src=N.find(n=>n.id===e.src),tgt=N.find(n=>n.id===e.tgt);if(!src||!tgt) return;
+    ctx.beginPath();ctx.strokeStyle='#2a2a3a';ctx.lineWidth=1;
+    ctx.moveTo((src.x-minX)*s+4,(src.y-minY)*s+4);ctx.lineTo((tgt.x-minX)*s+4,(tgt.y-minY)*s+4);ctx.stroke();
+  });
+  N.forEach(n=>{
+    const m=NM[n.tool]||{c:'#7c3aed'};
+    ctx.fillStyle=n.status==='run'?'#06b6d4':n.status==='ok'?'#10b981':n.status==='err'?'#ef4444':m.c;
+    ctx.fillRect((n.x-minX)*s+3,(n.y-minY)*s+3,Math.max(8,190*s),Math.max(5,50*s));
+  });
+  const wrap=$('cw'),r=wrap.getBoundingClientRect();
+  ctx.strokeStyle='rgba(124,58,237,.7)';ctx.lineWidth=1;
+  ctx.strokeRect((-ox-minX)*s+3,(-oy-minY)*s+3,(r.width/sc)*s,(r.height/sc)*s);
+}
+
+// ── CONTEXT MENU ──────────────────────────────────────────────────────────
+function showCX(x,y){
+  const m=$('ctx');m.style.display='block';m.style.left=x+'px';m.style.top=y+'px';
+  const r=m.getBoundingClientRect();
+  if(r.right>window.innerWidth) m.style.left=(x-r.width)+'px';
+  if(r.bottom>window.innerHeight) m.style.top=(y-r.height)+'px';
+}
+function hideCX(){$('ctx').style.display='none';}
+function cxRun(){hideCX();if(ctxT?.type==='node') runSN(ctxT.id);else runPipeline();}
+function cxEdit(){hideCX();if(ctxT?.type==='node'){selNode(ctxT.id);openSP(ctxT.id);}}
+function cxDupe(){hideCX();if(ctxT?.type==='node'){const s=N.find(n=>n.id===ctxT.id);if(s) aN(s.tool,s.x+25,s.y+25);}}
+function cxDel(){
+  hideCX();
+  if(ctxT?.type==='node') rmNode(ctxT.id);
+  else if(ctxT?.type==='edge'){E=E.filter(e=>e.id!==ctxT.id);rE();}
+  else if(ctxT?.type==='canvas') promptAddNode();
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────────────────────────
+function gKey(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.key==='Delete'&&selN){rmNode(selN);selN=null;}
+  if(e.key==='Delete'&&selE){E=E.filter(ed=>ed.id!==selE);selE=null;rE();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();savePip();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runPipeline();}
+  if(e.key==='Escape'){closeSP();hideCX();}
+  if(e.key==='r'&&!e.ctrlKey) rv();
+  if(e.key==='+'||e.key==='=') zoom(1.1);
+  if(e.key==='-') zoom(0.9);
+}
+</script>
+</body>
+</html>
