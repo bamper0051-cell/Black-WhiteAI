@@ -1,22 +1,4 @@
 FROM python:3.11-slim
-<<<<<<< HEAD
-
-WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY admin_web.py .
-COPY nginx.conf /tmp/nginx.conf.example
-
-EXPOSE 8080 5100
-
-CMD ["python", "admin_web.py"]
-=======
 WORKDIR /app
 
 # Системные утилиты — включая инструменты для MATRIX (nmap, whois, git)
@@ -70,4 +52,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
