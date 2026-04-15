@@ -73,7 +73,7 @@ docker compose -f docker-compose.yml config
 
 ### Rollback (если нужно быстро откатить деплой)
 ```bash
-git checkout -- Dockerfile docker-compose.yml
+git restore Dockerfile docker-compose.yml
 docker compose down
 docker compose up -d --build
 ```
