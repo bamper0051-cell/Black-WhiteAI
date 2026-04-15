@@ -66,6 +66,18 @@ URL:   http://<IP>:8080
 - Nginx проксирует `/fish/*` → port 5100
 - Только admin_web управляет tunnel через `/api/tunnel/start`
 
+### Smoke-check после обновления Docker-конфигов
+```bash
+docker compose -f docker-compose.yml config
+```
+
+### Rollback (если нужно быстро откатить деплой)
+```bash
+git restore Dockerfile docker-compose.yml
+docker compose down
+docker compose up -d --build
+```
+
 ---
 
 ## 📱 Сборка APK
