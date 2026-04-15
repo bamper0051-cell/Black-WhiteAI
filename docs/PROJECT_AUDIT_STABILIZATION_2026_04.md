@@ -46,7 +46,7 @@
 
 ### 2.2 CI/build failures
 - Recent Actions failures include **startup_failure/failure** before/at job setup.
-- Retrieved failed job logs (run `24331632260`) show action resolution errors:
+- Retrieved failed job logs for 2026-04-13 (run `24331632260`: `https://github.com/bamper0051-cell/Black-WhiteAI/actions/runs/24331632260`) show action resolution errors:
   - `Unable to resolve action actions/checkout@de0fac2e...`
   - `Unable to resolve action actions/setup-java@be666c2f...`
   - `Unable to resolve action actions/upload-artifact@bbbca2dd...`
