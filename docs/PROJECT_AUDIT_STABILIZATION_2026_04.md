@@ -1,4 +1,4 @@
-# Black-WhiteAI Audit (stabilization/2026-04 scope)
+# Black-WhiteAI / Agent Matrix Audit (stabilization/2026-04 scope)
 
 ## 1) Architecture Breakdown
 
@@ -38,13 +38,13 @@
 
 ## 2) Broken Components Analysis
 
-## 2.1 Syntax/import blockers (hard failures)
+### 2.1 Syntax/import blockers (hard failures)
 - Widespread unresolved Git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) in critical files:
   - `bot.py`, `admin_web.py`, `agent_neo.py`, `agent_matrix.py`, `auth_module.py`, `bot_ui.py`, `.env.example`, `docker-compose.yml`, `.github/workflows/build-apk.yml`, plus many Android/Dart files.
 - `py_compile` fails on core runtime files above, so core runtime is non-startable in current state.
 - Environment dependency gap in local run: tests fail immediately when `dotenv`/`flask` unavailable.
 
-## 2.2 CI/build failures
+### 2.2 CI/build failures
 - Recent Actions failures include **startup_failure/failure** before/at job setup.
 - Retrieved failed job logs (run `24331632260`) show action resolution errors:
   - `Unable to resolve action actions/checkout@de0fac2e...`
@@ -52,7 +52,7 @@
   - `Unable to resolve action actions/upload-artifact@bbbca2dd...`
 - Workflow files themselves also contain merge markers, which can cause workflow parse/startup failures.
 
-## 2.3 Config/env inconsistency (`config.py` / `settings.py` / `.env.example`)
+### 2.3 Config/env inconsistency (`config.py` / `settings.py` / `.env.example`)
 - `.env.example` is corrupted by merge conflict blocks and mixes incompatible variable schemes.
 - Token/key name drift:
   - `TELEGRAM_BOT_TOKEN` vs `BOT_TOKEN`
@@ -61,18 +61,18 @@
   - `OLLAMA_BASE_URL` vs `OLLAMA_HOST`
 - `settings.py` base path logic differs from `config.py` and appears not aligned with active runtime imports.
 
-## 2.4 Tool registry consistency
+### 2.4 Tool registry consistency
 - `agent_tools_registry.py` has 24 registered tools (unique), but config free-plan tool allowlist references names not registered there (e.g., `python_sandbox`, `chat`, `image_gen`).
 - This creates permission/plan gating mismatch: valid tools may be denied or expected aliases missing.
 - `agent_matrix.py` internal `_bt(...)` tool registration and `KNOWN_TOOLS` set are internally aligned, but file is currently syntax-broken due merge artifacts.
 
-## 2.5 Manifest drift
+### 2.5 Manifest drift
 - `MANIFEST.json` has significant drift from actual repository:
   - 195 manifest entries; 61 missing on disk.
   - References removed snapshots/paths (`BlackBugsAI_v1.0\\...`, `agent_session (1).py`, `agent_session (2).py`, etc.).
   - Includes sensitive/runtime artifacts (`.env`, multiple `.db` paths) inconsistent with a clean source manifest.
 
-## 2.6 Database/schema mismatch risk
+### 2.6 Database/schema mismatch risk
 - Separate DB files/modules with overlapping auth/user concerns:
   - `database.py` (`automuvie.db`) contains both `news` and `users` tables (with conflicting user schemas in same module).
   - `auth_module.py`/`admin_module.py` operate on `auth.db`-style user structures.
@@ -80,7 +80,7 @@
   - `fish_db.py` uses separate fish DB schema.
 - No unified migration layer; high risk of runtime mismatch and stale assumptions between modules.
 
-## 2.7 Dead code / duplication
+### 2.7 Dead code / duplication
 - `bot_callbacks_patched.py` / `bot_handlers_patched.py` / `bot_ui_patched.py` duplicate originals but are not main import targets.
 - `bot.py` and `bot_main.py` duplicate orchestration logic, increasing divergence risk.
 
