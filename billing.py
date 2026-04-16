@@ -1,7 +1,7 @@
 """
 BlackBugsAI — Billing
 Тарифы, кредиты, лимиты задач.
-Хранит данные в auth.db (рядом с ботом).
+Хранит данные в data/blackbugs.db (BLACKBUGS_DB).
 """
 import os, sqlite3, time, json
 import config

@@ -378,7 +378,6 @@ def print_banner():
 
 if __name__ == "__main__":
     print_banner()
-import time, threading, schedule, os, subprocess, re, shutil
 try:
     from database import init_db, get_stats, get_today_count
 except ImportError:
@@ -8706,12 +8705,19 @@ def main():
     print(f"📁 Директория: {config.BASE_DIR}", flush=True)
 
     # ── Token check ──────────────────────────────────────────────────────────
-    if not config.TELEGRAM_BOT_TOKEN:
-        print("❌ TELEGRAM_BOT_TOKEN не задан! Бот не запустится.", flush=True)
-        print("   Добавь в .env: TELEGRAM_BOT_TOKEN=1234567890:AAH...", flush=True)
-        import sys; sys.exit(1)
+    _TELEGRAM_ENABLED = bool(config.TELEGRAM_BOT_TOKEN)
+    if not _TELEGRAM_ENABLED:
+        _webui_only = os.environ.get("WEBUI_ONLY", "").lower() in ("1", "true", "yes")
+        if _webui_only:
+            print("⚠️  TELEGRAM_BOT_TOKEN не задан — запуск в режиме WebUI-only.", flush=True)
+        else:
+            print("❌ TELEGRAM_BOT_TOKEN не задан! Бот не запустится.", flush=True)
+            print("   Добавь в .env: TELEGRAM_BOT_TOKEN=1234567890:AAH...", flush=True)
+            print("   Для запуска только WebUI установи WEBUI_ONLY=1", flush=True)
+            sys.exit(1)
 
-    _validate_startup_config()
+    if _TELEGRAM_ENABLED:
+        _validate_startup_config()
     print("🧠 LLM: {} / {}".format(config.LLM_PROVIDER, config.LLM_MODEL), flush=True)
     print("🎙  TTS: {} / {}".format(config.TTS_PROVIDER, config.TTS_VOICE), flush=True)
 
@@ -8720,11 +8726,11 @@ def main():
         _gs.setup()
         _gs.register_notify(send_message)
 
-    # ── Database init (всегда первым) ──────────────────────────────────────
+    # ── Database init: schema first, then legacy migration ─────────────────
     try:
         from core.db_manager import init_all as _db_init_all, migrate_legacy_files
+        _db_init_all()          # create tables before migration reads/writes them
         migrate_legacy_files()
-        _db_init_all()
     except Exception as _dbe:
         print(f"  ⚠️ db_manager init: {_dbe}", flush=True)
 
@@ -8766,7 +8772,8 @@ def main():
         print(f"  ⚠️ Не удалось восстановить сессии: {_re}", flush=True)
 
     # Удаляем вебхук если был — иначе getUpdates не работает
-    delete_webhook()
+    if _TELEGRAM_ENABLED:
+        delete_webhook()
 
     schedule.every(config.PARSE_INTERVAL_HOURS).hours.do(scheduled_cycle)
     threading.Thread(target=_run_scheduler, daemon=True).start()

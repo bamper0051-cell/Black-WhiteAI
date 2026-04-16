@@ -107,7 +107,7 @@ services:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
       interval: 20s
       timeout: 8s
-      start_period: 30s
+      start_period: 120s
       retries: 5
 
     logging: *log-opts

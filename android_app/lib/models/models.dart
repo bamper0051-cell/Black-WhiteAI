@@ -3,9 +3,9 @@
 
 class AgentInfo {
   final String  id;
-  final String? name;
+  final String  name;         // non-nullable: widgets use it directly
+  final String  status;       // non-nullable: online | offline | busy | active | idle
   final String? description;
-  final String? status;       // online | offline | busy | active | idle
   final String? workspace;
   final String? emoji;
   final bool?   available;
@@ -15,9 +15,9 @@ class AgentInfo {
 
   const AgentInfo({
     required this.id,
-    this.name,
+    this.name        = '',
+    this.status      = 'idle',
     this.description,
-    this.status,
     this.workspace,
     this.emoji,
     this.available,
@@ -27,15 +27,15 @@ class AgentInfo {
   });
 
   factory AgentInfo.fromJson(Map<String, dynamic> j) => AgentInfo(
-        id:          j['id']          ?? j['name']?.toString().toLowerCase() ?? '',
-        name:        j['name']?.toString(),
+        id:          j['id']?.toString()   ?? j['name']?.toString().toLowerCase() ?? '',
+        name:        j['name']?.toString() ?? '',
+        status:      j['status']?.toString() ?? 'idle',
         description: (j['description'] ?? j['desc'])?.toString(),
-        status:      (j['status'])?.toString() ?? 'idle',
         workspace:   j['workspace']?.toString(),
         emoji:       j['emoji']?.toString(),
         available:   j['available'] == true || j['available'] == 1,
-        tasksCompleted: (j['tasks_completed'] ?? j['tasksCompleted'] as num? ?? 0).toInt(),
-        tasksFailed:    (j['tasks_failed']    ?? j['tasksFailed']    as num? ?? 0).toInt(),
+        tasksCompleted: (j['tasks_completed'] as num? ?? j['tasksCompleted'] as num? ?? 0).toInt(),
+        tasksFailed:    (j['tasks_failed']    as num? ?? j['tasksFailed']    as num? ?? 0).toInt(),
         lastActive: j['last_active'] != null
             ? DateTime.tryParse(j['last_active'].toString())
             : null,

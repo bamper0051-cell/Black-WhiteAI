@@ -329,7 +329,7 @@ def api_status():
 
 # ── Users ─────────────────────────────────────────────────────────────────────
 @app.route('/api/users')
-@require_token
+@require_admin
 def api_users():
     from auth_module import get_all_users
     users = get_all_users()
@@ -527,7 +527,7 @@ def api_tasks():
         return jsonify({'ok': False, 'error': str(e), 'tasks': []})
 
 @app.route('/api/tasks/<tid>/cancel', methods=['POST'])
-@require_token
+@require_admin
 def api_task_cancel(tid):
     try:
         from task_queue import cancel_task
@@ -537,7 +537,7 @@ def api_task_cancel(tid):
         return jsonify({'ok': False, 'error': str(e)})
 
 @app.route('/api/tasks/<tid>/retry', methods=['POST'])
-@require_token
+@require_admin
 def api_task_retry(tid):
     try:
         from task_queue import retry_task
@@ -1025,7 +1025,7 @@ def api_file_list():
 
 
 @app.route('/api/files/download')
-@require_token
+@require_admin
 def api_file_download():
     """Скачать файл по пути."""
     from flask import send_file
@@ -1040,7 +1040,7 @@ def api_file_download():
 
 
 @app.route('/api/files/delete', methods=['POST'])
-@require_token
+@require_admin
 def api_file_delete():
     """Удалить файл."""
     data = request.get_json(silent=True) or {}

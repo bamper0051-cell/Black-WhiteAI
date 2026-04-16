@@ -32,9 +32,9 @@ python3 - << 'PYEOF'
 import sys
 sys.path.insert(0, '/app')
 try:
-    from core.db_manager import migrate_legacy_files, init_all
-    migrate_legacy_files()
-    init_all()
+    from core.db_manager import init_all, migrate_legacy_files
+    init_all()              # create schemas first
+    migrate_legacy_files()  # then merge legacy data into existing tables
 except Exception as e:
     print(f"  ⚠️  DB init warning: {e}")
 PYEOF

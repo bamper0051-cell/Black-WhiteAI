@@ -143,6 +143,32 @@ def migrate_legacy_files():
                     src_conn.close()
                     if rows:
                         dst_conn = _sq.connect(str(BLACKBUGS_DB))
+                        # Ensure the canonical users table exists before inserting.
+                        # (blackbugs.db may have been pre-created by web-auth bootstrap
+                        # which only creates web_users, not users.)
+                        dst_conn.execute("""
+                            CREATE TABLE IF NOT EXISTS users (
+                                telegram_id   INTEGER PRIMARY KEY,
+                                username      TEXT,
+                                first_name    TEXT,
+                                privilege     TEXT    DEFAULT 'user',
+                                status        TEXT    DEFAULT 'active',
+                                pin_hash      TEXT,
+                                rating        INTEGER DEFAULT 0,
+                                agent_type    TEXT    DEFAULT 'assistant',
+                                llm_provider  TEXT,
+                                llm_model     TEXT,
+                                tts_voice     TEXT,
+                                system_prompt TEXT,
+                                sandbox_on    INTEGER DEFAULT 1,
+                                settings_json TEXT    DEFAULT '{}',
+                                memory_json   TEXT    DEFAULT '[]',
+                                active_task_id TEXT,
+                                lang          TEXT    DEFAULT 'ru',
+                                created_at    REAL,
+                                last_seen     REAL
+                            )
+                        """)
                         inserted = 0
                         for row in rows:
                             row_dict = dict(zip(src_cols, row))
