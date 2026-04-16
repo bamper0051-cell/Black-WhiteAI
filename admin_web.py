@@ -79,11 +79,41 @@ def _is_valid_token(token: str) -> bool:
 
 
 def require_token(f):
+    """Allow any authenticated user (admin or regular) to access this endpoint."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         token = _extract_token()
         if not _is_valid_token(token):
             return jsonify({'error': 'Unauthorized'}), 401
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def _is_admin_token(token: str) -> bool:
+    """Return True only for the master admin token or users with role='admin'."""
+    if not token:
+        return False
+    if token == ADMIN_WEB_TOKEN:
+        return True
+    try:
+        import sqlite3 as _sq
+        with _sq.connect(_WEB_AUTH_DB) as c:
+            row = c.execute(
+                "SELECT id FROM web_users WHERE token=? AND role='admin' LIMIT 1",
+                (token,)
+            ).fetchone()
+            return row is not None
+    except Exception:
+        return False
+
+
+def require_admin(f):
+    """Restrict endpoint to admin-role tokens only (for destructive/operational APIs)."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = _extract_token()
+        if not _is_admin_token(token):
+            return jsonify({'error': 'Forbidden — admin role required'}), 403
         return f(*args, **kwargs)
     return wrapper
 
@@ -306,7 +336,7 @@ def api_users():
     return jsonify({'ok': True, 'users': users, 'total': len(users)})
 
 @app.route('/api/users/<int:uid>/priv', methods=['POST'])
-@require_token
+@require_admin
 def api_user_priv(uid):
     data = request.get_json(silent=True) or {}
     from auth_module import set_privilege
@@ -314,28 +344,28 @@ def api_user_priv(uid):
     return jsonify({'ok': ok})
 
 @app.route('/api/users/<int:uid>/ban', methods=['POST'])
-@require_token
+@require_admin
 def api_user_ban(uid):
     from admin_module import ban_user
     ban_user(uid)
     return jsonify({'ok': True})
 
 @app.route('/api/users/<int:uid>/unban', methods=['POST'])
-@require_token
+@require_admin
 def api_user_unban(uid):
     from admin_module import unban_user
     unban_user(uid)
     return jsonify({'ok': True})
 
 @app.route('/api/users/<int:uid>/kick', methods=['POST'])
-@require_token
+@require_admin
 def api_user_kick(uid):
     from auth_module import auth_session_delete
     auth_session_delete(uid)
     return jsonify({'ok': True})
 
 @app.route('/api/users/<int:uid>', methods=['DELETE'])
-@require_token
+@require_admin
 def api_user_delete(uid):
     from admin_module import delete_user
     delete_user(uid)
@@ -343,7 +373,7 @@ def api_user_delete(uid):
 
 # ── Messages ──────────────────────────────────────────────────────────────────
 @app.route('/api/msg/user', methods=['POST'])
-@require_token
+@require_admin
 def api_msg_user():
     data   = request.get_json(silent=True) or {}
     target = str(data.get('target', ''))
@@ -355,7 +385,7 @@ def api_msg_user():
     return jsonify({'ok': ok, 'error': err})
 
 @app.route('/api/msg/broadcast', methods=['POST'])
-@require_token
+@require_admin
 def api_msg_broadcast():
     data = request.get_json(silent=True) or {}
     text = data.get('text', '')
@@ -440,7 +470,7 @@ def api_processes():
     return jsonify({'ok': True, 'processes': procs})
 
 @app.route('/api/processes/<pid>/kill', methods=['POST'])
-@require_token
+@require_admin
 def api_kill(pid):
     from admin_module import kill_process
     ok, msg = kill_process(pid)
@@ -448,7 +478,7 @@ def api_kill(pid):
 
 # ── Shell ─────────────────────────────────────────────────────────────────────
 @app.route('/api/shell', methods=['POST'])
-@require_token
+@require_admin
 def api_shell():
     data = request.get_json(silent=True) or {}
     cmd  = data.get('cmd', '').strip()
@@ -573,7 +603,7 @@ def api_matrix_tools():
 
 
 @app.route('/api/matrix/run', methods=['POST'])
-@require_token
+@require_admin
 def api_matrix_run():
     """Запустить задачу через AGENT MATRIX."""
     data = request.get_json(silent=True) or {}
@@ -604,7 +634,7 @@ def api_matrix_run():
 
 
 @app.route('/api/neo/tool/delete', methods=['POST'])
-@require_token
+@require_admin
 def api_neo_tool_delete():
     """Удалить инструмент NEO."""
     data = request.get_json(silent=True) or {}
@@ -625,7 +655,7 @@ def api_neo_tool_delete():
 
 
 @app.route('/api/matrix/tool/delete', methods=['POST'])
-@require_token
+@require_admin
 def api_matrix_tool_delete():
     """Удалить инструмент MATRIX."""
     data = request.get_json(silent=True) or {}
@@ -646,7 +676,7 @@ def api_matrix_tool_delete():
 
 
 @app.route('/api/agent/github_install', methods=['POST'])
-@require_token
+@require_admin
 def api_agent_github_install():
     """Клонировать GitHub репо и установить как инструмент агента."""
     data      = request.get_json(silent=True) or {}
@@ -679,7 +709,7 @@ def api_agent_github_install():
 
 
 @app.route('/api/agent/create_tool', methods=['POST'])
-@require_token
+@require_admin
 def api_agent_create_tool():
     """Создать новый инструмент через LLM для агента."""
     data    = request.get_json(silent=True) or {}
@@ -822,7 +852,7 @@ def api_agents_list():
 
 
 @app.route('/api/agent/run', methods=['POST'])
-@require_token
+@require_admin
 def api_agent_run():
     """Запустить задачу через выбранного агента."""
     import traceback
@@ -1039,7 +1069,7 @@ def api_config_get():
     return jsonify({'ok': True, 'config': {k: os.environ.get(k,'') for k in safe}})
 
 @app.route('/api/config', methods=['POST'])
-@require_token
+@require_admin
 def api_config_set():
     data = request.get_json(silent=True) or {}
     allowed = {'LLM_PROVIDER','LLM_MODEL','LLM_API_KEY','TTS_PROVIDER','TTS_VOICE',
@@ -1071,7 +1101,7 @@ def api_config_set():
 
 # ── Restart ───────────────────────────────────────────────────────────────────
 @app.route('/api/restart', methods=['POST'])
-@require_token
+@require_admin
 def api_restart():
     def _do():
         time.sleep(2)
@@ -1086,7 +1116,7 @@ def api_restart():
 
 # ── Tunnel management ─────────────────────────────────────────────────────────
 @app.route('/api/tunnel/start', methods=['POST'])
-@require_token
+@require_admin
 def api_tunnel_start():
     """Запустить тоннель (cloudflared или bore)."""
     data  = request.get_json(silent=True) or {}
@@ -1151,7 +1181,7 @@ def api_tunnel_start():
 
 
 @app.route('/api/tunnel/stop', methods=['POST'])
-@require_token
+@require_admin
 def api_tunnel_stop():
     """Остановить тоннель."""
     data  = request.get_json(silent=True) or {}
@@ -1212,7 +1242,7 @@ def serve_panel():
 # ── Remote Control API ────────────────────────────────────────────────────────
 
 @app.route('/api/rc/shell', methods=['POST'])
-@require_token
+@require_admin
 def api_rc_shell():
     """Выполнить shell команду."""
     data = request.get_json(silent=True) or {}
@@ -1259,7 +1289,7 @@ def api_rc_docker_list():
 
 
 @app.route('/api/rc/docker/action', methods=['POST'])
-@require_token
+@require_admin
 def api_rc_docker_action():
     """Действие с контейнером: start/stop/restart/logs/rm."""
     data      = request.get_json(silent=True) or {}
@@ -1276,7 +1306,7 @@ def api_rc_docker_action():
 
 
 @app.route('/api/rc/pty/start', methods=['POST'])
-@require_token
+@require_admin
 def api_rc_pty_start():
     """Запустить PTY сессию."""
     try:
@@ -1290,7 +1320,7 @@ def api_rc_pty_start():
 
 
 @app.route('/api/rc/pty/write', methods=['POST'])
-@require_token
+@require_admin
 def api_rc_pty_write():
     """Отправить команду в PTY."""
     data = request.get_json(silent=True) or {}
@@ -1308,7 +1338,7 @@ def api_rc_pty_write():
 
 
 @app.route('/api/rc/pty/stop', methods=['POST'])
-@require_token
+@require_admin
 def api_rc_pty_stop():
     """Закрыть PTY сессию."""
     try:

@@ -16,8 +16,7 @@ NOTE: No eager imports here — each module imports exactly what it needs.
         from core import tool_registry as TR   # submodule access works fine
 """
 
-__all__ = [
-    'Gateway', 'TaskQueue', 'Task', 'WorkerPool',
-    'AgentBase', 'AgentResult', 'ToolRegistry',
-    'MemoryStore', 'Observer',
-]
+__all__: list = []   # No eager exports — nothing is imported at package level.
+                     # Import submodules directly in your code, e.g.:
+                     #   from core.gateway       import Gateway
+                     #   from core.queue_manager import TaskQueue, Task

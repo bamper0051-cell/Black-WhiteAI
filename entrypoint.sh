@@ -145,7 +145,17 @@ fi
 cleanup() {
   echo ""
   echo "⏹  BlackBugsAI shutting down..."
-  [[ -n "$_TUNNEL_PID" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
+  # Stop the bot process first so it can flush logs / close SQLite connections.
+  if [[ -n "${_BOT_PID:-}" ]]; then
+    kill "$_BOT_PID" 2>/dev/null || true
+    # Give the bot up to 10 s to exit cleanly, then force-kill.
+    for _i in 1 2 3 4 5 6 7 8 9 10; do
+      kill -0 "$_BOT_PID" 2>/dev/null || break
+      sleep 1
+    done
+    kill -9 "$_BOT_PID" 2>/dev/null || true
+  fi
+  [[ -n "${_TUNNEL_PID:-}" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
   echo "👋 Bye!"
   exit 0
 }

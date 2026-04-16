@@ -67,6 +67,7 @@ def set_user_setting(user_id, key, value):
         db.execute(f'UPDATE users SET {key} = ? WHERE user_id = ?', (value, user_id))
         db.commit()
 def init_db():
+    """Initialise news DB and ensure the canonical users schema exists."""
     with sqlite3.connect(DB_PATH) as db:
         db.execute('''CREATE TABLE IF NOT EXISTS news (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,15 +81,10 @@ def init_db():
             created_at TEXT
         )''')
         db.commit()
-        
-        db.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        telegram_id INTEGER UNIQUE,
-        username TEXT,
-        registered_at TEXT,
-        role TEXT DEFAULT 'user',
-        settings TEXT   -- JSON с настройками (язык, голос, LLM и т.п.)
-    )''')
+    # Delegate user-table creation to init_users_table() which owns the schema
+    # (user_id, username, first_name, ... llm_provider, role, settings).
+    # Do NOT create a conflicting 'users' table here.
+    init_users_table()
 
 def save_news(source, title, url, content) -> bool:
     try:
