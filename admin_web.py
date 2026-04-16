@@ -44,21 +44,45 @@ def install_log_capture():
     sys.stderr = _LogCapture(sys.stderr)
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
+def _extract_token() -> str:
+    """Extract bearer/header/query token from the current request."""
+    auth_header = (request.headers.get('Authorization') or '').strip()
+    bearer = ''
+    if auth_header.lower().startswith('bearer '):
+        bearer = auth_header[7:].strip()
+    elif auth_header.lower().startswith('token '):
+        bearer = auth_header[6:].strip()
+    return (request.headers.get('X-Admin-Token') or
+            request.headers.get('X-Api-Key') or
+            bearer or
+            request.args.get('token') or
+            (request.get_json(silent=True) or {}).get('token', ''))
+
+
+def _is_valid_token(token: str) -> bool:
+    """Return True if token is ADMIN_WEB_TOKEN or any active per-user token."""
+    if not token:
+        return False
+    if token == ADMIN_WEB_TOKEN:
+        return True
+    # Accept per-user tokens issued by /api/auth/login and /api/auth/register.
+    # _WEB_AUTH_DB is defined after this function; access it via module-level name.
+    try:
+        import sqlite3 as _sq
+        with _sq.connect(_WEB_AUTH_DB) as c:
+            row = c.execute(
+                "SELECT id FROM web_users WHERE token=? LIMIT 1", (token,)
+            ).fetchone()
+            return row is not None
+    except Exception:
+        return False
+
+
 def require_token(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        auth_header = (request.headers.get('Authorization') or '').strip()
-        bearer = ''
-        if auth_header.lower().startswith('bearer '):
-            bearer = auth_header[7:].strip()
-        elif auth_header.lower().startswith('token '):
-            bearer = auth_header[6:].strip()
-        token = (request.headers.get('X-Admin-Token') or
-                 request.headers.get('X-Api-Key') or
-                 bearer or
-                 request.args.get('token') or
-                 (request.get_json(silent=True) or {}).get('token', ''))
-        if token != ADMIN_WEB_TOKEN:
+        token = _extract_token()
+        if not _is_valid_token(token):
             return jsonify({'error': 'Unauthorized'}), 401
         return f(*args, **kwargs)
     return wrapper
@@ -148,7 +172,23 @@ def api_login():
 @app.route('/api/auth/me')
 @require_token
 def api_auth_me():
-    return jsonify({'ok': True, 'token_valid': True, 'server_version': '1.0'}), 200
+    token = _extract_token()
+    role  = 'admin'
+    username = 'admin'
+    if token != ADMIN_WEB_TOKEN:
+        try:
+            import sqlite3 as _sq
+            with _sq.connect(_WEB_AUTH_DB) as c:
+                row = c.execute(
+                    "SELECT username, role FROM web_users WHERE token=? LIMIT 1",
+                    (token,)
+                ).fetchone()
+                if row:
+                    username, role = row[0], row[1]
+        except Exception:
+            pass
+    return jsonify({'ok': True, 'token_valid': True, 'username': username,
+                    'role': role, 'server_version': '1.0'}), 200
 
 # ── Health (без токена — для Docker healthcheck) ───────────────────────────────
 @app.route('/ping')
