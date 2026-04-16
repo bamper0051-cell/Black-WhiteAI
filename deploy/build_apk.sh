@@ -99,18 +99,35 @@ build_github_actions() {
     echo "   APK появится в Releases"
 }
 
+
+
+# ── Method 4: GitHub Spark UI design workflow ─────────────────────────────
+build_spark_ui() {
+    echo -e "${CYAN}"
+    echo "╔══════════════════════════════════════════════════════════╗"
+    echo "║  GitHub Spark: дизайн интерфейса APK/WebUI              ║"
+    echo "╚══════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo "1. Открой GitHub Spark: https://github.com/features/spark"
+    echo "2. Сгенерируй дизайн по промпту из deploy/spark_ui_prompt.md"
+    echo "3. Экспортируй UI-assets в android_app/assets и web шаблоны"
+    echo "4. Запусти пункт 3 (GitHub Actions) для сборки APK"
+}
+
 # ── Select build method ────────────────────────────────────────────────────
 echo "Выбери метод сборки:"
 echo "  1) Локальный Flutter (нужен Flutter SDK + Android SDK)"
 echo "  2) Docker (нужен Docker)"
 echo "  3) GitHub Actions (онлайн, без локального SDK)"
+echo "  4) GitHub Spark (генерация UI/дизайна)"
 echo ""
-read -p "Метод [1/2/3]: " method
+read -p "Метод [1/2/3/4]: " method
 
 case $method in
     1) build_local || build_docker || build_github_actions ;;
     2) build_docker || build_github_actions ;;
     3) build_github_actions ;;
+    4) build_spark_ui ;;
     *) build_github_actions ;;
 esac
 
