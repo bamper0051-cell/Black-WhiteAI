@@ -121,7 +121,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
               decoration: const InputDecoration(hintText: 'Enter command...', hintStyle: TextStyle(color: NeonColors.textDisabled, fontFamily: 'JetBrainsMono', fontSize: 12), border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 6)),
               onSubmitted: (v) { _run(v); _inputCtrl.clear(); },
               onChanged: (_) => setState(() => _historyIdx = -1))),
-            GestureDetector(onTap: () { if (_history.isEmpty) return; setState(() { _historyIdx = (_historyIdx+1).clamp(0, _history.length-1); _inputCtrl.text = _history[_historyIdx]; }); }, child: const Icon(Icons.arrow_upward, color: NeonColors.textSecondary, size: 18)),
+            GestureDetector(onTap: () { if (_history.isEmpty) return; setState(() { _historyIdx = (_historyIdx+1).clamp(0, _history.length-1).toInt(); _inputCtrl.text = _history[_historyIdx]; }); }, child: const Icon(Icons.arrow_upward, color: NeonColors.textSecondary, size: 18)),
             const SizedBox(width: 4),
             GestureDetector(onTap: () => _togglePin(_inputCtrl.text),
               child: Icon(_pinned.contains(_inputCtrl.text.trim()) ? Icons.star : Icons.star_border,

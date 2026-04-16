@@ -98,10 +98,16 @@ class ApiService {
             .timeout(const Duration(seconds: 8));
         if (data.statusCode >= 200 && data.statusCode < 300) {
           if (data.body.isEmpty) return true;
-          final json = jsonDecode(data.body);
-          return json['ok'] == true ||
-              json['pong'] == true ||
-              json['status'] == 'ok';
+          try {
+            final json = jsonDecode(data.body);
+            return json['ok'] == true ||
+                json['pong'] == true ||
+                json['status'] == 'ok';
+          } catch (_) {
+            final body = data.body.trim().toLowerCase();
+            if (body == 'ok' || body == 'pong') return true;
+            return true;
+          }
         }
       } catch (_) {
         // try next endpoint
@@ -225,9 +231,10 @@ class ApiService {
     String? filePath,
   }) async {
     if (await _shouldUseDemo()) {
+      final previewLen = task.length.clamp(0, 40).toInt();
       return {
         'ok': true,
-        'final': 'DEMO: $agent выполнил задачу «${task.substring(0, task.length.clamp(0, 40))}...»',
+        'final': 'DEMO: $agent выполнил задачу «${task.substring(0, previewLen)}...»',
         'steps': [],
       };
     }

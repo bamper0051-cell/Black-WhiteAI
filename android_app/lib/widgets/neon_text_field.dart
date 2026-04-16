@@ -1,6 +1,7 @@
 // neon_text_field.dart — Neon styled text input widget
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/neon_theme.dart';
 
 class NeonTextField extends StatelessWidget {
@@ -38,9 +39,8 @@ class NeonTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.jetBrainsMono(
             color:       color.withOpacity(0.8),
-            fontFamily: 'JetBrainsMono',
             fontSize:   9,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
@@ -54,16 +54,14 @@ class NeonTextField extends StatelessWidget {
           maxLines:    maxLines,
           validator:   validator,
           onChanged:   onChanged,
-          style: const TextStyle(
+          style: GoogleFonts.jetBrainsMono(
             color:      NeonColors.textPrimary,
-            fontFamily: 'JetBrainsMono',
             fontSize:   13,
           ),
           decoration: InputDecoration(
             hintText:   hint,
-            hintStyle:  TextStyle(
+            hintStyle:  GoogleFonts.jetBrainsMono(
               color:      NeonColors.textDisabled,
-              fontFamily: 'JetBrainsMono',
               fontSize:   12,
             ),
             prefixIcon: prefixIcon != null
