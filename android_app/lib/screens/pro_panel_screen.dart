@@ -46,7 +46,7 @@ class _ProPanelScreenState extends State<ProPanelScreen> {
 
   Future<void> _setDemoMode(bool v) async { await ApiService.setDemoMode(v); if (!mounted) return; setState(() => _demoMode = v); }
 
-  String _maskToken(String t) { if (t.isEmpty) return '—'; if (t.length <= 6) return '•••$t'; return '•••• \${t.substring(t.length-4)}'; }
+  String _maskToken(String t) { if (t.isEmpty) return '—'; if (t.length <= 6) return '•••$t'; return '•••• ${t.substring(t.length-4)}'; }
 
   @override
   Widget build(BuildContext context) {
