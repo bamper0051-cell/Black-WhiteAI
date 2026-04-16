@@ -34,9 +34,13 @@ service_account.json
 # === Backup / Duplicate Files ===
 *.bak
 *.BK
+*BK
 *.tmp
 *.temp
 *~
+harry_potter_script.txt
+tool_setup_complete.txt
+tools_list.txt
 
 # === Docker ===
 docker-compose.override.yml
