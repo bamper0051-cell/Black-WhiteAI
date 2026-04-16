@@ -6,8 +6,10 @@ BlackBugsAI — Auth Module v3
 import os, random, time, sqlite3, hashlib, re
 import bcrypt
 import config
+from core.db_manager import BLACKBUGS_DB
 
-DB_PATH = os.path.join(config.BASE_DIR, 'auth.db')
+# Canonical path: data/blackbugs.db (was: auth.db in project root)
+DB_PATH = str(BLACKBUGS_DB)
 
 MAX_ATTEMPTS   = 5
 CAPTCHA_TTL    = 300   # 5 минут

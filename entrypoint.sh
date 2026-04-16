@@ -25,11 +25,19 @@ mkdir -p /app/data /app/fish_uploads /app/fish_pages /app/fish_logs \
          /app/agent_projects /app/created_bots /app/artifacts \
          /app/neo_workspace /app/matrix_workspace /app/logs
 
-# Создаём пустые БД-файлы если их нет (предотвращаем создание директорий вместо файлов)
-for db in auth.db tasks.db; do
-    [ -d "/app/data/$db" ] && rmdir "/app/data/$db" 2>/dev/null || true
-    [ -f "/app/data/$db" ] || touch "/app/data/$db"
-done
+# ── DB initialisation + legacy migration ─────────────────────────────────
+# Переносит старые automuvie.db / auth.db из корня в /app/data/
+# Создаёт схемы если БД новая
+python3 - << 'PYEOF'
+import sys
+sys.path.insert(0, '/app')
+try:
+    from core.db_manager import migrate_legacy_files, init_all
+    migrate_legacy_files()
+    init_all()
+except Exception as e:
+    print(f"  ⚠️  DB init warning: {e}")
+PYEOF
 
 # ── Validate required env ─────────────────────────────────────────────────
 [[ -z "${TELEGRAM_BOT_TOKEN:-}" ]] && echo "⚠️  TELEGRAM_BOT_TOKEN not set"

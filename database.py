@@ -1,7 +1,9 @@
 import sqlite3
 from datetime import datetime
+from core.db_manager import NEWS_DB
 
-DB_PATH = 'automuvie.db'
+# Canonical path: data/news.db (was: automuvie.db in project root — legacy name)
+DB_PATH = str(NEWS_DB)
 
 # Whitelist of allowed column names for get/set_user_setting
 _ALLOWED_USER_COLS = {

@@ -10,8 +10,9 @@ from pathlib import Path
 from queue import PriorityQueue
 
 import config
+from core.db_manager import TASKS_DB
 
-DB_PATH = Path(config.DATA_DIR) / "tasks.db"
+DB_PATH = TASKS_DB
 
 
 @dataclass
