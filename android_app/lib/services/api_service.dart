@@ -104,8 +104,6 @@ class ApiService {
                 json['pong'] == true ||
                 json['status'] == 'ok';
           } catch (_) {
-            final body = data.body.trim().toLowerCase();
-            if (body == 'ok' || body == 'pong') return true;
             return true;
           }
         }
