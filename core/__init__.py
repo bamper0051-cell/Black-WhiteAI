@@ -6,17 +6,17 @@ Pipeline: User → Bot → Gateway → Queue → Workers → Agents → Tools �
                                  Observer (SMITH)
                                     ↓
                                  Admin Panel
-"""
-from core.gateway import Gateway
-from core.queue_manager import TaskQueue, Task
-from core.worker_pool import WorkerPool
-from core.agent_base import AgentBase, AgentResult
-from core.tool_registry import ToolRegistry
-from core.memory_store import MemoryStore
-from core.observer import Observer
 
-__all__ = [
-    'Gateway', 'TaskQueue', 'Task', 'WorkerPool',
-    'AgentBase', 'AgentResult', 'ToolRegistry',
-    'MemoryStore', 'Observer',
-]
+NOTE: No eager imports here — each module imports exactly what it needs.
+      Eager package-level imports cause cascade failures when any one
+      dependency (e.g. config, dotenv, bcrypt) is unavailable at import time.
+      Use direct submodule imports instead:
+        from core.gateway      import Gateway
+        from core.queue_manager import TaskQueue, Task
+        from core import tool_registry as TR   # submodule access works fine
+"""
+
+__all__: list = []   # No eager exports — nothing is imported at package level.
+                     # Import submodules directly in your code, e.g.:
+                     #   from core.gateway       import Gateway
+                     #   from core.queue_manager import TaskQueue, Task

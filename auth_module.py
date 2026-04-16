@@ -6,8 +6,10 @@ BlackBugsAI — Auth Module v3
 import os, random, time, sqlite3, hashlib, re
 import bcrypt
 import config
+from core.db_manager import BLACKBUGS_DB
 
-DB_PATH = os.path.join(config.BASE_DIR, 'auth.db')
+# Canonical path: data/blackbugs.db (was: auth.db in project root)
+DB_PATH = str(BLACKBUGS_DB)
 
 MAX_ATTEMPTS   = 5
 CAPTCHA_TTL    = 300   # 5 минут
@@ -256,7 +258,6 @@ _SET_PIN_ART = """<code>
 ║  Только цифры: 0-9       ║
 ╚══════════════════════════╝</code>"""
 
-<<<<<<< HEAD
 # ─── КАПЧА v4 — чистая и понятная ─────────────────────────────────────────────
 
 def captcha_generate(telegram_id) -> str:
@@ -311,136 +312,10 @@ def captcha_generate(telegram_id) -> str:
         "expires": time.time() + CAPTCHA_TTL,
         "tries": 0,
         "type": ctype,
-=======
-# ─── КАПЧА v3 — киберпанк ────────────────────────────────────────────────────
-
-def captcha_generate(telegram_id) -> str:
-    ctype = random.choice(CAPTCHA_TYPES)
-
-    if ctype == 'emoji_grid':
-        # 4x4 грид эмодзи, посчитай целевой
-        target = random.choice(['🖤','🐛','🔥','⚡','💀','🕵️','🦾','🤖'])
-        filler = random.choice(['⬛','🟫','🟪','🟦','🟩'])
-        count  = random.randint(3, 8)
-        total  = 16
-        cells  = [target]*count + [filler]*(total-count)
-        random.shuffle(cells)
-        rows   = [''.join(cells[i*4:(i+1)*4]) for i in range(4)]
-        grid   = '\n'.join(rows)
-        question = (
-            f"🎯 <b>GRID SCAN</b>\n\n"
-            f"<code>{grid}</code>\n\n"
-            f"Сколько <b>{target}</b> в матрице?"
-        )
-        answer = str(count)
-
-    elif ctype == 'ascii_art':
-        # Угадай число по ASCII-арту
-        digits_art = {
-            '1': ['  █ ',' ██ ','  █ ','  █ ','████'],
-            '2': ['████','   █','████','█   ','████'],
-            '3': ['████','   █','████','   █','████'],
-            '4': ['█  █','█  █','████','   █','   █'],
-            '5': ['████','█   ','████','   █','████'],
-            '6': ['████','█   ','████','█  █','████'],
-            '7': ['████','   █','  █ ',' █  ',' █  '],
-            '8': ['████','█  █','████','█  █','████'],
-            '9': ['████','█  █','████','   █','████'],
-        }
-        d1, d2 = random.choice('23456789'), random.choice('23456789')
-        art1, art2 = digits_art[d1], digits_art[d2]
-        combined = [f"{art1[i]}  {art2[i]}" for i in range(5)]
-        question = (
-            f"🔢 <b>ASCII DECODE</b>\n\n"
-            f"<code>{'┃' + chr(10) + '┃'.join(combined) + chr(10) + '┃'}</code>\n\n"
-            f"Что за число? (введи 2 цифры)"
-        )
-        answer = d1 + d2
-
-    elif ctype == 'matrix_decode':
-        # Матрица символов, найди паттерн
-        target = random.choice(['01','10','00','11'])
-        grid_rows = []
-        count = 0
-        for _ in range(4):
-            row = ''
-            for _ in range(6):
-                cell = random.choice(['01','10','00','11'])
-                if cell == target:
-                    count += 1
-                row += cell + ' '
-            grid_rows.append(row.strip())
-        question = (
-            f"💾 <b>MATRIX SCAN</b>\n\n"
-            f"<code>{'  '.join(['COL'+str(i) for i in range(1,7)])}\n"
-            f"{chr(10).join(grid_rows)}</code>\n\n"
-            f"Сколько раз встречается <code>{target}</code>?"
-        )
-        answer = str(count)
-
-    elif ctype == 'bit_flip':
-        # XOR задача
-        a = random.randint(1, 15)
-        b = random.randint(1, 15)
-        result = a ^ b
-        a_bin = format(a, '04b')
-        b_bin = format(b, '04b')
-        question = (
-            f"⚡ <b>BIT OPERATION</b>\n\n"
-            f"<code>"
-            f"  {a_bin}  ({a})\n"
-            f"⊕ {b_bin}  ({b})\n"
-            f"─────────\n"
-            f"  ????</code>\n\n"
-            f"Результат XOR в десятичном?"
-        )
-        answer = str(result)
-
-    elif ctype == 'logic_gate':
-        # Логический вентиль
-        a, b = random.randint(0,1), random.randint(0,1)
-        gate = random.choice(['AND','OR','NAND','NOR','XOR'])
-        ops  = {'AND': a&b, 'OR': a|b, 'NAND': int(not(a&b)),
-                'NOR': int(not(a|b)), 'XOR': a^b}
-        result = ops[gate]
-        question = (
-            f"🔌 <b>LOGIC GATE</b>\n\n"
-            f"<code>"
-            f"  A={a}  B={b}\n"
-            f"  ┌───────┐\n"
-            f"  │  {gate:<4} │──→ ?\n"
-            f"  └───────┘</code>\n\n"
-            f"Выход вентиля {gate}(A,B) = ?"
-        )
-        answer = str(result)
-
-    else:  # cipher_shift
-        # ROT-N шифр
-        shift = random.randint(1, 5)
-        word  = random.choice(['CODE','HACK','BUGS','BOTS','KEYS','DATA','DARK'])
-        encoded = ''.join(chr((ord(c)-65+shift)%26+65) for c in word)
-        question = (
-            f"🔐 <b>CIPHER DECODE</b>\n\n"
-            f"<code>ROT-{shift} шифр:\n{encoded} → ?</code>\n\n"
-            f"Каждая буква сдвинута на <b>{shift}</b> назад.\n"
-            f"Раскодируй слово:"
-        )
-        answer = word
-
-    _captchas[telegram_id] = {
-        "answer":   answer.strip().upper(),
-        "expires":  time.time() + CAPTCHA_TTL,
-        "tries":    0,
-        "type":     ctype,
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         "question": question,
     }
     return question
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 def captcha_check(telegram_id, user_input) -> tuple:
     c = _captchas.get(telegram_id)
     if not c:
@@ -521,7 +396,6 @@ def _pbn(label, data=None):
 def auth_send_captcha(chat_id):
     question = captcha_generate(chat_id)
     auth_state_set(chat_id, "captcha")
-<<<<<<< HEAD
     send_message(
         f"<b>Шаг 1 из 3 · Проверка</b>\n\n"
         f"{question}\n\n"
@@ -530,19 +404,6 @@ def auth_send_captcha(chat_id):
         reply_markup={"inline_keyboard": [[
             {"text": "🔄 Обновить", "callback_data": "captcha_new"},
             {"text": "💡 Подсказка", "callback_data": "captcha_hint"},
-=======
-    # Прогресс-бар безопасности
-    bar = "█" * random.randint(3,7) + "░" * random.randint(3,5)
-    send_message(
-        f"<code>[ SECURITY CHECK ]</code>\n"
-        f"<code>[{bar}]</code>\n\n"
-        f"🛡 <b>Докажи что не робот</b>\n\n"
-        f"{question}",
-        chat_id,
-        reply_markup={"inline_keyboard": [[
-            {"text": "🔄 Другая задача", "callback_data": "captcha_new"},
-            {"text": "💡 Подсказка",     "callback_data": "captcha_hint"},
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         ]]}
     )
 
@@ -610,12 +471,7 @@ def _step_captcha(chat_id, answer):
     ok, reason = captcha_check(chat_id, answer)
     if ok:
         send_message(
-<<<<<<< HEAD
             "✅ <b>Проверка пройдена</b>\n\nТеперь выбери имя профиля.",
-=======
-            "<code>[ CAPTCHA ] ✅ PASSED</code>\n\n"
-            "Проверка пройдена! Выбери никнейм:",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
             chat_id
         )
         _ask_nickname(chat_id)
@@ -623,36 +479,20 @@ def _step_captcha(chat_id, answer):
         auth_send_captcha(chat_id)
     elif reason == "too_many":
         auth_state_clear(chat_id)
-<<<<<<< HEAD
         send_message("🚫 Слишком много ошибок. Запусти /start и попробуй ещё раз.", chat_id)
     else:
         rem = reason.split(":")[1] if ":" in reason else "?"
-=======
-        send_message("🚫 Слишком много ошибок. /start заново.", chat_id)
-    else:
-        rem  = reason.split(":")[1] if ":" in reason else "?"
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         new_q = captcha_generate(chat_id)
         auth_state_set(chat_id, "captcha")
         fails = 4 - int(rem) if rem.isdigit() else 1
         fail_bar = "🔴" * fails + "⚫" * (4 - fails)
         send_message(
-<<<<<<< HEAD
             f"❌ <b>Ответ неверный</b>\n{fail_bar}\n\n"
             f"Осталось попыток: <b>{rem}</b>\n\n"
             f"Попробуй новую задачу:\n\n{new_q}",
             chat_id,
             reply_markup={"inline_keyboard": [[
                 {"text": "🔄 Обновить", "callback_data": "captcha_new"},
-=======
-            f"<code>[ ACCESS DENIED ] ❌</code>\n"
-            f"{fail_bar}\n\n"
-            f"Осталось попыток: <b>{rem}</b>\n\n"
-            f"🔄 <b>Новая задача:</b>\n\n{new_q}",
-            chat_id,
-            reply_markup={"inline_keyboard": [[
-                {"text": "🔄 Другая",  "callback_data": "captcha_new"},
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                 {"text": "💡 Подсказка", "callback_data": "captcha_hint"},
             ]]}
         )
@@ -662,16 +502,9 @@ def _ask_nickname(chat_id):
     """Запрашивает никнейм после капчи."""
     auth_state_set(chat_id, "reg_nick")
     send_message(
-<<<<<<< HEAD
         "<b>Шаг 2 из 3 · Никнейм</b>\n\n"
         "Придумай имя для профиля.\n\n"
         "<i>Буквы, цифры, _ и - · от 3 до 24 символов.</i>",
-=======
-        "👤 <b>Придумай никнейм</b>\n\n"
-        "<i>• только буквы, цифры, _ и -\n"
-        "• от 3 до 24 символов</i>\n\n"
-        "Напиши его:",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         chat_id
     )
 
@@ -695,12 +528,7 @@ def _step_reg_nick(chat_id, text: str):
     with _db() as c:
         c.execute('UPDATE users SET username=? WHERE telegram_id=?', (nick, int(chat_id)))
     send_message(
-<<<<<<< HEAD
         f"✅ Ник <b>{nick}</b> сохранён.\n\nПереходим к защите входа.",
-=======
-        f"✅ Ник <b>{nick}</b> сохранён!\n\n"
-        f"🔑 Теперь создай PIN-код:",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         chat_id
     )
     _start_set_pin(chat_id)
@@ -710,17 +538,10 @@ def _start_set_pin(chat_id):
     auth_state_set(chat_id, "set_pin_pad", None)
     rows = _pin_rows("", "set_pin_pad")
     send_message(
-<<<<<<< HEAD
         "<b>Шаг 3 из 3 · PIN-код</b>\n\n"
         "Придумай PIN для быстрого входа.\n\n"
         "<code>  ⚪⚪⚪⚪  </code>\n\n"
         "<i>Минимум 4 цифры, затем нажми ✅</i>",
-=======
-        f"{_SET_PIN_ART}\n\n"
-        f"🔑 <b>Создай PIN-код</b>\n\n"
-        f"<code>  ⚪⚪⚪⚪  </code>\n\n"
-        f"<i>Нажми 4+ цифры, затем ✅</i>",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         chat_id,
         reply_markup={"inline_keyboard": rows}
     )
@@ -735,12 +556,7 @@ def _step_set_pin(chat_id, pin):
     auth_state_set(chat_id, "confirm_pin", pin)
     masked = "●" * len(pin)
     send_message(
-<<<<<<< HEAD
         f"<b>Подтверди PIN</b>\n\n<code>{masked}</code>\n\nВведи тот же PIN ещё раз.",
-=======
-        f"<code>PIN: {masked}</code>\n\n"
-        f"🔄 Повтори PIN для подтверждения:",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         chat_id
     )
 
@@ -760,11 +576,7 @@ def _step_confirm_pin(chat_id, pin, original):
 
     if pin != str(original):
         auth_state_set(chat_id, "confirm_pin", original)
-<<<<<<< HEAD
         send_message("❌ <b>PIN не совпадает</b>\n\nПовтори подтверждение ещё раз.", chat_id)
-=======
-        send_message("❌ <b>PIN не совпадает</b>\n\nВведи подтверждение ещё раз:", chat_id)
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         return
 
     try:
@@ -783,13 +595,7 @@ def _step_confirm_pin(chat_id, pin, original):
     u = get_user(chat_id)
     priv = u.get('privilege','user') if u else 'user'
     send_message(
-<<<<<<< HEAD
         "✅ <b>Регистрация завершена</b>\n\nТеперь вход будет через твой PIN-код.",
-=======
-        f"{_SUCCESS_ART}\n\n"
-        f"✅ <b>PIN установлен!</b>\n\n"
-        f"🔐 Следующий вход — только PIN.",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         chat_id
     )
 
@@ -804,27 +610,16 @@ def auth_handle_callback(chat_id, data, msg_id=None):
     if data == "captcha_new":
         q = captcha_refresh(chat_id)
         auth_state_set(chat_id, "captcha")
-<<<<<<< HEAD
         try:
             edit_message(
                 chat_id, msg_id,
                 f"<b>Шаг 1 из 3 · Проверка</b>\n\n{q}\n\n<i>Если задача неудобная — обнови её.</i>",
                 reply_markup={"inline_keyboard": [[
                     {"text": "🔄 Обновить", "callback_data": "captcha_new"},
-=======
-        bar = "█" * random.randint(3,7) + "░" * random.randint(3,5)
-        try:
-            edit_message(chat_id, msg_id,
-                f"<code>[ SECURITY CHECK ]</code>\n<code>[{bar}]</code>\n\n"
-                f"🛡 <b>Новая задача:</b>\n\n{q}",
-                reply_markup={"inline_keyboard": [[
-                    {"text": "🔄 Другая",    "callback_data": "captcha_new"},
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                     {"text": "💡 Подсказка", "callback_data": "captcha_hint"},
                 ]]}
             )
         except Exception:
-<<<<<<< HEAD
             send_message(
                 f"<b>Шаг 1 из 3 · Проверка</b>\n\n{q}",
                 chat_id,
@@ -833,30 +628,15 @@ def auth_handle_callback(chat_id, data, msg_id=None):
                     {"text": "💡 Подсказка", "callback_data": "captcha_hint"},
                 ]]}
             )
-=======
-            send_message(f"🔄 Новая задача:\n\n{q}", chat_id,
-                        reply_markup={"inline_keyboard": [[
-                            {"text": "🔄 Другая", "callback_data": "captcha_new"}
-                        ]]})
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
     elif data == "captcha_hint":
         c = _captchas.get(chat_id)
         if not c: return
         hints = {
-<<<<<<< HEAD
             'simple_math':  "Просто реши пример",
             'emoji_count':  "Считай только указанный символ",
             'word_reverse': "Прочитай слово справа налево",
             'sequence_next': "Посмотри, какой шаг между числами",
-=======
-            'emoji_grid':     "Считай внимательно по строкам слева направо",
-            'ascii_art':      "Смотри на форму букв — каждые 5 строк одна цифра",
-            'matrix_decode':  "Ищи пары битов которые точно совпадают с паттерном",
-            'bit_flip':       "XOR: 1⊕1=0, 0⊕0=0, 1⊕0=1, 0⊕1=1",
-            'logic_gate':     "AND=умножение, OR=сложение, XOR=разность по модулю 2",
-            'cipher_shift':   "Сдвигай каждую букву НАЗАД по алфавиту",
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         }
         hint = hints.get(c['type'], "Думай логически!")
         send_message(f"💡 <b>Подсказка:</b>\n<i>{hint}</i>", chat_id)

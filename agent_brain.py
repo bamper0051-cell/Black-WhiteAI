@@ -34,9 +34,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import config
+from core.db_manager import BRAIN_DB
 
 # ── Хранилище обратной связи ──────────────────────────────────────────────────
-_BRAIN_DB = Path(config.DATA_DIR) / "agent_brain.db"
+_BRAIN_DB = BRAIN_DB
 
 
 def _db():

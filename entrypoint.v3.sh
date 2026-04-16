@@ -20,6 +20,23 @@ echo "📦 Platform: $(uname -m)"
 
 cd /app
 
+# ── Init directories ──────────────────────────────────────────────────────
+mkdir -p /app/data /app/fish_uploads /app/fish_pages /app/fish_logs \
+         /app/agent_projects /app/created_bots /app/artifacts \
+         /app/neo_workspace /app/matrix_workspace /app/logs
+
+# ── DB init: schema first, then legacy migration ──────────────────────────
+python3 - << 'PYEOF'
+import sys
+sys.path.insert(0, '/app')
+try:
+    from core.db_manager import init_all, migrate_legacy_files
+    init_all()              # create schemas first
+    migrate_legacy_files()  # then merge legacy data into existing tables
+except Exception as e:
+    print(f"  ⚠️  DB init warning: {e}")
+PYEOF
+
 # ── Validate required env ─────────────────────────────────────────────────
 [[ -z "${TELEGRAM_BOT_TOKEN:-}" ]] && echo "⚠️  TELEGRAM_BOT_TOKEN not set — bot won't start Telegram polling"
 [[ -z "${ADMIN_WEB_TOKEN:-}" ]]    && echo "⚠️  ADMIN_WEB_TOKEN not set — using default (INSECURE!)"
@@ -129,10 +146,19 @@ if [[ "${AUTO_TUNNEL:-false}" == "true" ]]; then
 fi
 
 # ── Graceful shutdown ─────────────────────────────────────────────────────
+_BOT_PID=""
 cleanup() {
   echo ""
   echo "⏹ BlackBugsAI shutting down..."
-  [[ -n "$_TUNNEL_PID" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
+  if [[ -n "${_BOT_PID:-}" ]]; then
+    kill "$_BOT_PID" 2>/dev/null || true
+    for _i in 1 2 3 4 5 6 7 8 9 10; do
+      kill -0 "$_BOT_PID" 2>/dev/null || break
+      sleep 1
+    done
+    kill -9 "$_BOT_PID" 2>/dev/null || true
+  fi
+  [[ -n "${_TUNNEL_PID:-}" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
   echo "👋 Bye!"
   exit 0
 }
@@ -149,5 +175,13 @@ echo "════════════════════════�
 echo ""
 
 # ── Launch ────────────────────────────────────────────────────────────────
+# Run as child process (not exec) so the shell stays as PID 1 and the
+# cleanup trap above can fire on SIGTERM/SIGINT to flush logs/close SQLite.
 echo "🚀 Launching BlackBugsAI..."
-exec python3 -u bot.py
+if [ $# -gt 0 ]; then
+    "$@" &
+else
+    python3 -u bot.py &
+fi
+_BOT_PID=$!
+wait $_BOT_PID

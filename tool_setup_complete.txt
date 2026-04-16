@@ -1,8 +1,0 @@
-=== Установленные инструменты для пентеста ===
-nmap: $(nmap --version 2>/dev/null | head -1 || echo 'не установлен')
-gobuster: $(gobuster version 2>/dev/null || echo 'не установлен')
-ffuf: $(ffuf -V 2>/dev/null | head -1 || echo 'не установлен')
-sqlmap: $(sqlmap --version 2>/dev/null | head -1 || echo 'не установлен')
-autorecon: $(autorecon --help 2>&1 | head -1 || echo 'не установлен')
-
-Дата установки: $(date)

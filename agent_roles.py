@@ -5,8 +5,9 @@ agent_roles.py — RBAC система АВТОМУВИ
 import os, json, time, sqlite3
 from functools import wraps
 import config
+from core.db_manager import BLACKBUGS_DB
 
-DB_PATH = os.path.join(config.DATA_DIR, 'auth.db')
+DB_PATH = str(BLACKBUGS_DB)
 
 # ─── Константы прав ───────────────────────────────────────────────────────────
 PERM = {

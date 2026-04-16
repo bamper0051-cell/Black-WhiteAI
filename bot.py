@@ -6,14 +6,11 @@ import sys
 import time
 import random
 import shutil
-<<<<<<< HEAD
-=======
 import os
 import threading
 import schedule
 import subprocess
 import re
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 from auth_module import (
     is_authenticated,
     auth_state_get,
@@ -38,10 +35,6 @@ try:
         log_admin_cmd, get_system_info, list_processes,
         kill_process, exec_shell, get_recent_logs,
         format_users_list, ban_user, unban_user, delete_user,
-<<<<<<< HEAD
-        format_users_list,
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     )
     ADMIN_ENABLED = True
 except ImportError as _ae:
@@ -385,10 +378,6 @@ def print_banner():
 
 if __name__ == "__main__":
     print_banner()
-<<<<<<< HEAD
-import time, threading, schedule, os, subprocess, re, shutil
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 try:
     from database import init_db, get_stats, get_today_count
 except ImportError:
@@ -8714,7 +8703,21 @@ def _validate_startup_config():
 def main():
     print(config.startup_banner(), flush=True)
     print(f"📁 Директория: {config.BASE_DIR}", flush=True)
-    _validate_startup_config()
+
+    # ── Token check ──────────────────────────────────────────────────────────
+    _TELEGRAM_ENABLED = bool(config.TELEGRAM_BOT_TOKEN)
+    if not _TELEGRAM_ENABLED:
+        _webui_only = os.environ.get("WEBUI_ONLY", "").lower() in ("1", "true", "yes")
+        if _webui_only:
+            print("⚠️  TELEGRAM_BOT_TOKEN не задан — запуск в режиме WebUI-only.", flush=True)
+        else:
+            print("❌ TELEGRAM_BOT_TOKEN не задан! Бот не запустится.", flush=True)
+            print("   Добавь в .env: TELEGRAM_BOT_TOKEN=1234567890:AAH...", flush=True)
+            print("   Для запуска только WebUI установи WEBUI_ONLY=1", flush=True)
+            sys.exit(1)
+
+    if _TELEGRAM_ENABLED:
+        _validate_startup_config()
     print("🧠 LLM: {} / {}".format(config.LLM_PROVIDER, config.LLM_MODEL), flush=True)
     print("🎙  TTS: {} / {}".format(config.TTS_PROVIDER, config.TTS_VOICE), flush=True)
 
@@ -8723,7 +8726,15 @@ def main():
         _gs.setup()
         _gs.register_notify(send_message)
 
-    init_db()                     # БД новостей
+    # ── Database init: schema first, then legacy migration ─────────────────
+    try:
+        from core.db_manager import init_all as _db_init_all, migrate_legacy_files
+        _db_init_all()          # create tables before migration reads/writes them
+        migrate_legacy_files()
+    except Exception as _dbe:
+        print(f"  ⚠️ db_manager init: {_dbe}", flush=True)
+
+    init_db()                     # БД новостей (legacy)
     init_auth_db()
 
     # ── Structured logging ──────────────────────────────────────────────────
@@ -8761,14 +8772,11 @@ def main():
         print(f"  ⚠️ Не удалось восстановить сессии: {_re}", flush=True)
 
     # Удаляем вебхук если был — иначе getUpdates не работает
-    delete_webhook()
+    if _TELEGRAM_ENABLED:
+        delete_webhook()
 
     schedule.every(config.PARSE_INTERVAL_HOURS).hours.do(scheduled_cycle)
     threading.Thread(target=_run_scheduler, daemon=True).start()
-
-    # Инициализация модуля авторизации
-    # Инициализация модуля авторизации (синхронная)
-    init_auth_db()
 
     # ── Admin Web Panel ──────────────────────────────────────────────────────
     try:
@@ -8846,7 +8854,6 @@ def main():
         admin_ids = list(_load_admin_ids())
     except Exception:
         pass
-<<<<<<< HEAD
     for _aid in admin_ids[:3]:  # не спамим
         try:
             send_message(
@@ -8856,53 +8863,6 @@ def main():
                 "👇 Нажми меню для управления".format(
                     config.LLM_PROVIDER, config.LLM_MODEL,
                     config.TTS_PROVIDER, config.TTS_VOICE),
-=======
-
-    # ── Авто-запуск Cloudflare tunnel для доступа к панели ──────────────────
-    _panel_url = f"http://0.0.0.0:{config.ADMIN_WEB_PORT}/panel"
-    _tunnel_url = ""
-    if os.environ.get('AUTO_TUNNEL', '').lower() in ('1', 'true', 'yes'):
-        try:
-            import subprocess as _sp_cf, re as _re_cf, threading as _th_cf
-            _cf_proc = _sp_cf.Popen(
-                ['cloudflared', 'tunnel', '--url', f'http://localhost:{config.ADMIN_WEB_PORT}'],
-                stdout=_sp_cf.PIPE, stderr=_sp_cf.STDOUT
-            )
-            import time as _t_cf
-            _deadline = _t_cf.time() + 20
-            while _t_cf.time() < _deadline:
-                _line = _cf_proc.stdout.readline()
-                if _line:
-                    _m = _re_cf.search(r'https://[\w\-]+\.trycloudflare\.com', _line.decode('utf-8', errors='replace'))
-                    if _m:
-                        _tunnel_url = _m.group(0)
-                        try:
-                            import fish_bot_state as _fbs
-                            _fbs.tunnel_process = _cf_proc
-                            _fbs.tunnel_url = _tunnel_url
-                        except Exception: pass
-                        print(f"  🌐 Cloudflare Tunnel: {_tunnel_url}", flush=True)
-                        break
-        except FileNotFoundError:
-            pass
-        except Exception as _te:
-            print(f"  ⚠️ Tunnel: {_te}", flush=True)
-
-    for _aid in admin_ids[:3]:  # не спамим
-        try:
-            _panel_info = (
-                f"\n🌐 Панель: {_tunnel_url or _panel_url}"
-                if _tunnel_url else
-                f"\n🌐 Локальная панель: {_panel_url}\n💡 Для доступа из любой точки — Admin Panel → Доступ → Cloudflare"
-            )
-            send_message(
-                "🤖 <b>BlackBugsAI запущен!</b>\n"
-                "LLM: {} / {}\n"
-                "TTS: {} / {}{}\n\n"
-                "👇 Нажми меню для управления".format(
-                    config.LLM_PROVIDER, config.LLM_MODEL,
-                    config.TTS_PROVIDER, config.TTS_VOICE, _panel_info),
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                 _aid, reply_markup=menu_keyboard(_aid)
             )
         except Exception:
@@ -9059,7 +9019,12 @@ def main():
         except Exception as _fe:
             print(f"  ⚠️ Fish Flask не запустился: {_fe}", flush=True)
 
-    poll()
+    if _TELEGRAM_ENABLED:
+        poll()
+    else:
+        print("ℹ️  WEBUI_ONLY mode — Telegram polling disabled, WebUI running.", flush=True)
+        while True:
+            time.sleep(60)
 
 if __name__ == '__main__':
     main()

@@ -1,67 +1,64 @@
-<<<<<<< HEAD
-=======
-// agents_screen.dart — Agents overview and management
+// agents_screen.dart — Alliance Registry
+// Spark UI: agent cards with role badges, live status, quick-launch
 
-import 'dart:math' as math;
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/neon_theme.dart';
-import '../animations/neon_animations.dart';
 import '../models/models.dart';
-import '../widgets/neon_card.dart';
 import 'main_shell.dart';
 
 class AgentsScreen extends StatefulWidget {
   const AgentsScreen({super.key});
-<<<<<<< HEAD
   @override State<AgentsScreen> createState() => _AgentsScreenState();
-=======
-
-  @override
-  State<AgentsScreen> createState() => _AgentsScreenState();
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 }
 
 class _AgentsScreenState extends State<AgentsScreen> {
   List<AgentInfo> _agents = [];
   bool _loading = true;
+  String? _selectedFilter;
 
-<<<<<<< HEAD
-  final _colors = {
-    'neo': NeonColors.cyan, 'matrix': NeonColors.pink,
-    'smith': NeonColors.orange, 'anderson': NeonColors.purple,
-    'pythia': Color(0xFF00FFFF), 'tanker': NeonColors.yellow,
-    'operator': NeonColors.green,
-  };
-
-  @override void initState() { super.initState(); WidgetsBinding.instance.addPostFrameCallback((_) => _load()); }
-=======
-  final _agentDetails = {
-    'neo': {
-      'color': NeonColors.cyan,
-      'icon': '🧠',
-      'capabilities': ['Self-tool generation', 'Task decomposition', 'OSINT', 'ZIP artifacts'],
-      'workspace': '/app/neo_workspace',
-    },
-    'matrix': {
-      'color': NeonColors.purple,
-      'icon': '🔀',
-      'capabilities': ['Multi-role', 'GitHub tools', 'Coder/Tester/Security/OSINT', 'Self-evolving'],
-      'workspace': '/app/matrix_workspace',
-    },
-    'coder3': {
-      'color': NeonColors.green,
-      'icon': '💻',
-      'capabilities': ['Code generation', '15x auto-fix', 'Python sandbox', 'Multi-LLM'],
-      'workspace': '/app/agent_projects',
-    },
-    'chat': {
-      'color': NeonColors.orange,
-      'icon': '💬',
-      'capabilities': ['Conversational AI', 'Tool calling', 'Sessions', 'Multi-mode'],
-      'workspace': '/app/artifacts',
-    },
+  static const _agentMeta = {
+    'neo': (
+      emoji: '🧬', role: 'AUTONOMOUS',
+      desc: 'Self-tool generation, sandbox execution, OSINT, ZIP artifacts',
+      access: 'owner+',
+    ),
+    'matrix': (
+      emoji: '🔮', role: 'TOOLSMITH',
+      desc: 'Custom tool creation via LLM, GitHub, hybrid mode',
+      access: 'owner+',
+    ),
+    'smith': (
+      emoji: '🕶', role: 'GENERATOR',
+      desc: 'Bot templates, project scaffolding, code generation',
+      access: 'adm+',
+    ),
+    'pythia': (
+      emoji: '💻', role: 'CODER',
+      desc: 'Quick code, project mode, code review, autofix, sandbox',
+      access: 'all',
+    ),
+    'anderson': (
+      emoji: '🔍', role: 'SECURITY',
+      desc: 'Vulnerability analysis, code audit, CVE scanner',
+      access: 'all',
+    ),
+    'tanker': (
+      emoji: '🚛', role: 'SCRAPER',
+      desc: 'Web parsing, monitoring, RSS feeds, data extraction',
+      access: 'all',
+    ),
+    'operator': (
+      emoji: '🎛', role: 'ORCHESTRATOR',
+      desc: 'System tasks, agent coordination, task planning',
+      access: 'owner+',
+    ),
+    'morpheus': (
+      emoji: '🟣', role: 'SYSTEM',
+      desc: 'apt · pip · docker · systemctl · shell automation',
+      access: 'owner+',
+    ),
   };
 
   @override
@@ -69,415 +66,291 @@ class _AgentsScreenState extends State<AgentsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
   Future<void> _load() async {
     try {
       final api = ApiServiceProvider.of(context);
       final agents = await api.getAgents();
       if (!mounted) return;
-<<<<<<< HEAD
       setState(() { _agents = agents; _loading = false; });
-    } catch (e) { if (!mounted) return; setState(() => _loading = false); }
-=======
-      setState(() {
-        _agents = agents;
-        _loading = false;
-      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
     }
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
+  }
+
+  AgentInfo _buildDemoAgent(String id) {
+    final meta = _agentMeta[id];
+    return AgentInfo(
+      id: id,
+      name: id.toUpperCase(),
+      status: 'idle',
+      emoji: meta?.emoji ?? '🤖',
+      description: meta?.desc,
+      available: true,
+    );
+  }
+
+  List<AgentInfo> get _displayAgents {
+    if (_agents.isNotEmpty) return _agents;
+    return _agentMeta.keys.map(_buildDemoAgent).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NeonColors.bgDeep,
-<<<<<<< HEAD
-      appBar: AppBar(title: const NeonText('AGENT NETWORK', fontFamily: 'Orbitron', fontSize: 16, fontWeight: FontWeight.w700, glowRadius: 8)),
-      body: _loading
-        ? const Center(child: NeonLoadingIndicator(label: 'SCANNING AGENTS...'))
-        : RefreshIndicator(onRefresh: _load, color: NeonColors.cyan, backgroundColor: NeonColors.bgCard,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _agents.length,
-              itemBuilder: (_, i) {
-                final a = _agents[i];
-                final color = _colors[a.id] ?? NeonColors.cyan;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: NeonCard(glowColor: color, glowRadius: a.isOnline ? 8 : 3, child: Row(children: [
-                    Container(width: 4, height: 60, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
-                    const SizedBox(width: 12),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      NeonText(a.name, color: color, fontSize: 13, fontFamily: 'Orbitron', fontWeight: FontWeight.w700, glowRadius: 5),
-                      Text(a.description, style: const TextStyle(color: NeonColors.textSecondary, fontFamily: 'JetBrainsMono', fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Row(children: [
-                        Text('✅ \${a.tasksCompleted}', style: TextStyle(color: NeonColors.green, fontSize: 10, fontFamily: 'JetBrainsMono')),
-                        const SizedBox(width: 10),
-                        Text('❌ \${a.tasksFailed}', style: const TextStyle(color: NeonColors.pink, fontSize: 10, fontFamily: 'JetBrainsMono')),
-                      ]),
-                    ])),
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: (a.isOnline ? color : NeonColors.textDisabled).withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(4), border: Border.all(color: (a.isOnline ? color : NeonColors.textDisabled).withOpacity(0.5))),
-                      child: Text(a.status.toUpperCase(), style: TextStyle(color: a.isOnline ? color : NeonColors.textDisabled, fontFamily: 'JetBrainsMono', fontSize: 8, fontWeight: FontWeight.w700))),
-                  ])),
-                ).animate().fadeIn(delay: Duration(milliseconds: 80*i)).slideX(begin: 0.1);
-              },
-            )),
-=======
-      appBar: AppBar(
-        title: const NeonText('AGENT NETWORK', fontFamily: 'Orbitron',
-            fontSize: 16, fontWeight: FontWeight.w700, glowRadius: 8),
-      ),
-      body: _loading
-          ? const Center(child: NeonLoadingIndicator(label: 'SCANNING AGENTS...'))
-          : RefreshIndicator(
-              onRefresh: _load,
-              color: NeonColors.cyan,
-              backgroundColor: NeonColors.bgCard,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Network visualization
-                  _NetworkVisualization(agents: _agents),
-                  const SizedBox(height: 20),
-
-                  // Agent cards
-                  ..._agents.asMap().entries.map((entry) {
-                    final i = entry.key;
-                    final agent = entry.value;
-                    final details = _agentDetails[agent.id] ?? {};
-                    final color = details['color'] as Color? ?? NeonColors.cyan;
-                    return _AgentDetailCard(
-                      agent: agent,
-                      color: color,
-                      icon: details['icon'] as String? ?? '🤖',
-                      capabilities: details['capabilities'] as List<String>? ?? [],
-                    )
-                        .animate()
-                        .fadeIn(delay: Duration(milliseconds: 100 * i), duration: 400.ms)
-                        .slideX(begin: 0.1);
-                  }),
-                ],
-              ),
-            ),
-    );
-  }
-}
-
-class _NetworkVisualization extends StatefulWidget {
-  final List<AgentInfo> agents;
-  const _NetworkVisualization({required this.agents});
-
-  @override
-  State<_NetworkVisualization> createState() => _NetworkVisualizationState();
-}
-
-class _NetworkVisualizationState extends State<_NetworkVisualization>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return NeonCard(
-      child: Column(
-        children: [
-          const NeonText('> NEURAL NETWORK', color: NeonColors.cyan,
-              fontSize: 10, fontFamily: 'Orbitron', glowRadius: 4),
-          const SizedBox(height: 12),
-          AnimatedBuilder(
-            animation: _ctrl,
-            builder: (_, __) => CustomPaint(
-              size: const Size(double.infinity, 100),
-              painter: _NetworkPainter(
-                agents: widget.agents,
-                progress: _ctrl.value,
-              ),
+      backgroundColor: NeonColors.canvas,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildAppBar(),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildFilterRow(),
+                const SizedBox(height: 16),
+                ..._buildAgentCards(),
+              ]),
             ),
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 600.ms);
-  }
-}
-
-class _NetworkPainter extends CustomPainter {
-  final List<AgentInfo> agents;
-  final double progress;
-
-  _NetworkPainter({required this.agents, required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final colors = [NeonColors.cyan, NeonColors.purple, NeonColors.green, NeonColors.orange];
-    final n = agents.length.clamp(1, 4);
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final r = size.height * 0.35;
-
-    final positions = List.generate(n, (i) {
-      final angle = (i / n) * math.pi * 2 - math.pi / 2;
-      return Offset(cx + r * math.cos(angle), cy + r * math.sin(angle));
-    });
-
-    // Draw connection lines with animated pulse
-    for (int i = 0; i < n; i++) {
-      for (int j = i + 1; j < n; j++) {
-        final paint = Paint()
-          ..color = colors[i % colors.length].withOpacity(0.2)
-          ..strokeWidth = 1;
-        canvas.drawLine(positions[i], positions[j], paint);
-
-        // Animated pulse dot along connection
-        final t = (progress + i * 0.25) % 1.0;
-        final px = positions[i].dx + (positions[j].dx - positions[i].dx) * t;
-        final py = positions[i].dy + (positions[j].dy - positions[i].dy) * t;
-        canvas.drawCircle(
-          Offset(px, py),
-          2,
-          Paint()..color = colors[i % colors.length].withOpacity(0.8),
-        );
-      }
-    }
-
-    // Draw agent nodes
-    for (int i = 0; i < n; i++) {
-      final color = i < agents.length && agents[i].isOnline
-          ? colors[i % colors.length]
-          : NeonColors.textDisabled;
-
-      // Glow
-      canvas.drawCircle(
-        positions[i],
-        10,
-        Paint()
-          ..color = color.withOpacity(0.2)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-      );
-
-      // Outer ring
-      canvas.drawCircle(positions[i], 10, Paint()
-        ..color = color.withOpacity(0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5);
-
-      // Inner dot
-      canvas.drawCircle(positions[i], 5, Paint()..color = color);
-    }
-
-    // Center node (LLM Router)
-    final pulseSz = 8.0 + 2 * math.sin(progress * math.pi * 2);
-    canvas.drawCircle(
-      Offset(cx, cy),
-      pulseSz + 4,
-      Paint()
-        ..color = NeonColors.cyan.withOpacity(0.15)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
     );
-    canvas.drawCircle(Offset(cx, cy), pulseSz, Paint()..color = NeonColors.cyan);
-
-    // Center connections
-    for (int i = 0; i < n; i++) {
-      canvas.drawLine(
-        Offset(cx, cy),
-        positions[i],
-        Paint()
-          ..color = NeonColors.cyan.withOpacity(0.15)
-          ..strokeWidth = 0.5,
-      );
-    }
   }
 
-  @override
-  bool shouldRepaint(_NetworkPainter old) => old.progress != progress;
+  SliverAppBar _buildAppBar() => SliverAppBar(
+        pinned: true,
+        backgroundColor: NeonColors.bgDark,
+        elevation: 0,
+        titleSpacing: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: NeonColors.border),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(children: [
+            Text('ALLIANCE',
+                style: GoogleFonts.orbitron(
+                    fontSize: 16, fontWeight: FontWeight.w700,
+                    color: NeonColors.purple, letterSpacing: 2)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: NeonColors.purple.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: NeonColors.purple.withOpacity(0.3)),
+              ),
+              child: Text('${_displayAgents.length} AGENTS',
+                  style: GoogleFonts.jetBrainsMono(
+                      fontSize: 9, color: NeonColors.purple,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ]),
+        ),
+      );
+
+  Widget _buildFilterRow() => Row(
+        children: ['ALL', 'ACTIVE', 'LOCKED'].map((f) {
+          final isSelected = _selectedFilter == f || (_selectedFilter == null && f == 'ALL');
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedFilter = f == 'ALL' ? null : f),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? NeonColors.purple.withOpacity(0.15) : NeonColors.bgCard,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isSelected ? NeonColors.purple : NeonColors.border,
+                  ),
+                ),
+                child: Text(f,
+                    style: GoogleFonts.orbitron(
+                        fontSize: 9, fontWeight: FontWeight.w700,
+                        color: isSelected ? NeonColors.purple : NeonColors.textSecondary,
+                        letterSpacing: 1)),
+              ),
+            ),
+          );
+        }).toList(),
+      );
+
+  List<Widget> _buildAgentCards() {
+    final agents = _displayAgents;
+    return List.generate(agents.length, (i) {
+      final agent = agents[i];
+      final locked = !(agent.available ?? true);
+      if (_selectedFilter == 'ACTIVE' && agent.status != 'active') return const SizedBox.shrink();
+      if (_selectedFilter == 'LOCKED' && !locked) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: _AgentCard(agent: agent, index: i)
+            .animate()
+            .fadeIn(duration: 300.ms, delay: Duration(milliseconds: 50 * i))
+            .slideY(begin: 0.03, end: 0),
+      );
+    });
+  }
 }
 
-class _AgentDetailCard extends StatelessWidget {
-  final AgentInfo agent;
-  final Color color;
-  final String icon;
-  final List<String> capabilities;
+// ── Agent Card ─────────────────────────────────────────────────────────────────
 
-  const _AgentDetailCard({
-    required this.agent,
-    required this.color,
-    required this.icon,
-    required this.capabilities,
-  });
+class _AgentCard extends StatelessWidget {
+  final AgentInfo agent;
+  final int index;
+  const _AgentCard({required this.agent, required this.index});
+
+  static const _agentRoles = {
+    'neo': 'AUTONOMOUS', 'matrix': 'TOOLSMITH', 'smith': 'GENERATOR',
+    'pythia': 'CODER', 'anderson': 'SECURITY', 'tanker': 'SCRAPER',
+    'operator': 'ORCHESTRATOR', 'morpheus': 'SYSTEM',
+  };
+
+  static const _agentAccess = {
+    'neo': 'owner+', 'matrix': 'owner+', 'smith': 'adm+',
+    'operator': 'owner+', 'morpheus': 'owner+',
+  };
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: NeonCard(
-        glowColor: color,
-        glowRadius: agent.isOnline ? 10 : 3,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final color   = NeonTheme.agentColor(agent.id);
+    final locked  = !(agent.available ?? true);
+    final isActive = agent.status == 'active' || agent.status == 'running';
+    final role    = _agentRoles[agent.id.toLowerCase()] ?? 'AGENT';
+    final access  = _agentAccess[agent.id.toLowerCase()] ?? 'all';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: NeonColors.bgCard,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: locked
+              ? NeonColors.border
+              : isActive
+                  ? color.withOpacity(0.5)
+                  : color.withOpacity(0.2),
+          width: isActive ? 1.5 : 1,
+        ),
+        boxShadow: isActive
+            ? [BoxShadow(color: color.withOpacity(0.1), blurRadius: 8, spreadRadius: 0)]
+            : null,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
           children: [
-            Row(
-              children: [
-                Text(icon, style: const TextStyle(fontSize: 24)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      NeonText(
-                        agent.name,
-                        color: color,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Orbitron',
-                        glowRadius: 6,
-                      ),
-                      Text(
-                        agent.description,
-                        style: const TextStyle(
-                          color: NeonColors.textSecondary,
-                          fontSize: 10,
-                          fontFamily: 'JetBrainsMono',
+            // Subtle left accent bar
+            Positioned(
+              left: 0, top: 0, bottom: 0,
+              child: Container(width: 3, color: locked ? NeonColors.textMuted : color),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+              child: Row(
+                children: [
+                  // Agent icon
+                  _AgentIcon(agent: agent, color: color, locked: locked),
+                  const SizedBox(width: 14),
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          Text(agent.name ?? agent.id.toUpperCase(),
+                              style: GoogleFonts.orbitron(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: locked ? NeonColors.textMuted : color,
+                                  letterSpacing: 1)),
+                          const SizedBox(width: 8),
+                          SparkBadge(role, color: locked ? NeonColors.textMuted : color),
+                          if (access != 'all') ...[
+                            const SizedBox(width: 6),
+                            SparkBadge('🔒 $access',
+                                color: NeonColors.orange),
+                          ],
+                        ]),
+                        const SizedBox(height: 4),
+                        Text(
+                          agent.description ?? _getDesc(agent.id),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: locked ? NeonColors.textMuted : NeonColors.textSecondary),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Status badge
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SparkStatusDot(agent.status ?? 'idle', size: 9),
+                      const SizedBox(height: 4),
+                      Text(
+                        (agent.status ?? 'idle').toUpperCase(),
+                        style: GoogleFonts.orbitron(
+                          fontSize: 7,
+                          color: locked ? NeonColors.textMuted
+                              : statusColor(agent.status ?? 'idle'),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: (agent.isOnline ? color : NeonColors.textDisabled)
-                        .withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: (agent.isOnline ? color : NeonColors.textDisabled)
-                          .withOpacity(0.5),
-                    ),
-                  ),
-                  child: Text(
-                    agent.status.toUpperCase(),
-                    style: TextStyle(
-                      color: agent.isOnline ? color : NeonColors.textDisabled,
-                      fontFamily: 'Orbitron',
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Stats row
-            Row(
-              children: [
-                _StatBadge('DONE', '${agent.tasksCompleted}', NeonColors.green),
-                const SizedBox(width: 8),
-                _StatBadge('FAIL', '${agent.tasksFailed}', NeonColors.pink),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-            const Divider(color: NeonColors.cyanGlow, height: 1),
-            const SizedBox(height: 10),
-
-            // Capabilities
-            NeonText('CAPABILITIES', color: color.withOpacity(0.7),
-                fontSize: 8, fontFamily: 'Orbitron'),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: capabilities
-                  .map((c) => Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(4),
-                          border:
-                              Border.all(color: color.withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          c,
-                          style: TextStyle(
-                            color: color.withOpacity(0.8),
-                            fontSize: 9,
-                            fontFamily: 'JetBrainsMono',
-                          ),
-                        ),
-                      ))
-                  .toList(),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  String _getDesc(String id) {
+    const descs = {
+      'neo': 'Self-tool generation, sandbox execution, OSINT',
+      'matrix': 'Custom tool creation via LLM, GitHub, hybrid mode',
+      'smith': 'Bot templates, project scaffolding, code generation',
+      'pythia': 'Quick code, project mode, code review, autofix',
+      'anderson': 'Vulnerability analysis, code audit, CVE scanner',
+      'tanker': 'Web parsing, monitoring, RSS feeds, data extraction',
+      'operator': 'System tasks, agent coordination, planning',
+      'morpheus': 'apt · pip · docker · systemctl · shell automation',
+    };
+    return descs[id.toLowerCase()] ?? 'AI agent';
+  }
 }
 
-class _StatBadge extends StatelessWidget {
-  final String label;
-  final String value;
+class _AgentIcon extends StatelessWidget {
+  final AgentInfo agent;
   final Color color;
-
-  const _StatBadge(this.label, this.value, this.color);
+  final bool locked;
+  const _AgentIcon({required this.agent, required this.color, required this.locked});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: color.withOpacity(0.6),
-              fontSize: 8,
-              fontFamily: 'Orbitron',
-            ),
+  Widget build(BuildContext context) => Container(
+        width: 44, height: 44,
+        decoration: BoxDecoration(
+          color: locked ? NeonColors.bgElevated : color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: locked ? NeonColors.border : color.withOpacity(0.4),
           ),
-          const SizedBox(width: 4),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontFamily: 'Orbitron',
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
-    );
-  }
+        ),
+        child: Center(
+          child: locked
+              ? Icon(Icons.lock_outline, size: 18, color: NeonColors.textMuted)
+              : Text(agent.emoji ?? agent.id[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 20)),
+        ),
+      );
 }
