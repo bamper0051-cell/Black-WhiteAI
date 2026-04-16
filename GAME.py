@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -15,7 +16,7 @@ from aiogram.client.default import DefaultBotProperties
 # =========================
 # CONFIG
 # =========================
-BOT_TOKEN = "8542269896:AAHvZIlxZ9pVDj-yb1yhLmjVp_pJM2fW7p4"
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 CHAT_ID = 5722838040  # если хочешь запускать игру только в одном чате - поставь chat_id, иначе None
 
 GAME_INTERVAL_SECONDS = 600   # 10 минут

@@ -77,9 +77,12 @@ def call_llm_for(role: str, prompt: str, system: str = "",
         return _call_provider(provider, prompt, system, max_tokens, model=model,
                               temperature=temperature)
     except Exception:
-        # Fallback to global call_llm
+        # Fallback to global call_llm (no temperature param — legacy signature)
         from llm_client import call_llm
-        return call_llm(prompt, system, max_tokens, temperature=temperature)
+        try:
+            return call_llm(prompt, system, max_tokens, temperature=temperature)
+        except TypeError:
+            return call_llm(prompt, system, max_tokens)
 
 
 def get_llm_for(role: str) -> Callable[[str, str], str]:

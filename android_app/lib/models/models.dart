@@ -33,9 +33,9 @@ class AgentInfo {
         status:      (j['status'])?.toString() ?? 'idle',
         workspace:   j['workspace']?.toString(),
         emoji:       j['emoji']?.toString(),
-        available:   j['available'] as bool? ?? j['available'] == 1,
-        tasksCompleted: (j['tasks_completed'] ?? j['tasksCompleted'] ?? 0) as int,
-        tasksFailed:    (j['tasks_failed']    ?? j['tasksFailed']    ?? 0) as int,
+        available:   j['available'] == true || j['available'] == 1,
+        tasksCompleted: (j['tasks_completed'] ?? j['tasksCompleted'] as num? ?? 0).toInt(),
+        tasksFailed:    (j['tasks_failed']    ?? j['tasksFailed']    as num? ?? 0).toInt(),
         lastActive: j['last_active'] != null
             ? DateTime.tryParse(j['last_active'].toString())
             : null,
@@ -210,7 +210,7 @@ class SystemStats {
       runningTasks: (queue['running'] as num?)?.toInt() ?? (j['running']       as num?)?.toInt() ?? 0,
       doneTasks:    (queue['done']    as num?)?.toInt() ?? (j['done']          as num?)?.toInt() ?? 0,
       failedTasks:  (queue['failed']  as num?)?.toInt() ?? (j['failed']        as num?)?.toInt() ?? 0,
-      totalUsers:   (j['users_total'] ?? j['total_users'] ?? 0) as int,
+      totalUsers:   ((j['users_total'] ?? j['total_users']) as num?)?.toInt() ?? 0,
       agents:       (j['agents'] as List? ?? []).map((a) => AgentInfo.fromJson(a as Map<String, dynamic>)).toList(),
       tasksByType:  Map<String, int>.from(j['tasks_by_type'] ?? {}),
       timestamp:    DateTime.now(),

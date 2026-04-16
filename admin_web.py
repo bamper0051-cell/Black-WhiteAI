@@ -818,7 +818,7 @@ def api_agents_list():
             })
         return jsonify({'ok': True, 'agents': agents_out})
     except Exception as e:
-        return jsonify({'ok': True, 'agents': [], 'error': str(e)})
+        return jsonify({'ok': False, 'agents': [], 'error': str(e)})
 
 
 @app.route('/api/agent/run', methods=['POST'])
