@@ -6,14 +6,11 @@ import sys
 import time
 import random
 import shutil
-<<<<<<< HEAD
-=======
 import os
 import threading
 import schedule
 import subprocess
 import re
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 from auth_module import (
     is_authenticated,
     auth_state_get,
@@ -38,10 +35,6 @@ try:
         log_admin_cmd, get_system_info, list_processes,
         kill_process, exec_shell, get_recent_logs,
         format_users_list, ban_user, unban_user, delete_user,
-<<<<<<< HEAD
-        format_users_list,
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     )
     ADMIN_ENABLED = True
 except ImportError as _ae:
@@ -385,10 +378,6 @@ def print_banner():
 
 if __name__ == "__main__":
     print_banner()
-<<<<<<< HEAD
-import time, threading, schedule, os, subprocess, re, shutil
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 try:
     from database import init_db, get_stats, get_today_count
 except ImportError:
@@ -8846,18 +8835,6 @@ def main():
         admin_ids = list(_load_admin_ids())
     except Exception:
         pass
-<<<<<<< HEAD
-    for _aid in admin_ids[:3]:  # не спамим
-        try:
-            send_message(
-                "🤖 <b>BlackBugsAI запущен!</b>\n"
-                "LLM: {} / {}\n"
-                "TTS: {} / {}\n\n"
-                "👇 Нажми меню для управления".format(
-                    config.LLM_PROVIDER, config.LLM_MODEL,
-                    config.TTS_PROVIDER, config.TTS_VOICE),
-=======
-
     # ── Авто-запуск Cloudflare tunnel для доступа к панели ──────────────────
     _panel_url = f"http://0.0.0.0:{config.ADMIN_WEB_PORT}/panel"
     _tunnel_url = ""
@@ -8902,7 +8879,6 @@ def main():
                 "👇 Нажми меню для управления".format(
                     config.LLM_PROVIDER, config.LLM_MODEL,
                     config.TTS_PROVIDER, config.TTS_VOICE, _panel_info),
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                 _aid, reply_markup=menu_keyboard(_aid)
             )
         except Exception:
