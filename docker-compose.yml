@@ -88,9 +88,6 @@ services:
       - "8080"   # Admin
       - "5100"   # Fish (только internal)
 
-    # Прямой доступ к admin если nginx не нужен
-    ports:
-      - "${ADMIN_DIRECT_PORT:-8080}:8080"
 
     volumes:
       - blackbugs-data:/app/data
