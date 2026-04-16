@@ -35,12 +35,9 @@ mkdir -p /app/fish_uploads /app/fish_pages /app/fish_logs \
 for db in auth.db automuvie.db sessions.db tasks.db; do
   db_path="/app/$db"
 
-  if [ -d "$db_path" ]; then
-    rmdir "$db_path" 2>/dev/null || true
-    if [ -d "$db_path" ]; then
-      echo "❌ Cannot initialize database $db: $db_path exists as a directory and could not be removed" >&2
-      exit 1
-    fi
+  if [ -d "$db_path" ] && ! rmdir "$db_path" 2>/dev/null; then
+    echo "❌ Cannot initialize database $db: $db_path is a directory (expected file path)" >&2
+    exit 1
   fi
 
   [ -f "$db_path" ] || touch "$db_path"
