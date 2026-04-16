@@ -30,6 +30,19 @@ _AGENT_KEYWORDS = {
     "anderson": (["anderson", "андерсон", "/anderson", "vuln", "уязвимост"], 8),
     "pythia":   (["pythia", "пифия", "/pythia"], 8),
     "operator": (["operator", "оператор", "/operator", "оркестр"], 9),
+    "morpheus": (["morpheus", "морфеус", "/morpheus", "обучи", "объясни", "learn"], 7),
+}
+
+# Alliance: full agent registry for /alliance command
+ALLIANCE_REGISTRY = {
+    "neo":      {"emoji": "🟢", "name": "NEO",      "desc": "Автономный агент, self-tool gen, sandbox, OSINT",  "access": ["god", "owner"]},
+    "matrix":   {"emoji": "🟥", "name": "MATRIX",   "desc": "Универсал: Coder + OSINT + Pentester + тулы",      "access": ["god", "owner"]},
+    "smith":    {"emoji": "🕶",  "name": "SMITH",    "desc": "Генератор шаблонов, ботов, проектов",              "access": ["god", "owner", "adm"]},
+    "pythia":   {"emoji": "💻", "name": "PYTHIA",   "desc": "Кодер: quick/project/review/sandbox/autofix",      "access": ["*"]},
+    "anderson": {"emoji": "🔍", "name": "ANDERSON", "desc": "Анализ уязвимостей, code fix, VulnSage",           "access": ["*"]},
+    "tanker":   {"emoji": "🚛", "name": "TANKER",   "desc": "Парсинг, веб-скрапинг, мониторинг",                "access": ["*"]},
+    "operator": {"emoji": "🎛", "name": "OPERATOR", "desc": "Системные задачи, оркестрация, планирование",      "access": ["god", "owner"]},
+    "morpheus": {"emoji": "🟣", "name": "MORPHEUS", "desc": "Обучение, объяснения, анализ данных",              "access": ["*"]},
 }
 
 _MODE_KEYWORDS = {
@@ -106,6 +119,17 @@ class Gateway:
         if scores:
             return max(scores, key=scores.get)
         return "auto"
+
+    def alliance_info(self, privilege: str = "user") -> List[dict]:
+        """Return list of agents accessible to the given privilege level."""
+        result = []
+        for key, info in ALLIANCE_REGISTRY.items():
+            allowed = info["access"]
+            if "*" in allowed or privilege in allowed:
+                result.append({"id": key, **info, "available": True})
+            else:
+                result.append({"id": key, **info, "available": False})
+        return result
 
     def submit(self, chat_id: int, text: str, files: list = None,
                privilege: str = "user", forced_agent: str = "",

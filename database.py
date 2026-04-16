@@ -2,6 +2,13 @@ import sqlite3
 from datetime import datetime
 
 DB_PATH = 'automuvie.db'
+
+# Whitelist of allowed column names for get/set_user_setting
+_ALLOWED_USER_COLS = {
+    'username', 'first_name', 'last_name', 'registered_at',
+    'llm_provider', 'llm_model', 'tts_provider', 'tts_voice',
+    'rewrite_style', 'created_at', 'role', 'settings',
+}
 def init_users_table():
     with sqlite3.connect(DB_PATH) as db:
         db.execute('''
@@ -38,6 +45,8 @@ def get_or_create_user(chat_id, username='', first_name='', last_name=''):
             return get_or_create_user(chat_id)  # рекурсивный вызов
 
 def get_user_setting(user_id, key):
+    if key not in _ALLOWED_USER_COLS:
+        raise ValueError(f"Invalid column name: {key!r}")
     with sqlite3.connect(DB_PATH) as db:
         cur = db.execute(f'SELECT {key} FROM users WHERE user_id = ?', (user_id,))
         row = cur.fetchone()
@@ -46,6 +55,8 @@ def get_user_setting(user_id, key):
         return None  # fallback на глобальные настройки будет в вызывающем коде
 
 def set_user_setting(user_id, key, value):
+    if key not in _ALLOWED_USER_COLS:
+        raise ValueError(f"Invalid column name: {key!r}")
     with sqlite3.connect(DB_PATH) as db:
         db.execute(f'UPDATE users SET {key} = ? WHERE user_id = ?', (value, user_id))
         db.commit()

@@ -1,56 +1,3 @@
-<<<<<<< HEAD
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.db
-.env
-*.zip
-*.log
-
-# Python
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Env / secrets
-.env
-.env.*
-
-# Logs / db / temp
-*.log
-*.db
-*.sqlite
-*.sqlite3
-output.txt
-search_results_*.json
-
-# Archives / binaries
-*.zip
-*.rar
-*.7z
-*.exe
-*.apk
-
-# Backup / duplicate files
-*.bak
-*.BK
-*~
-docker-compose.ymlBK
-nginx.confBK
-
-# Work dirs
-matrix_workspace/
-neo_workspace/
-workspace/
-fish_logs/
-
-# OS/editor
-.DS_Store
-Thumbs.db
-=======
 # ============================================================
 # BlackBugsAI — .gitignore
 # ============================================================
@@ -66,7 +13,6 @@ dist/
 build/
 .eggs/
 *.whl
-MANIFEST
 
 # === Virtual Environments ===
 .venv/
@@ -85,8 +31,14 @@ secrets.json
 credentials.json
 service_account.json
 
+# === Backup / Duplicate Files ===
+*.bak
+*.BK
+*.tmp
+*.temp
+*~
+
 # === Docker ===
-.dockerignore.local
 docker-compose.override.yml
 docker-compose.local.yml
 
@@ -95,15 +47,13 @@ logs/
 *.log
 *.log.*
 log_*.txt
+fish_logs/
 
 # === Databases / Data ===
 data/
 *.db
 *.sqlite
 *.sqlite3
-tasks.db
-users.db
-sessions.db
 
 # === Runtime Workspaces ===
 neo_workspace/
@@ -111,23 +61,27 @@ matrix_workspace/
 agent_projects/
 artifacts/
 created_bots/
-/workspace/
-/tmp_agent/
+workspace/
+tmp_agent/
+output/
+overlay/
+
+# === Archives / Binaries ===
+*.zip
+*.rar
+*.7z
+*.exe
+*.pdf
+*.apk
+*.aab
 
 # === Media / Generated Content ===
 *.mp3
 *.mp4
 *.wav
 *.ogg
-*.jpg
-*.jpeg
-*.png
-# Allow Android launcher icons
-!android_app/android/app/src/main/res/mipmap-*/ic_launcher.png
-*.gif
-*.webp
-*.zip
-!BlackBugsAI.zip
+search_results_*.json
+output.txt
 
 # === OS Files ===
 .DS_Store
@@ -144,7 +98,6 @@ desktop.ini
 .idea/
 *.swp
 *.swo
-*~
 .project
 .classpath
 .settings/
@@ -156,7 +109,6 @@ htmlcov/
 .tox/
 coverage.xml
 *.cover
-nosetests.xml
 test-results/
 
 # === Flutter / Dart ===
@@ -173,8 +125,6 @@ android_app/android/key.properties
 android_app/android/app/debug/
 android_app/android/app/release/
 android_app/android/app/profile/
-android_app/*.apk
-android_app/*.aab
 android_app/ios/
 android_app/web/
 android_app/linux/
@@ -182,19 +132,8 @@ android_app/macos/
 android_app/windows/
 android_app/pubspec.lock
 
-# === Node / JS (if any) ===
+# === Node / JS ===
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# === Misc ===
-*.bak
-*.tmp
-*.temp
-*.swp
-.cache/
-tmp/
-temp/
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
-x22.zip
