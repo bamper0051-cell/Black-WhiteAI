@@ -36,9 +36,9 @@ for db in auth.db automuvie.db sessions.db tasks.db; do
   db_path="/app/$db"
 
   if [ -d "$db_path" ]; then
-    rmdir "$db_path" 2>/dev/null || [ -d "$db_path" ]
+    rmdir "$db_path" 2>/dev/null || true
     if [ -d "$db_path" ]; then
-      echo "❌ Cannot initialize database $db: $db_path exists as a non-empty directory" >&2
+      echo "❌ Cannot initialize database $db: $db_path exists as a directory and could not be removed" >&2
       exit 1
     fi
   fi
