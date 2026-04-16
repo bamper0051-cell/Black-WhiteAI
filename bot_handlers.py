@@ -263,6 +263,28 @@ def handle_text(text, chat_id, username=None, first_name=None):
                          chat_id, reply_markup=kb([btn("◀️ Меню","menu")]))
         else:
             send_message("❌ Реестр инструментов не загружен.", chat_id)
+
+    elif cmd in ('/alliance', '/альянс', '/agents'):
+        try:
+            from core.gateway import ALLIANCE_REGISTRY
+            from auth_module import get_user_privilege
+            priv = get_user_privilege(chat_id)
+            lines = ["🤝 <b>ALLIANCE — Реестр агентов</b>\n"]
+            for key, info in ALLIANCE_REGISTRY.items():
+                allowed = info['access']
+                available = '*' in allowed or priv in allowed
+                status = "🟢" if available else "🔴"
+                lines.append(
+                    f"{status} {info['emoji']} <b>{info['name']}</b>\n"
+                    f"   └ {info['desc']}\n"
+                    f"   └ Доступ: {', '.join(allowed) if '*' not in allowed else 'все'}"
+                )
+            lines.append("\n<i>Напиши /neo, /matrix, /pythia и т.д. чтобы выбрать агента</i>")
+            send_message("\n\n".join(lines), chat_id,
+                         reply_markup=kb([btn("◀️ Меню", "menu")]))
+        except Exception as e:
+            send_message(f"❌ Alliance недоступен: {e}", chat_id)
+
     elif cmd == '/run':
         _guard_lock(chat_id) or _run_in_thread(task_run, chat_id)
     elif cmd == '/parse':

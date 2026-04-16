@@ -47,7 +47,6 @@ def install_log_capture():
 def require_token(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-<<<<<<< HEAD
         auth_header = (request.headers.get('Authorization') or '').strip()
         bearer = ''
         if auth_header.lower().startswith('bearer '):
@@ -57,9 +56,6 @@ def require_token(f):
         token = (request.headers.get('X-Admin-Token') or
                  request.headers.get('X-Api-Key') or
                  bearer or
-=======
-        token = (request.headers.get('X-Admin-Token') or
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                  request.args.get('token') or
                  (request.get_json(silent=True) or {}).get('token', ''))
         if token != ADMIN_WEB_TOKEN:
@@ -71,13 +67,8 @@ def require_token(f):
 @app.after_request
 def add_cors(resp):
     resp.headers['Access-Control-Allow-Origin']  = '*'
-<<<<<<< HEAD
     resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, Authorization, X-Api-Key, Accept, Origin'
     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, PUT, OPTIONS'
-=======
-    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token'
-    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     return resp
 
 @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
@@ -85,12 +76,11 @@ def add_cors(resp):
 def options_handler(path=''):
     return '', 204
 
-<<<<<<< HEAD
-=======
-# ── Web Auth (логин/пароль для мобильного приложения) ────────────────────────
+# ── Web Auth (PIN/password login для mobile + web panel) ─────────────────────
 import sqlite3 as _sqlite3, hashlib as _hashlib, secrets as _secrets
+from core.db_manager import BLACKBUGS_DB as _BLACKBUGS_DB
 
-_WEB_AUTH_DB = os.path.join(BASE, 'web_users.db')
+_WEB_AUTH_DB = str(_BLACKBUGS_DB)
 
 def _init_web_auth():
     with _sqlite3.connect(_WEB_AUTH_DB) as c:
@@ -102,6 +92,7 @@ def _init_web_auth():
             token    TEXT,
             created  TEXT
         )''')
+        c.commit()
         # Создаём admin-аккаунт из ADMIN_WEB_TOKEN если не существует
         existing = c.execute("SELECT id FROM web_users WHERE username='admin'").fetchone()
         if not existing:
@@ -159,14 +150,11 @@ def api_login():
 def api_auth_me():
     return jsonify({'ok': True, 'token_valid': True, 'server_version': '1.0'}), 200
 
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 # ── Health (без токена — для Docker healthcheck) ───────────────────────────────
 @app.route('/ping')
 def ping():
     """Самый простой эндпоинт — без токена, без зависимостей."""
     return jsonify({'ok': True, 'pong': True, 'port': ADMIN_WEB_PORT}), 200
-
-<<<<<<< HEAD
 
 @app.route('/api/mobile/bootstrap')
 def api_mobile_bootstrap():
@@ -180,22 +168,16 @@ def api_mobile_bootstrap():
     })
 
 @app.route('/health')
-=======
-@app.route('/health')
 @app.route('/healthz')
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 def health():
     try:
         uptime = int(time.time() - _start_time)
         h, r = divmod(uptime, 3600); m, s = divmod(r, 60)
-<<<<<<< HEAD
         # Проверяем БД
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
         import sqlite3
         db_ok = True
         try:
-            with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
+            with sqlite3.connect(str(_BLACKBUGS_DB)) as c:
                 c.execute('SELECT 1')
         except Exception:
             db_ok = False
@@ -207,20 +189,17 @@ def health():
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 503
 
-<<<<<<< HEAD
-=======
 @app.route('/readyz')
 def readyz():
     """Kubernetes readiness probe — passes once DB is reachable."""
     import sqlite3
     try:
-        with sqlite3.connect(os.path.join(BASE, 'auth.db')) as c:
+        with sqlite3.connect(str(_BLACKBUGS_DB)) as c:
             c.execute('SELECT 1')
         return jsonify({'ready': True}), 200
     except Exception as e:
         return jsonify({'ready': False, 'error': str(e)}), 503
 
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 # ── Status ────────────────────────────────────────────────────────────────────
 @app.route('/api/status')
 @require_token
@@ -778,7 +757,6 @@ def api_tools():
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e), 'tools': []})
 
-<<<<<<< HEAD
 @app.route('/api/agents')
 @require_token
 def api_agents_list():
@@ -800,39 +778,19 @@ def api_agents_list():
             })
         return jsonify({'ok': True, 'agents': agents_out})
     except Exception as e:
-        # Fallback: вернуть статичный список если agents/ не доступен
-        return jsonify({'ok': True, 'agents': [
-            {'id': 'smith',    'name': 'АГЕНТ СМИТ',  'emoji': '🕵️', 'description': 'Autofix pipeline + security audit', 'status': 'online', 'modes': ['auto','code','autofix','security'], 'access': ['god','adm'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'neo',      'name': 'AGENT NEO',   'emoji': '🧠', 'description': 'Self-tool gen, OSINT, ZIP artifacts', 'status': 'online', 'modes': ['auto'], 'access': ['god','adm','vip'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'matrix',   'name': 'AGENT MATRIX','emoji': '🟥', 'description': 'Coder + OSINT + Security Analyst', 'status': 'online', 'modes': ['auto'], 'access': ['god','adm','vip'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'anderson', 'name': 'MR. ANDERSON', 'emoji': '🔍', 'description': 'Анализ уязвимостей, code fix, review', 'status': 'online', 'modes': ['auto','vuln_scan','code_fix','review'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'pythia',   'name': 'AGENT PYTHIA', 'emoji': '💻', 'description': 'Кодер: quick/project/review/sandbox', 'status': 'online', 'modes': ['auto','quick','autofix','project','review'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'tanker',   'name': 'AGENT TANKER', 'emoji': '🛡', 'description': 'Red team: multitool, двухстадийный цикл', 'status': 'online', 'modes': ['auto','code','multitool','analyze'], 'access': ['god','adm','vip','user'], 'tasksCompleted': 0, 'tasksFailed': 0},
-            {'id': 'operator', 'name': 'OPERATOR',     'emoji': '🎯', 'description': 'Мета-агент: оркестрирует всех остальных', 'status': 'online', 'modes': ['auto','orchestrate'], 'access': ['god','owner'], 'tasksCompleted': 0, 'tasksFailed': 0},
-        ]})
+        return jsonify({'ok': True, 'agents': [], 'error': str(e)})
 
 
 @app.route('/api/agent/run', methods=['POST'])
 @require_token
 def api_agent_run():
-    """Запустить задачу через выбранного агента.
-    Поддерживаемые агенты: smith, neo, matrix, anderson, pythia, tanker, operator
-    """
+    """Запустить задачу через выбранного агента."""
     import traceback
     data       = request.get_json(silent=True) or {}
     task       = data.get('task', '').strip()
     agent      = data.get('agent', 'smith').lower()
     mode       = data.get('mode', 'auto')
     file_path  = data.get('file_path', '')
-=======
-@app.route('/api/agent/run', methods=['POST'])
-@require_token
-def api_agent_run():
-    data       = request.get_json(silent=True) or {}
-    task       = data.get('task', '').strip()
-    agent      = data.get('agent', 'smith').lower()
-    file_path  = data.get('file_path', '')   # путь к загруженному файлу
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     if not task:
         return jsonify({'ok': False, 'error': 'task required'}), 400
 
@@ -846,7 +804,6 @@ def api_agent_run():
 
     steps = []
 
-<<<<<<< HEAD
     def _on_status(m):
         steps.append({'type': 'status', 'text': str(m), 'ok': True})
 
@@ -943,80 +900,6 @@ def api_agent_run():
         return jsonify({'ok': True, 'final': str(final), 'result': str(final),
                         'steps': steps, 'artifacts': arts})
     except Exception as e:
-        return jsonify({'ok': False, 'error': str(e),
-                        'trace': traceback.format_exc()[-500:], 'steps': steps})
-=======
-    # ── MATRIX ──
-    if agent == 'matrix':
-        try:
-            from agent_matrix import run_matrix
-            result = run_matrix(
-                task=task, chat_id='admin_panel',
-                attached_files=attached_files or None,
-                on_status=lambda m: steps.append({'type':'status','text':str(m),'ok':True}),
-            )
-            return jsonify({
-                'ok': bool(result and result.ok),
-                'final': result.answer if result else '',
-                'result': result.answer if result else '',
-                'steps': steps,
-                'error': result.error if result else 'No result',
-                'generated_tools': getattr(result, 'generated_tools', []),
-                'files': getattr(result, 'files', []),
-                'zip_path': getattr(result, 'zip_path', ''),
-            })
-        except Exception as e:
-            import traceback
-            return jsonify({'ok': False, 'error': str(e),
-                            'trace': traceback.format_exc()[-400:], 'steps': steps})
-
-    # ── NEO ──
-    if agent == 'neo':
-        try:
-            from agent_neo import run_neo
-            result = run_neo(
-                task=task, chat_id='admin_panel',
-                attached_files=attached_files or None,
-                on_status=lambda m: steps.append({'type':'status','text':str(m),'ok':True}),
-            )
-            answer = getattr(result, 'answer', '') or str(result) if result else ''
-            return jsonify({
-                'ok': bool(result),
-                'final': answer[:2000],
-                'result': answer[:2000],
-                'steps': steps,
-                'files': getattr(result, 'files', []),
-                'zip_path': getattr(result, 'zip_path', ''),
-                'error': getattr(result, 'error', '') if result else 'No result',
-            })
-        except Exception as e:
-            import traceback
-            return jsonify({'ok': False, 'error': str(e),
-                            'trace': traceback.format_exc()[-400:], 'steps': steps})
-
-    # ── АГЕНТ_СМИТ (default) ──
-    try:
-        from agent_tools_registry import run_agent_with_tools
-        final, results = run_agent_with_tools(
-            chat_id=None, user_request=task,
-            on_status=lambda m: steps.append({'type': 'status', 'text': str(m)}),
-        )
-        final = final or '✅ Выполнено'
-        for r in (results or []):
-            steps.append({'type': 'tool', 'tool': str(r.get('tool','')),
-                          'ok': bool(r.get('ok')),
-                          'result': str(r.get('result',''))[:300]})
-        arts = []
-        for r in (results or []):
-            for line in str(r.get('result','')).splitlines():
-                line = line.strip()
-                if os.path.exists(line) and os.path.isfile(line):
-                    arts.append(line)
-        return jsonify({'ok': True, 'final': str(final), 'steps': steps,
-                        'result': str(final), 'artifacts': arts})
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
-    except Exception as e:
-        import traceback
         return jsonify({'ok': False, 'error': str(e),
                         'trace': traceback.format_exc()[-500:], 'steps': steps})
 
@@ -1409,8 +1292,6 @@ def _find_free_port(start_port, attempts=5):
             continue
     return None
 
-<<<<<<< HEAD
-=======
 
 # ════════════════════════════════════════════════════════════════════════════
 #  MODULE APIs  — Learning / Memory / Skills / Tasks / Backup / Models / etc
@@ -1561,7 +1442,7 @@ def api_billing_stats():
         from billing import BillingManager
         bm = BillingManager()
         import sqlite3 as _s
-        db = _s.connect(str(bm._db_path if hasattr(bm, '_db_path') else os.path.join(BASE, 'auth.db')))
+        db = _s.connect(str(bm._db_path if hasattr(bm, '_db_path') else str(_BLACKBUGS_DB)))
         db.row_factory = _s.Row
         try:
             rows = db.execute("SELECT user_id, plan, credits FROM billing ORDER BY credits DESC LIMIT 50").fetchall()
@@ -1666,12 +1547,8 @@ def api_marketplace_share():
     pipelines = _j.loads(open(mp_file).read()) if os.path.exists(mp_file) else []
     pipelines.append({
         'id': str(int(_t.time())),
-        'name': name,
-        'description': desc,
-        'author': author,
-        'nodes': nodes,
-        'created': _t.strftime('%Y-%m-%d %H:%M'),
-        'runs': 0,
+        'name': name, 'description': desc, 'author': author,
+        'nodes': nodes, 'created': _t.strftime('%Y-%m-%d %H:%M'), 'runs': 0,
     })
     open(mp_file, 'w').write(_j.dumps(pipelines, ensure_ascii=False, indent=2))
     return jsonify({'ok': True, 'id': pipelines[-1]['id']})
@@ -1729,7 +1606,6 @@ def api_workflow_execute():
     return jsonify({'ok': True, 'results': results, 'log': steps_log[-20:]})
 
 
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 def start_admin_web():
     global _web_started
     if _web_started:
@@ -1761,8 +1637,6 @@ def start_admin_web():
     t = threading.Thread(target=_run, daemon=True, name='admin-web')
     t.start()
     return t
-<<<<<<< HEAD
-=======
 
 
 if __name__ == '__main__':
@@ -1773,4 +1647,3 @@ if __name__ == '__main__':
     print(f"  🔑 Token: {ADMIN_WEB_TOKEN[:8]}...", flush=True)
     install_log_capture()
     app.run(host='0.0.0.0', port=port, debug=False, threaded=True, use_reloader=False)
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
