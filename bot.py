@@ -8704,6 +8704,13 @@ def _validate_startup_config():
 def main():
     print(config.startup_banner(), flush=True)
     print(f"📁 Директория: {config.BASE_DIR}", flush=True)
+
+    # ── Token check ──────────────────────────────────────────────────────────
+    if not config.TELEGRAM_BOT_TOKEN:
+        print("❌ TELEGRAM_BOT_TOKEN не задан! Бот не запустится.", flush=True)
+        print("   Добавь в .env: TELEGRAM_BOT_TOKEN=1234567890:AAH...", flush=True)
+        import sys; sys.exit(1)
+
     _validate_startup_config()
     print("🧠 LLM: {} / {}".format(config.LLM_PROVIDER, config.LLM_MODEL), flush=True)
     print("🎙  TTS: {} / {}".format(config.TTS_PROVIDER, config.TTS_VOICE), flush=True)
@@ -8713,7 +8720,15 @@ def main():
         _gs.setup()
         _gs.register_notify(send_message)
 
-    init_db()                     # БД новостей
+    # ── Database init (всегда первым) ──────────────────────────────────────
+    try:
+        from core.db_manager import init_all as _db_init_all, migrate_legacy_files
+        migrate_legacy_files()
+        _db_init_all()
+    except Exception as _dbe:
+        print(f"  ⚠️ db_manager init: {_dbe}", flush=True)
+
+    init_db()                     # БД новостей (legacy)
     init_auth_db()
 
     # ── Structured logging ──────────────────────────────────────────────────
@@ -8755,10 +8770,6 @@ def main():
 
     schedule.every(config.PARSE_INTERVAL_HOURS).hours.do(scheduled_cycle)
     threading.Thread(target=_run_scheduler, daemon=True).start()
-
-    # Инициализация модуля авторизации
-    # Инициализация модуля авторизации (синхронная)
-    init_auth_db()
 
     # ── Admin Web Panel ──────────────────────────────────────────────────────
     try:

@@ -903,6 +903,14 @@ def _route_callback(action, arg, cb_id, chat_id, msg_id):
     # ── AGENT MATRIX ──────────────────────────────────────────────────────────
     elif action == 'agent_matrix_start':
         answer_callback(cb_id)
+        try:
+            role = get_role(chat_id)
+        except Exception:
+            role = 'user'
+        if role not in ('god', 'owner'):
+            send_message("🔒 AGENT MATRIX доступен только owner/god.", chat_id,
+                         reply_markup=kb([back_btn('menu_agent')]))
+            return
         send_message(
             "🔮 <b>AGENT MATRIX</b> — генерация и управление инструментами\n\n"
             "Создаёт кастомные инструменты через LLM, GitHub или hybrid-режим.\n\n"

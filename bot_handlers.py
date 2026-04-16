@@ -1089,12 +1089,13 @@ def _handle_input(state, text, chat_id):
             try:
                 from morpheus import AgentMorpheus
                 agent = AgentMorpheus()
-                result = agent.run(
-                    task=text, chat_id=str(chat_id),
+                result = agent.execute(
+                    task=text, chat_id=chat_id,
                     on_status=lambda m: send_message(m, chat_id),
                 )
+                answer = result.answer if hasattr(result, 'answer') else str(result)
                 send_message(
-                    '✅ <b>Morpheus</b>\n\n' + str(result or '')[:4000],
+                    '✅ <b>Morpheus</b>\n\n' + str(answer or '')[:4000],
                     chat_id, reply_markup=kb([back_btn('menu_agent')])
                 )
             except Exception as e:

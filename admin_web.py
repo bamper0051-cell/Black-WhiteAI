@@ -1160,10 +1160,14 @@ def api_system_info():
 @app.route('/panel')
 @app.route('/panel/')
 def serve_panel():
-    panel = os.path.join(BASE, 'admin_panel.html')
-    if os.path.exists(panel):
-        return send_file(panel)
-    return '<h1>admin_panel.html not found</h1><p>Place admin_panel.html in the bot folder.</p>', 404
+    # Prefer v4, fall back to v3/v2, then base
+    for candidate in ('admin_panel_v4.html', 'admin_panel_v3_fixed.html',
+                      'admin_panel_v3.html', 'admin_panel.html'):
+        path = os.path.join(BASE, candidate)
+        if os.path.exists(path):
+            return send_file(path)
+    return ('<h1>Admin panel not found</h1>'
+            '<p>Place admin_panel_v4.html or admin_panel.html in the bot folder.</p>'), 404
 
 # ── Remote Control API ────────────────────────────────────────────────────────
 
