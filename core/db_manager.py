@@ -105,7 +105,6 @@ def migrate_legacy_files():
     # ── Simple copy migrations (copy only if target does not exist) ──────────
     simple = [
         (base / "automuvie.db", NEWS_DB),
-        (base / "auth.db",      BLACKBUGS_DB),
     ]
     for src, dst in simple:
         if not src.exists():
@@ -119,6 +118,66 @@ def migrate_legacy_files():
             print(f"  ✅ db_manager: migrated {src.name} → {dst}")
         except Exception as e:
             print(f"  ❌ db_manager: failed to migrate {src.name}: {e}")
+
+    # ── auth.db → blackbugs.db: copy if target missing, merge users if it exists ─
+    auth_src = base / "auth.db"
+    if auth_src.exists():
+        if not BLACKBUGS_DB.exists():
+            try:
+                shutil.copy2(str(auth_src), str(BLACKBUGS_DB))
+                moved.append(f"auth.db → {BLACKBUGS_DB.name}")
+                print(f"  ✅ db_manager: migrated auth.db → {BLACKBUGS_DB}")
+            except Exception as e:
+                print(f"  ❌ db_manager: failed to migrate auth.db: {e}")
+        else:
+            # Merge: preserve legacy users rows that don't yet exist in blackbugs.db.
+            # INSERT OR IGNORE on telegram_id (PK) — existing rows are untouched.
+            try:
+                src_conn = _sq.connect(str(auth_src))
+                src_info = src_conn.execute(
+                    "PRAGMA table_info(users)"
+                ).fetchall()
+                src_cols = [row[1] for row in src_info] if src_info else []
+                if src_cols and "telegram_id" in src_cols:
+                    rows = src_conn.execute("SELECT * FROM users").fetchall()
+                    src_conn.close()
+                    if rows:
+                        dst_conn = _sq.connect(str(BLACKBUGS_DB))
+                        inserted = 0
+                        for row in rows:
+                            row_dict = dict(zip(src_cols, row))
+                            tid = row_dict.get("telegram_id")
+                            if not tid:
+                                continue
+                            try:
+                                dst_conn.execute(
+                                    "INSERT OR IGNORE INTO users "
+                                    "(telegram_id, username, first_name, privilege, status, "
+                                    " pin_hash, rating, created_at, last_seen) "
+                                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                                    (
+                                        tid,
+                                        row_dict.get("username"),
+                                        row_dict.get("first_name"),
+                                        row_dict.get("privilege", "user"),
+                                        row_dict.get("status", "active"),
+                                        row_dict.get("pin_hash"),
+                                        row_dict.get("rating", 0),
+                                        row_dict.get("created_at"),
+                                        row_dict.get("last_seen"),
+                                    ),
+                                )
+                                inserted += 1
+                            except Exception:
+                                pass
+                        dst_conn.commit()
+                        dst_conn.close()
+                        print(f"  ✅ db_manager: merged {inserted} users from auth.db")
+                        moved.append(f"auth.db → {BLACKBUGS_DB.name} (merge)")
+                else:
+                    src_conn.close()
+            except Exception as e:
+                print(f"  ⚠️  db_manager: auth.db merge skipped: {e}")
 
     # ── web_users.db → merge rows into blackbugs.db even if target exists ────
     # This prevents account loss when auth.db was migrated first.

@@ -1044,11 +1044,11 @@ def _handle_input(state, text, chat_id):
                 if getattr(res, 'zip_path', None):
                     import os
                     if os.path.exists(res.zip_path):
-                        send_document(cid, res.zip_path, caption='📦 Артефакты NEO')
+                        send_document(res.zip_path, caption='📦 Артефакты NEO', chat_id=cid)
                 if getattr(res, 'tts_path', None):
                     import os
                     if os.path.exists(res.tts_path):
-                        send_document(cid, res.tts_path, caption='🎙 TTS')
+                        send_document(res.tts_path, caption='🎙 TTS', chat_id=cid)
             except Exception as e:
                 send_message('❌ NEO done-handler ошибка: {}'.format(e), cid)
         _run_in_thread(_do_neo)
@@ -1076,7 +1076,7 @@ def _handle_input(state, text, chat_id):
                 if hasattr(res, 'zip_path') and res.zip_path:
                     import os
                     if os.path.exists(res.zip_path):
-                        send_document(cid, res.zip_path, caption='📦 Артефакты Matrix')
+                        send_document(res.zip_path, caption='📦 Артефакты Matrix', chat_id=cid)
             except Exception as e:
                 send_message('❌ Matrix done-handler ошибка: {}'.format(e), cid)
         _run_in_thread(_do_matrix)
