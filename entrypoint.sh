@@ -86,34 +86,41 @@ wait_for_health() {
 
 start_tunnel() {
   local provider="${TUNNEL_PROVIDER:-cloudflared}"
-  local port="${TUNNEL_TARGET_PORT:-80}"
+  # Default: admin web port (8080) when running without nginx.
+  # Set TUNNEL_TARGET_PORT=80 explicitly when nginx container is in front.
+  local port="${TUNNEL_TARGET_PORT:-${ADMIN_WEB_PORT:-8080}}"
 
   echo "🌐 Starting tunnel: $provider → localhost:$port"
 
   case "$provider" in
     cloudflared)
       if command -v cloudflared &>/dev/null; then
+        # Run cloudflared directly (no pipe) — saves real PID for cleanup.
+        # URL is extracted from the logfile by a background reader.
         cloudflared tunnel --url "http://localhost:${port}" \
           --no-autoupdate \
           --logfile /tmp/cloudflared.log \
-          2>&1 | while IFS= read -r line; do
+          > /dev/null 2>&1 &
+        _TUNNEL_PID=$!
+        # Background reader: watches log and writes URL to shared file
+        ( tail -f /tmp/cloudflared.log 2>/dev/null | while IFS= read -r line; do
             if echo "$line" | grep -qE 'trycloudflare\.com|cfargotunnel\.com'; then
-              URL=$(echo "$line" | grep -oE 'https://[^\s]+\.(trycloudflare|cfargotunnel)\.com' | head -1)
+              URL=$(echo "$line" | grep -oE 'https://[^ ]+\.(trycloudflare|cfargotunnel)\.com' | head -1)
               if [[ -n "$URL" ]]; then
                 echo "$URL" > /tmp/tunnel_url.txt
                 echo "🌐 Tunnel URL: $URL"
               fi
             fi
-          done &
-        _TUNNEL_PID=$!
+          done ) &
       else
-        echo "⚠️  cloudflared not found — install via: curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cloudflared.deb"
+        echo "⚠️  cloudflared not found — install: curl -L -o cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cloudflared.deb"
       fi
       ;;
     bore)
       local server="${BORE_SERVER:-bore.pub}"
       if command -v bore &>/dev/null; then
-        bore local "${port}" --to "${server}" 2>&1 | tee /tmp/bore.log &
+        # Run bore directly, save its PID; tee log in background.
+        bore local "${port}" --to "${server}" > /tmp/bore.log 2>&1 &
         _TUNNEL_PID=$!
         sleep 3
         BORE_URL=$(grep -oE 'bore\.pub:[0-9]+' /tmp/bore.log 2>/dev/null | head -1)

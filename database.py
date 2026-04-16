@@ -5,12 +5,14 @@ from core.db_manager import NEWS_DB
 # Canonical path: data/news.db (was: automuvie.db in project root — legacy name)
 DB_PATH = str(NEWS_DB)
 
-# Whitelist of allowed column names for get/set_user_setting
+# Whitelist of allowed column names for get/set_user_setting.
+# Must match the columns created in init_users_table() below.
 _ALLOWED_USER_COLS = {
     'username', 'first_name', 'last_name', 'registered_at',
     'llm_provider', 'llm_model', 'tts_provider', 'tts_voice',
     'rewrite_style', 'created_at', 'role', 'settings',
 }
+
 def init_users_table():
     with sqlite3.connect(DB_PATH) as db:
         db.execute('''
@@ -25,7 +27,9 @@ def init_users_table():
                 tts_provider TEXT DEFAULT 'edge',
                 tts_voice TEXT DEFAULT 'ru-RU-DmitryNeural',
                 rewrite_style TEXT DEFAULT 'troll',
-                created_at TEXT
+                created_at TEXT,
+                role TEXT DEFAULT 'user',
+                settings TEXT DEFAULT '{}'
             )
         ''')
         db.commit()

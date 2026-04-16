@@ -24,6 +24,7 @@ ENV/
 
 # === Environment / Secrets ===
 .env
+.env.*
 .env.local
 .env.*.local
 *.secret
