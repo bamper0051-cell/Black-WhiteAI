@@ -33,15 +33,18 @@ mkdir -p /app/fish_uploads /app/fish_pages /app/fish_logs \
          /app/agent_projects /app/created_bots /app/artifacts /app/logs
 
 for db in auth.db automuvie.db sessions.db tasks.db; do
-  [ -d "/app/$db" ] && rmdir "/app/$db" 2>/dev/null || true
-  [ -f "/app/$db" ] || touch "/app/$db"
-done
+  db_path="/app/$db"
 
-cleanup() {
-  echo "⏹ BlackBugsAI shutting down..."
-  exit 0
-}
-trap cleanup SIGTERM SIGINT SIGQUIT
+  if [ -d "$db_path" ]; then
+    rmdir "$db_path" 2>/dev/null || true
+    if [ -d "$db_path" ]; then
+      echo "❌ Cannot initialize database $db: $db_path exists as a non-empty directory" >&2
+      exit 1
+    fi
+  fi
+
+  [ -f "$db_path" ] || touch "$db_path"
+done
 
 if [ $# -gt 0 ]; then
   echo "🚀 Launching custom command: $*"
