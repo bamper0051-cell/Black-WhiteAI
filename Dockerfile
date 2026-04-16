@@ -92,7 +92,7 @@ HEALTHCHECK --interval=20s --timeout=8s --start-period=30s --retries=5 \
     CMD curl -sf http://localhost:8080/health || exit 1
 
 # ── Entrypoint ────────────────────────────────────────────────────────────
-COPY entrypoint.v3.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
