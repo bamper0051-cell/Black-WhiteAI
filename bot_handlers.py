@@ -1032,7 +1032,7 @@ def _handle_input(state, text, chat_id):
                 run_neo_async(
                     task=text, chat_id=str(chat_id),
                     on_status=lambda m: send_message(m, chat_id),
-                    on_done=lambda res: _neo_done(chat_id, res),
+                    on_complete=lambda res: _neo_done(chat_id, res),
                 )
             except Exception as e:
                 send_message('❌ NEO ошибка: {}'.format(e), chat_id,
@@ -1063,7 +1063,7 @@ def _handle_input(state, text, chat_id):
                 run_matrix_async(
                     task=text, chat_id=str(chat_id),
                     on_status=lambda m: send_message(m, chat_id),
-                    on_done=lambda res: _matrix_done(chat_id, res),
+                    callback=lambda res: _matrix_done(chat_id, res),
                 )
             except Exception as e:
                 send_message('❌ Matrix ошибка: {}'.format(e), chat_id,
@@ -1087,8 +1087,8 @@ def _handle_input(state, text, chat_id):
         send_message('🟣 <b>AGENT MORPHEUS</b> — выполняю...', chat_id)
         def _do_morpheus():
             try:
-                from morpheus import Morpheus
-                agent = Morpheus()
+                from morpheus import AgentMorpheus
+                agent = AgentMorpheus()
                 result = agent.run(
                     task=text, chat_id=str(chat_id),
                     on_status=lambda m: send_message(m, chat_id),
