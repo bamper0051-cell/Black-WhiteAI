@@ -40,8 +40,8 @@ class NeonTextField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.jetBrainsMono(
-            color:       color.withOpacity(0.8),
-            fontSize:   9,
+            color: color.withOpacity(0.8),
+            fontSize: 9,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
           ),
@@ -55,14 +55,14 @@ class NeonTextField extends StatelessWidget {
           validator:   validator,
           onChanged:   onChanged,
           style: GoogleFonts.jetBrainsMono(
-            color:      NeonColors.textPrimary,
-            fontSize:   13,
+            color: NeonColors.textPrimary,
+            fontSize: 13,
           ),
           decoration: InputDecoration(
             hintText:   hint,
             hintStyle:  GoogleFonts.jetBrainsMono(
-              color:      NeonColors.textDisabled,
-              fontSize:   12,
+              color: NeonColors.textDisabled,
+              fontSize: 12,
             ),
             prefixIcon: prefixIcon != null
                 ? Icon(prefixIcon, color: color.withOpacity(0.6), size: 18)
