@@ -130,78 +130,70 @@ def migrate_legacy_files():
             except Exception as e:
                 print(f"  ❌ db_manager: failed to migrate auth.db: {e}")
         else:
-            # Merge: preserve legacy users rows that don't yet exist in blackbugs.db.
-            # INSERT OR IGNORE on telegram_id (PK) — existing rows are untouched.
+            # blackbugs.db already exists (init_all() ran first) — merge all tables
+            # from auth.db that aren't in blackbugs.db, plus INSERT OR IGNORE rows
+            # into tables that do exist (e.g. users, billing, transactions).
             try:
                 src_conn = _sq.connect(str(auth_src))
-                src_info = src_conn.execute(
-                    "PRAGMA table_info(users)"
-                ).fetchall()
-                src_cols = [row[1] for row in src_info] if src_info else []
-                if src_cols and "telegram_id" in src_cols:
-                    rows = src_conn.execute("SELECT * FROM users").fetchall()
-                    src_conn.close()
-                    if rows:
-                        dst_conn = _sq.connect(str(BLACKBUGS_DB))
-                        # Ensure the canonical users table exists before inserting.
-                        # (blackbugs.db may have been pre-created by web-auth bootstrap
-                        # which only creates web_users, not users.)
-                        dst_conn.execute("""
-                            CREATE TABLE IF NOT EXISTS users (
-                                telegram_id   INTEGER PRIMARY KEY,
-                                username      TEXT,
-                                first_name    TEXT,
-                                privilege     TEXT    DEFAULT 'user',
-                                status        TEXT    DEFAULT 'active',
-                                pin_hash      TEXT,
-                                rating        INTEGER DEFAULT 0,
-                                agent_type    TEXT    DEFAULT 'assistant',
-                                llm_provider  TEXT,
-                                llm_model     TEXT,
-                                tts_voice     TEXT,
-                                system_prompt TEXT,
-                                sandbox_on    INTEGER DEFAULT 1,
-                                settings_json TEXT    DEFAULT '{}',
-                                memory_json   TEXT    DEFAULT '[]',
-                                active_task_id TEXT,
-                                lang          TEXT    DEFAULT 'ru',
-                                created_at    REAL,
-                                last_seen     REAL
-                            )
-                        """)
-                        inserted = 0
+                dst_conn = _sq.connect(str(BLACKBUGS_DB))
+
+                # List all user-defined tables in auth.db
+                src_tables = [
+                    r[0] for r in src_conn.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table'"
+                    ).fetchall()
+                ]
+
+                # List tables already in blackbugs.db
+                dst_tables = {
+                    r[0] for r in dst_conn.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table'"
+                    ).fetchall()
+                }
+
+                total_inserted = 0
+                for tbl in src_tables:
+                    try:
+                        cols_info = src_conn.execute(
+                            f"PRAGMA table_info({tbl})"
+                        ).fetchall()
+                        if not cols_info:
+                            continue
+                        col_names = [c[1] for c in cols_info]
+
+                        if tbl not in dst_tables:
+                            # Table doesn't exist in destination — create and copy.
+                            create_sql = src_conn.execute(
+                                "SELECT sql FROM sqlite_master "
+                                "WHERE type='table' AND name=?", (tbl,)
+                            ).fetchone()
+                            if create_sql and create_sql[0]:
+                                dst_conn.execute(create_sql[0])
+                                dst_tables.add(tbl)
+
+                        # INSERT OR IGNORE all rows (skip on PK conflict).
+                        rows = src_conn.execute(f"SELECT * FROM {tbl}").fetchall()
+                        placeholders = ",".join("?" * len(col_names))
+                        col_list = ",".join(col_names)
                         for row in rows:
-                            row_dict = dict(zip(src_cols, row))
-                            tid = row_dict.get("telegram_id")
-                            if not tid:
-                                continue
                             try:
                                 dst_conn.execute(
-                                    "INSERT OR IGNORE INTO users "
-                                    "(telegram_id, username, first_name, privilege, status, "
-                                    " pin_hash, rating, created_at, last_seen) "
-                                    "VALUES (?,?,?,?,?,?,?,?,?)",
-                                    (
-                                        tid,
-                                        row_dict.get("username"),
-                                        row_dict.get("first_name"),
-                                        row_dict.get("privilege", "user"),
-                                        row_dict.get("status", "active"),
-                                        row_dict.get("pin_hash"),
-                                        row_dict.get("rating", 0),
-                                        row_dict.get("created_at"),
-                                        row_dict.get("last_seen"),
-                                    ),
+                                    f"INSERT OR IGNORE INTO {tbl} ({col_list}) "
+                                    f"VALUES ({placeholders})",
+                                    row,
                                 )
-                                inserted += 1
+                                total_inserted += 1
                             except Exception:
                                 pass
-                        dst_conn.commit()
-                        dst_conn.close()
-                        print(f"  ✅ db_manager: merged {inserted} users from auth.db")
-                        moved.append(f"auth.db → {BLACKBUGS_DB.name} (merge)")
-                else:
-                    src_conn.close()
+                    except Exception as _te:
+                        print(f"  ⚠️  db_manager: auth.db table '{tbl}' skipped: {_te}")
+
+                dst_conn.commit()
+                src_conn.close()
+                dst_conn.close()
+                print(f"  ✅ db_manager: merged {total_inserted} rows from auth.db "
+                      f"({len(src_tables)} tables)")
+                moved.append(f"auth.db → {BLACKBUGS_DB.name} (merge)")
             except Exception as e:
                 print(f"  ⚠️  db_manager: auth.db merge skipped: {e}")
 

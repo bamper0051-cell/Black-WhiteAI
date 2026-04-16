@@ -1646,7 +1646,7 @@ def api_marketplace_import():
 
 
 @app.route('/api/workflow/execute', methods=['POST'])
-@require_token
+@require_admin
 def api_workflow_execute():
     """Execute a workflow (list of nodes with agent tasks)."""
     data   = request.get_json(silent=True) or {}

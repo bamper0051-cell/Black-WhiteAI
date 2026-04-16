@@ -9019,7 +9019,12 @@ def main():
         except Exception as _fe:
             print(f"  ⚠️ Fish Flask не запустился: {_fe}", flush=True)
 
-    poll()
+    if _TELEGRAM_ENABLED:
+        poll()
+    else:
+        print("ℹ️  WEBUI_ONLY mode — Telegram polling disabled, WebUI running.", flush=True)
+        while True:
+            time.sleep(60)
 
 if __name__ == '__main__':
     main()
