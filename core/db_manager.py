@@ -91,34 +91,79 @@ def migrate_legacy_files():
     """
     Переносит старые БД-файлы из корня проекта в DATA_DIR.
     Вызывается один раз при старте (entrypoint.sh или bot.py).
-    Безопасно: не перезаписывает существующие файлы в DATA_DIR.
+
+    Стратегия:
+    - automuvie.db → NEWS_DB   (copy if target missing)
+    - auth.db      → BLACKBUGS_DB (copy if target missing, else merge tables)
+    - web_users.db → BLACKBUGS_DB (merge web_users rows if target already exists)
     """
+    import shutil
+    import sqlite3 as _sq
     base = Path(config.BASE_DIR)
     moved = []
 
-    migrations = [
-        (base / "automuvie.db",  NEWS_DB),
-        (base / "auth.db",       BLACKBUGS_DB),
-        (base / "web_users.db",  BLACKBUGS_DB),   # admin_web legacy
+    # ── Simple copy migrations (copy only if target does not exist) ──────────
+    simple = [
+        (base / "automuvie.db", NEWS_DB),
+        (base / "auth.db",      BLACKBUGS_DB),
     ]
-
-    for src, dst in migrations:
+    for src, dst in simple:
         if not src.exists():
             continue
         if dst.exists():
-            # Целевой файл уже есть — не перезаписываем, просто логируем
             print(f"  ⚠️  db_manager: {src.name} → {dst.name} skipped (target exists)")
             continue
         try:
-            import shutil
             shutil.copy2(str(src), str(dst))
             moved.append(f"{src.name} → {dst.name}")
             print(f"  ✅ db_manager: migrated {src.name} → {dst}")
         except Exception as e:
             print(f"  ❌ db_manager: failed to migrate {src.name}: {e}")
 
+    # ── web_users.db → merge rows into blackbugs.db even if target exists ────
+    # This prevents account loss when auth.db was migrated first.
+    web_src = base / "web_users.db"
+    if web_src.exists():
+        try:
+            src_conn = _sq.connect(str(web_src))
+            rows = src_conn.execute(
+                "SELECT id, username, pw_hash, role, token, created "
+                "FROM web_users"
+            ).fetchall()
+            src_conn.close()
+
+            if rows:
+                dst_conn = _sq.connect(str(BLACKBUGS_DB))
+                # Ensure table exists in destination
+                dst_conn.execute("""CREATE TABLE IF NOT EXISTS web_users (
+                    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    pw_hash  TEXT NOT NULL,
+                    role     TEXT DEFAULT 'user',
+                    token    TEXT,
+                    created  TEXT
+                )""")
+                inserted = 0
+                for row in rows:
+                    try:
+                        dst_conn.execute(
+                            "INSERT OR IGNORE INTO web_users "
+                            "(username, pw_hash, role, token, created) "
+                            "VALUES (?,?,?,?,?)",
+                            (row[1], row[2], row[3], row[4], row[5])
+                        )
+                        inserted += 1
+                    except Exception:
+                        pass
+                dst_conn.commit()
+                dst_conn.close()
+                print(f"  ✅ db_manager: merged {inserted} web_users rows from web_users.db")
+            moved.append(f"web_users.db → {BLACKBUGS_DB.name} (merge)")
+        except Exception as e:
+            print(f"  ⚠️  db_manager: web_users.db merge skipped: {e}")
+
     if moved:
-        print(f"  📦 db_manager: migrated {len(moved)} legacy DB file(s)")
+        print(f"  📦 db_manager: migration done ({len(moved)} operation(s))")
 
     return moved
 

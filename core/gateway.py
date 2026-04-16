@@ -30,7 +30,10 @@ _AGENT_KEYWORDS = {
     "anderson": (["anderson", "андерсон", "/anderson", "vuln", "уязвимост"], 8),
     "pythia":   (["pythia", "пифия", "/pythia"], 8),
     "operator": (["operator", "оператор", "/operator", "оркестр"], 9),
-    "morpheus": (["morpheus", "морфеус", "/morpheus", "обучи", "объясни", "learn"], 7),
+    # morpheus is in ALLIANCE_REGISTRY but NOT yet in agents/ AGENT_MAP.
+    # Keyword routing disabled to prevent Unknown agent errors in worker_pool.
+    # Re-enable when agents/morpheus.py is registered.
+    # "morpheus": (["morpheus", "морфеус", "/morpheus", "обучи", "объясни", "learn"], 7),
 }
 
 # Alliance: full agent registry for /alliance command

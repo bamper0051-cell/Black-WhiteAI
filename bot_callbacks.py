@@ -6,7 +6,7 @@ import os, sys, re, json, time, random, threading, subprocess, shutil
 import config
 from telegram_client import (
     send_message, edit_message, answer_callback, send_document,
-    delete_message, delete_webhook,
+    delete_webhook,
 )
 try:
     from agent_roles import get_role, has_perm, perm_error, get_user_limits
@@ -16,7 +16,7 @@ except ImportError:
     def get_role(cid): return 'user'
     def has_perm(cid, p): return True
     def perm_error(p, cid): return "🚫 Нет доступа"
-from roles import norm_role, role_icon, role_label
+from roles import role_icon, role_label
 
 from bot_ui import kb, btn, back_btn, btn_model, menu_keyboard, chat_control_keyboard
 from bot_handlers import _handle_agent_message, _run_code_task, _run_code_pipeline
@@ -874,6 +874,64 @@ def _route_callback(action, arg, cb_id, chat_id, msg_id):
                  btn("🎬 YouTube",            "agent_youtube_start")],
                 [back_btn("menu_agent")],
             ))
+
+    # ── AGENT NEO ─────────────────────────────────────────────────────────────
+    elif action == 'agent_neo_start':
+        answer_callback(cb_id)
+        try:
+            role = get_role(chat_id)
+        except Exception:
+            role = 'user'
+        if role not in ('god', 'owner', 'adm'):
+            send_message("🔒 AGENT NEO доступен только owner/adm.", chat_id,
+                         reply_markup=kb([back_btn('menu_agent')]))
+            return
+        send_message(
+            "🧬 <b>AGENT NEO</b> — автономный агент\n\n"
+            "Планирует задачи, генерирует инструменты на лету, запускает их в sandbox и возвращает ZIP-артефакт.\n\n"
+            "Введи задачу:",
+            chat_id,
+            reply_markup=kb([btn("❌ Отмена", "menu_agent")])
+        )
+        _wait_state[chat_id] = 'agent_neo_task'
+
+    elif action == 'agent_neo_locked':
+        answer_callback(cb_id)
+        send_message("🔒 AGENT NEO требует роль owner или выше.", chat_id,
+                     reply_markup=kb([back_btn('menu_agent')]))
+
+    # ── AGENT MATRIX ──────────────────────────────────────────────────────────
+    elif action == 'agent_matrix_start':
+        answer_callback(cb_id)
+        send_message(
+            "🔮 <b>AGENT MATRIX</b> — генерация и управление инструментами\n\n"
+            "Создаёт кастомные инструменты через LLM, GitHub или hybrid-режим.\n\n"
+            "Введи задачу или имя инструмента:",
+            chat_id,
+            reply_markup=kb([btn("❌ Отмена", "menu_agent")])
+        )
+        _wait_state[chat_id] = 'agent_matrix_task'
+
+    # ── AGENT MORPHEUS ────────────────────────────────────────────────────────
+    elif action == 'agent_morpheus_start':
+        answer_callback(cb_id)
+        try:
+            role = get_role(chat_id)
+        except Exception:
+            role = 'user'
+        if role not in ('god', 'owner'):
+            send_message("🔒 AGENT MORPHEUS — только owner/god.", chat_id,
+                         reply_markup=kb([back_btn('menu_agent')]))
+            return
+        send_message(
+            "🟣 <b>AGENT MORPHEUS</b> — системный агент\n\n"
+            "apt · pip · docker · systemctl · shell · файловая система.\n"
+            "Авто-фиксит зависимости. Управляет Docker-контейнерами.\n\n"
+            "⚠️ <b>Root-уровень — используй осторожно!</b>\n\nВведи команду:",
+            chat_id,
+            reply_markup=kb([btn("❌ Отмена", "menu_agent")])
+        )
+        _wait_state[chat_id] = 'agent_morpheus_task'
 
     elif action == 'agent_youtube_start':
         answer_callback(cb_id)
