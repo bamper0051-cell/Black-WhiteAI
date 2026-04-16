@@ -182,3 +182,4 @@ else
 fi
 _BOT_PID=$!
 wait $_BOT_PID
+exec python3 -u bot.py
