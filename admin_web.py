@@ -47,7 +47,6 @@ def install_log_capture():
 def require_token(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-<<<<<<< HEAD
         auth_header = (request.headers.get('Authorization') or '').strip()
         bearer = ''
         if auth_header.lower().startswith('bearer '):
@@ -57,9 +56,6 @@ def require_token(f):
         token = (request.headers.get('X-Admin-Token') or
                  request.headers.get('X-Api-Key') or
                  bearer or
-=======
-        token = (request.headers.get('X-Admin-Token') or
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
                  request.args.get('token') or
                  (request.get_json(silent=True) or {}).get('token', ''))
         if token != ADMIN_WEB_TOKEN:
@@ -71,13 +67,8 @@ def require_token(f):
 @app.after_request
 def add_cors(resp):
     resp.headers['Access-Control-Allow-Origin']  = '*'
-<<<<<<< HEAD
     resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token, Authorization, X-Api-Key, Accept, Origin'
     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, PUT, OPTIONS'
-=======
-    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Admin-Token'
-    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
     return resp
 
 @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
@@ -85,8 +76,6 @@ def add_cors(resp):
 def options_handler(path=''):
     return '', 204
 
-<<<<<<< HEAD
-=======
 # ── Web Auth (логин/пароль для мобильного приложения) ────────────────────────
 import sqlite3 as _sqlite3, hashlib as _hashlib, secrets as _secrets
 
