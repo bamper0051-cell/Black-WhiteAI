@@ -46,7 +46,7 @@ RUN mkdir -p \
     /app/created_bots \
     /app/logs
 
-EXPOSE 5100 8080
+EXPOSE 5000 5100 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
