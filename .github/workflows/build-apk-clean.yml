@@ -32,26 +32,29 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y openjdk-17-jdk
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
 
       - name: Install Flutter 3.24.5 (manual)
         run: |
           git clone https://github.com/flutter/flutter.git -b 3.24.5 --depth 1 "$HOME/flutter"
-          echo "$HOME/flutter/bin" >> $GITHUB_PATH
-          flutter --version
+          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          export PATH="$HOME/flutter/bin:$PATH"
+          flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
-
-      - name: Upload APK to workflow artifact
         run: |
-          mkdir -p $GITHUB_WORKSPACE/artifacts
-          cp android_app/build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk
+          export PATH="$HOME/flutter/bin:$PATH"
+          flutter build apk --release
+
+      - name: Move APK to workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts"
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk "$GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk"
         env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}
+          GITHUB_WORKSPACE: ${{ secrets.GITHUB_WORKSPACE || github.workspace }}
 
       - name: Publish to Release (optional)
         if: ${{ github.event.inputs.release_tag != '' }}
@@ -62,4 +65,4 @@ jobs:
             --repo ${{ github.repository }} \
             --title "${{ github.event.inputs.release_tag }}" \
             --notes "Automated Flutter APK build" \
-            $GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk
+            "$GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk"
