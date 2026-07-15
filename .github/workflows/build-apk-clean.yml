@@ -26,18 +26,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # pinned v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@c5199ef5184c396e48e981bb0a6e5698e8755063  # v4.7.1
-        with:
-          distribution: temurin
-          java-version: '17'
+      - name: Install Java 17 (manual, no action)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y openjdk-17-jdk
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
-      - name: Install Flutter manually (no third-party action)
+      - name: Install Flutter 3.24.5 (manual)
         run: |
           git clone https://github.com/flutter/flutter.git -b 3.24.5 --depth 1 "$HOME/flutter"
           echo "$HOME/flutter/bin" >> $GITHUB_PATH
+          flutter --version
 
       - name: Install dependencies
         run: flutter pub get
@@ -45,9 +46,20 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
+      - name: Upload APK to workflow artifact
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/artifacts
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+
       - name: Publish to Release (optional)
         if: ${{ github.event.inputs.release_tag != '' }}
-        uses: softprops/action-gh-release@dfbed29c3880da6da3369ae2717e92a70b87a503  # v2.2.1
-        with:
-          tag_name: ${{ github.event.inputs.release_tag }}
-          files: android_app/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.event.inputs.release_tag }}" \
+            --repo ${{ github.repository }} \
+            --title "${{ github.event.inputs.release_tag }}" \
+            --notes "Automated Flutter APK build" \
+            $GITHUB_WORKSPACE/artifacts/BlackBugsAI.apk
