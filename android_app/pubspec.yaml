@@ -12,18 +12,17 @@ dependencies:
 
   # HTTP & WebSocket
   http: ^1.1.0
+  dio: ^5.4.0
+  dio_smart_retry: ^6.0.0
   web_socket_channel: ^2.4.0
 
   # UI / Animations
   flutter_animate: ^4.3.0
   fl_chart: ^0.65.0
 
-<<<<<<< HEAD
   # Fonts (via Google Fonts — no local files needed)
   google_fonts: ^6.1.0
 
-=======
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
   # Storage
   shared_preferences: ^2.2.2
 
@@ -31,12 +30,8 @@ dependencies:
   intl: ^0.18.1
   url_launcher: ^6.2.1
 
-<<<<<<< HEAD
-=======
   # Icons
   font_awesome_flutter: ^10.6.0
-
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -49,19 +44,5 @@ flutter:
     - assets/animations/
     - assets/images/
 
-<<<<<<< HEAD
   # NOTE: Fonts are loaded via google_fonts package — no local font files needed
   # Orbitron and JetBrains Mono are available through Google Fonts
-=======
-  fonts:
-    - family: Orbitron
-      fonts:
-        - asset: assets/fonts/Orbitron-Regular.ttf
-        - asset: assets/fonts/Orbitron-Bold.ttf
-          weight: 700
-    - family: JetBrainsMono
-      fonts:
-        - asset: assets/fonts/JetBrainsMono-Regular.ttf
-        - asset: assets/fonts/JetBrainsMono-Bold.ttf
-          weight: 700
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
