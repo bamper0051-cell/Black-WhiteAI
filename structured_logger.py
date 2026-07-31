@@ -5,6 +5,7 @@ JSON логи + last_error + healthcheck endpoint
 import os, sys, json, time, threading, traceback
 from datetime import datetime
 import config
+from core.db_manager import BLACKBUGS_DB
 
 LOG_PATH   = os.path.join(config.BASE_DIR, 'bot.log')
 LOG_MAX_MB = 10
@@ -92,7 +93,7 @@ def healthcheck():
     db_ok = True
     try:
         import sqlite3
-        with sqlite3.connect(os.path.join(config.BASE_DIR, 'auth.db')) as c:
+        with sqlite3.connect(str(BLACKBUGS_DB)) as c:
             c.execute('SELECT 1')
     except Exception:
         db_ok = False

@@ -4,8 +4,9 @@ user_settings.py — Per-user настройки, история, память, 
 import os, json, sqlite3, time
 from datetime import datetime
 import config
+from core.db_manager import BLACKBUGS_DB
 
-DB_PATH = os.path.join(config.BASE_DIR, 'auth.db')
+DB_PATH = str(BLACKBUGS_DB)
 
 def _db():
     c = sqlite3.connect(DB_PATH)

@@ -1,14 +1,15 @@
 """
 BlackBugsAI — Billing
 Тарифы, кредиты, лимиты задач.
-Хранит данные в auth.db (рядом с ботом).
+Хранит данные в data/blackbugs.db (BLACKBUGS_DB).
 """
 import os, sqlite3, time, json
 import config
+from core.db_manager import BLACKBUGS_DB
 
 # ─── DB ───────────────────────────────────────────────────────────────────────
 
-_DB = os.path.join(config.BASE_DIR, 'auth.db')
+_DB = str(BLACKBUGS_DB)
 
 def _db():
     conn = sqlite3.connect(_DB)

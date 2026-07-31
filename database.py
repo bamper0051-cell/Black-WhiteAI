@@ -1,7 +1,18 @@
 import sqlite3
 from datetime import datetime
+from core.db_manager import NEWS_DB
 
-DB_PATH = 'automuvie.db'
+# Canonical path: data/news.db (was: automuvie.db in project root — legacy name)
+DB_PATH = str(NEWS_DB)
+
+# Whitelist of allowed column names for get/set_user_setting.
+# Must match the columns created in init_users_table() below.
+_ALLOWED_USER_COLS = {
+    'username', 'first_name', 'last_name', 'registered_at',
+    'llm_provider', 'llm_model', 'tts_provider', 'tts_voice',
+    'rewrite_style', 'created_at', 'role', 'settings',
+}
+
 def init_users_table():
     with sqlite3.connect(DB_PATH) as db:
         db.execute('''
@@ -16,7 +27,9 @@ def init_users_table():
                 tts_provider TEXT DEFAULT 'edge',
                 tts_voice TEXT DEFAULT 'ru-RU-DmitryNeural',
                 rewrite_style TEXT DEFAULT 'troll',
-                created_at TEXT
+                created_at TEXT,
+                role TEXT DEFAULT 'user',
+                settings TEXT DEFAULT '{}'
             )
         ''')
         db.commit()
@@ -38,6 +51,8 @@ def get_or_create_user(chat_id, username='', first_name='', last_name=''):
             return get_or_create_user(chat_id)  # рекурсивный вызов
 
 def get_user_setting(user_id, key):
+    if key not in _ALLOWED_USER_COLS:
+        raise ValueError(f"Invalid column name: {key!r}")
     with sqlite3.connect(DB_PATH) as db:
         cur = db.execute(f'SELECT {key} FROM users WHERE user_id = ?', (user_id,))
         row = cur.fetchone()
@@ -46,10 +61,13 @@ def get_user_setting(user_id, key):
         return None  # fallback на глобальные настройки будет в вызывающем коде
 
 def set_user_setting(user_id, key, value):
+    if key not in _ALLOWED_USER_COLS:
+        raise ValueError(f"Invalid column name: {key!r}")
     with sqlite3.connect(DB_PATH) as db:
         db.execute(f'UPDATE users SET {key} = ? WHERE user_id = ?', (value, user_id))
         db.commit()
 def init_db():
+    """Initialise news DB and ensure the canonical users schema exists."""
     with sqlite3.connect(DB_PATH) as db:
         db.execute('''CREATE TABLE IF NOT EXISTS news (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,15 +81,10 @@ def init_db():
             created_at TEXT
         )''')
         db.commit()
-        
-        db.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        telegram_id INTEGER UNIQUE,
-        username TEXT,
-        registered_at TEXT,
-        role TEXT DEFAULT 'user',
-        settings TEXT   -- JSON с настройками (язык, голос, LLM и т.п.)
-    )''')
+    # Delegate user-table creation to init_users_table() which owns the schema
+    # (user_id, username, first_name, ... llm_provider, role, settings).
+    # Do NOT create a conflicting 'users' table here.
+    init_users_table()
 
 def save_news(source, title, url, content) -> bool:
     try:

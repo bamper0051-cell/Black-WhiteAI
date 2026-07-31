@@ -263,6 +263,29 @@ def handle_text(text, chat_id, username=None, first_name=None):
                          chat_id, reply_markup=kb([btn("◀️ Меню","menu")]))
         else:
             send_message("❌ Реестр инструментов не загружен.", chat_id)
+
+    elif cmd in ('/alliance', '/альянс', '/agents'):
+        try:
+            from core.gateway import ALLIANCE_REGISTRY
+            from auth_module import get_user
+            u = get_user(chat_id) or {}
+            priv = u.get('privilege', 'user')
+            lines = ["🤝 <b>ALLIANCE — Реестр агентов</b>\n"]
+            for key, info in ALLIANCE_REGISTRY.items():
+                allowed = info['access']
+                available = '*' in allowed or priv in allowed
+                status = "🟢" if available else "🔴"
+                lines.append(
+                    f"{status} {info['emoji']} <b>{info['name']}</b>\n"
+                    f"   └ {info['desc']}\n"
+                    f"   └ Доступ: {', '.join(allowed) if '*' not in allowed else 'все'}"
+                )
+            lines.append("\n<i>Напиши /neo, /matrix, /pythia и т.д. чтобы выбрать агента</i>")
+            send_message("\n\n".join(lines), chat_id,
+                         reply_markup=kb([btn("◀️ Меню", "menu")]))
+        except Exception as e:
+            send_message(f"❌ Alliance недоступен: {e}", chat_id)
+
     elif cmd == '/run':
         _guard_lock(chat_id) or _run_in_thread(task_run, chat_id)
     elif cmd == '/parse':
@@ -998,6 +1021,87 @@ def _handle_input(state, text, chat_id):
             send_message(f"{status}: <code>{pkg}</code>\n<pre>{msg[:300]}</pre>",
                          chat_id, reply_markup=kb([back_btn("menu_update")]))
         _run_in_thread(_do_inst)
+
+    # ── AGENT NEO task input ──────────────────────────────────────────────────
+    elif state == 'agent_neo_task':
+        del _wait_state[chat_id]
+        send_message('🧬 <b>AGENT NEO</b> — запускаю...', chat_id)
+        def _do_neo():
+            try:
+                from agent_neo import run_neo_async
+                run_neo_async(
+                    task=text, chat_id=str(chat_id),
+                    on_status=lambda m: send_message(m, chat_id),
+                    on_complete=lambda res: _neo_done(chat_id, res),
+                )
+            except Exception as e:
+                send_message('❌ NEO ошибка: {}'.format(e), chat_id,
+                             reply_markup=kb([back_btn('menu_agent')]))
+        def _neo_done(cid, res):
+            try:
+                send_message('✅ <b>NEO готово</b>\n\n' + str(res.answer or '')[:3000], cid,
+                             reply_markup=kb([back_btn('menu_agent')]))
+                if getattr(res, 'zip_path', None):
+                    import os
+                    if os.path.exists(res.zip_path):
+                        send_document(res.zip_path, caption='📦 Артефакты NEO', chat_id=cid)
+                if getattr(res, 'tts_path', None):
+                    import os
+                    if os.path.exists(res.tts_path):
+                        send_document(res.tts_path, caption='🎙 TTS', chat_id=cid)
+            except Exception as e:
+                send_message('❌ NEO done-handler ошибка: {}'.format(e), cid)
+        _run_in_thread(_do_neo)
+
+    # ── AGENT MATRIX task input ───────────────────────────────────────────────
+    elif state == 'agent_matrix_task':
+        del _wait_state[chat_id]
+        send_message('🔮 <b>AGENT MATRIX</b> — запускаю...', chat_id)
+        def _do_matrix():
+            try:
+                from agent_matrix import run_matrix_async
+                run_matrix_async(
+                    task=text, chat_id=str(chat_id),
+                    on_status=lambda m: send_message(m, chat_id),
+                    callback=lambda res: _matrix_done(chat_id, res),
+                )
+            except Exception as e:
+                send_message('❌ Matrix ошибка: {}'.format(e), chat_id,
+                             reply_markup=kb([back_btn('menu_agent')]))
+        def _matrix_done(cid, res):
+            try:
+                answer = res.answer if hasattr(res, 'answer') else str(res)
+                send_message('✅ <b>MATRIX готово</b>\n\n' + str(answer or '')[:3000], cid,
+                             reply_markup=kb([back_btn('menu_agent')]))
+                if hasattr(res, 'zip_path') and res.zip_path:
+                    import os
+                    if os.path.exists(res.zip_path):
+                        send_document(res.zip_path, caption='📦 Артефакты Matrix', chat_id=cid)
+            except Exception as e:
+                send_message('❌ Matrix done-handler ошибка: {}'.format(e), cid)
+        _run_in_thread(_do_matrix)
+
+    # ── AGENT MORPHEUS task input ─────────────────────────────────────────────
+    elif state == 'agent_morpheus_task':
+        del _wait_state[chat_id]
+        send_message('🟣 <b>AGENT MORPHEUS</b> — выполняю...', chat_id)
+        def _do_morpheus():
+            try:
+                from morpheus import AgentMorpheus
+                agent = AgentMorpheus()
+                result = agent.execute(
+                    task=text, chat_id=chat_id,
+                    on_status=lambda m: send_message(m, chat_id),
+                )
+                answer = result.answer if hasattr(result, 'answer') else str(result)
+                send_message(
+                    '✅ <b>Morpheus</b>\n\n' + str(answer or '')[:4000],
+                    chat_id, reply_markup=kb([back_btn('menu_agent')])
+                )
+            except Exception as e:
+                send_message('❌ Morpheus ошибка: {}'.format(e), chat_id,
+                             reply_markup=kb([back_btn('menu_agent')]))
+        _run_in_thread(_do_morpheus)
 
     elif state == 'agent_youtube_url':
         # Пользователь прислал URL — сохраняем и показываем выбор формата

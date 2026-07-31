@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -15,13 +16,8 @@ from aiogram.client.default import DefaultBotProperties
 # =========================
 # CONFIG
 # =========================
-<<<<<<< HEAD
-BOT_TOKEN = "8542269896:AAHvZIlxZ9pVDj-yb1yhLmjVp_pJM2fW7p4"
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 CHAT_ID = 5722838040  # если хочешь запускать игру только в одном чате - поставь chat_id, иначе None
-=======
-BOT_TOKEN = ""
-CHAT_ID =   # если хочешь запускать игру только в одном чате - поставь chat_id, иначе None
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999
 
 GAME_INTERVAL_SECONDS = 600   # 10 минут
 BET_OPEN_BEFORE_SECONDS = 60  # за 1 минуту до старта
@@ -353,8 +349,4 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     asyncio.run(main())
-=======
-    asyncio.run(main())
->>>>>>> 1b23aae79cb517aabb8db6904939521ab4d04999

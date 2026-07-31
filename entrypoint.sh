@@ -1,17 +1,17 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════
-# BlackBugsAI — Entrypoint v3.0
-# FIX: Единый туннельный менеджмент (больше нет конфликта fish/admin)
-# FIX: Fish module на порту 5100, туннель → nginx:80 или admin:8080
+# BlackBugsAI — Entrypoint v3.1
+# FIX: Tunnel запускается ТОЛЬКО после того как admin web ответит на /health
+# FIX: Fish module на порту 5100, туннель → nginx:80
+# FIX: Merge-конфликт убран
 # ═══════════════════════════════════════════════════════════════════════════
 
 set -euo pipefail
 
-# ── Banner ────────────────────────────────────────────────────────────────
 cat << 'EOF'
 ╔══════════════════════════════════════════════════════╗
-║  🖤🐛  BlackBugsAI v3.0 — Autonomous Agent Platform  ║
-║  Matrix Agent · Neo Agent · Fish Module · Admin v4   ║
+║  🖤🐛  BlackBugsAI v3.1 — Autonomous Agent Platform  ║
+║  Matrix · Neo · Pythia · Anderson · Alliance v2      ║
 ╚══════════════════════════════════════════════════════╝
 EOF
 echo "⏰ Started: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
@@ -20,55 +20,33 @@ echo "📦 Platform: $(uname -m)"
 
 cd /app
 
+# ── Init directories ──────────────────────────────────────────────────────
+mkdir -p /app/data /app/fish_uploads /app/fish_pages /app/fish_logs \
+         /app/agent_projects /app/created_bots /app/artifacts \
+         /app/neo_workspace /app/matrix_workspace /app/logs
+
+# ── DB initialisation + legacy migration ─────────────────────────────────
+# Переносит старые automuvie.db / auth.db из корня в /app/data/
+# Создаёт схемы если БД новая
+python3 - << 'PYEOF'
+import sys
+sys.path.insert(0, '/app')
+try:
+    from core.db_manager import init_all, migrate_legacy_files
+    init_all()              # create schemas first
+    migrate_legacy_files()  # then merge legacy data into existing tables
+except Exception as e:
+    print(f"  ⚠️  DB init warning: {e}")
+PYEOF
+
 # ── Validate required env ─────────────────────────────────────────────────
-[[ -z "${TELEGRAM_BOT_TOKEN:-}" ]] && echo "⚠️  TELEGRAM_BOT_TOKEN not set — bot won't start Telegram polling"
+[[ -z "${TELEGRAM_BOT_TOKEN:-}" ]] && echo "⚠️  TELEGRAM_BOT_TOKEN not set"
 [[ -z "${ADMIN_WEB_TOKEN:-}" ]]    && echo "⚠️  ADMIN_WEB_TOKEN not set — using default (INSECURE!)"
 
-# ── FISH TUNNEL FIX ───────────────────────────────────────────────────────
-# Проблема: и fish_web.py и admin_web.py пытались управлять туннелем
-# Решение:  fish получает FISH_TUNNEL_DISABLED=true → только admin управляет
+# ── Fish tunnel isolation fix ─────────────────────────────────────────────
 export FISH_TUNNEL_DISABLED="${FISH_TUNNEL_DISABLED:-true}"
 export FISH_SERVER_PORT="${FISH_SERVER_PORT:-5100}"
-
-echo "🎣 Fish module port: $FISH_SERVER_PORT (tunnel: disabled=$FISH_TUNNEL_DISABLED)"
-
-# ── Patch fish_bot_state to prevent tunnel management ─────────────────────
-if [[ "$FISH_TUNNEL_DISABLED" == "true" ]]; then
-  python3 - << 'PYEOF'
-import os, sys
-state_file = "fish_bot_state.py"
-if os.path.exists(state_file):
-    with open(state_file) as f:
-        content = f.read()
-    # Inject tunnel guard
-    guard = '''
-# INJECTED BY ENTRYPOINT v3: fish tunnel disabled (managed by admin_web only)
-import os as _os
-_FISH_TUNNEL_DISABLED = _os.environ.get("FISH_TUNNEL_DISABLED","true").lower() == "true"
-'''
-    if "_FISH_TUNNEL_DISABLED" not in content:
-        with open(state_file, 'w') as f:
-            f.write(guard + content)
-        print("✅ fish_bot_state.py patched: tunnel disabled")
-    else:
-        print("ℹ️  fish_bot_state.py already patched")
-PYEOF
-fi
-
-# ── Install deps if missing ────────────────────────────────────────────────
-echo "📦 Checking Python deps..."
-
-check_and_install() {
-  python3 -c "import $1" 2>/dev/null || {
-    echo "  Installing: $2..."
-    pip install -q "$2" --break-system-packages 2>/dev/null || true
-  }
-}
-
-check_and_install flask_socketio  "flask-socketio==5.3.6"
-check_and_install psutil          "psutil"
-check_and_install eventlet        "eventlet"
-check_and_install gevent          "gevent"
+echo "🎣 Fish module port: $FISH_SERVER_PORT (tunnel disabled: $FISH_TUNNEL_DISABLED)"
 
 # ── Apply admin panel v4 ──────────────────────────────────────────────────
 if [[ -f "admin_panel_v4.html" ]]; then
@@ -76,45 +54,79 @@ if [[ -f "admin_panel_v4.html" ]]; then
   echo "✅ Admin Panel v4 applied"
 fi
 
-# ── TUNNEL MANAGER ───────────────────────────────────────────────────────
-# Один туннель, только если AUTO_TUNNEL=true
-# Туннель указывает на ADMIN_WEB (8080) или на nginx (80 если есть)
+# ── Install critical deps if missing ─────────────────────────────────────
+check_and_install() {
+  python3 -c "import $1" 2>/dev/null || {
+    echo "  Installing: $2..."
+    pip install -q "$2" --break-system-packages 2>/dev/null || true
+  }
+}
+check_and_install flask_socketio  "flask-socketio==5.3.6"
+check_and_install psutil          "psutil"
+check_and_install eventlet        "eventlet"
+
+# ── Tunnel manager ────────────────────────────────────────────────────────
 _TUNNEL_PID=""
+
+wait_for_health() {
+  # Ждём пока admin web ответит на /health — максимум 60 секунд
+  local port="${ADMIN_WEB_PORT:-8080}"
+  local attempts=0
+  echo "⏳ Waiting for admin web on port $port to be ready..."
+  while ! curl -sf "http://localhost:${port}/health" > /dev/null 2>&1; do
+    attempts=$((attempts + 1))
+    if [[ $attempts -ge 30 ]]; then
+      echo "⚠️  Health check timeout after 60s — starting tunnel anyway"
+      return
+    fi
+    sleep 2
+  done
+  echo "✅ Admin web is healthy (${attempts}x2s elapsed)"
+}
 
 start_tunnel() {
   local provider="${TUNNEL_PROVIDER:-cloudflared}"
+  # Default: admin web port (8080) when running without nginx.
+  # Set TUNNEL_TARGET_PORT=80 explicitly when nginx container is in front.
   local port="${TUNNEL_TARGET_PORT:-${ADMIN_WEB_PORT:-8080}}"
 
-  echo "🌐 Tunnel: $provider → localhost:$port"
+  echo "🌐 Starting tunnel: $provider → localhost:$port"
 
   case "$provider" in
     cloudflared)
       if command -v cloudflared &>/dev/null; then
+        # Run cloudflared directly (no pipe) — saves real PID for cleanup.
+        # URL is extracted from the logfile by a background reader.
         cloudflared tunnel --url "http://localhost:${port}" \
           --no-autoupdate \
           --logfile /tmp/cloudflared.log \
-          2>&1 | while IFS= read -r line; do
-            # Extract URL and write to shared state
-            if echo "$line" | grep -qE 'trycloudflare\.com|cfargotunnel\.com'; then
-              URL=$(echo "$line" | grep -oE 'https://[^\s]+\.(trycloudflare|cfargotunnel)\.com')
-              [[ -n "$URL" ]] && echo "$URL" > /tmp/tunnel_url.txt && echo "🌐 Tunnel URL: $URL"
-            fi
-          done &
+          > /dev/null 2>&1 &
         _TUNNEL_PID=$!
+        # Background reader: watches log and writes URL to shared file
+        ( tail -f /tmp/cloudflared.log 2>/dev/null | while IFS= read -r line; do
+            if echo "$line" | grep -qE 'trycloudflare\.com|cfargotunnel\.com'; then
+              URL=$(echo "$line" | grep -oE 'https://[^ ]+\.(trycloudflare|cfargotunnel)\.com' | head -1)
+              if [[ -n "$URL" ]]; then
+                echo "$URL" > /tmp/tunnel_url.txt
+                echo "🌐 Tunnel URL: $URL"
+              fi
+            fi
+          done ) &
       else
-        echo "⚠️ cloudflared not found"
+        echo "⚠️  cloudflared not found — install: curl -L -o cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cloudflared.deb"
       fi
       ;;
     bore)
       local server="${BORE_SERVER:-bore.pub}"
       if command -v bore &>/dev/null; then
-        bore local "${port}" --to "${server}" 2>&1 | tee /tmp/bore.log &
+        # Run bore directly, save its PID; tee log in background.
+        bore local "${port}" --to "${server}" > /tmp/bore.log 2>&1 &
         _TUNNEL_PID=$!
-        sleep 2
-        BORE_URL=$(grep -oE 'bore\.pub:[0-9]+' /tmp/bore.log 2>/dev/null|head -1)
+        sleep 3
+        BORE_URL=$(grep -oE 'bore\.pub:[0-9]+' /tmp/bore.log 2>/dev/null | head -1)
         [[ -n "$BORE_URL" ]] && echo "http://$BORE_URL" > /tmp/tunnel_url.txt && echo "🌐 Bore URL: http://$BORE_URL"
       else
-        echo "⚠️ bore not found"
+        echo "⚠️  bore not found"
       fi
       ;;
     none|"")
@@ -123,31 +135,51 @@ start_tunnel() {
   esac
 }
 
+# Запускаем туннель только ПОСЛЕ того как сервис стал healthy
 if [[ "${AUTO_TUNNEL:-false}" == "true" ]]; then
-  sleep 8 && start_tunnel &
-  echo "⏳ Auto-tunnel will start in 8 seconds..."
+  (wait_for_health && start_tunnel) &
+  echo "⏳ Tunnel will start after health check passes..."
 fi
 
 # ── Graceful shutdown ─────────────────────────────────────────────────────
 cleanup() {
   echo ""
-  echo "⏹ BlackBugsAI shutting down..."
-  [[ -n "$_TUNNEL_PID" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
+  echo "⏹  BlackBugsAI shutting down..."
+  # Stop the bot process first so it can flush logs / close SQLite connections.
+  if [[ -n "${_BOT_PID:-}" ]]; then
+    kill "$_BOT_PID" 2>/dev/null || true
+    # Give the bot up to 10 s to exit cleanly, then force-kill.
+    for _i in 1 2 3 4 5 6 7 8 9 10; do
+      kill -0 "$_BOT_PID" 2>/dev/null || break
+      sleep 1
+    done
+    kill -9 "$_BOT_PID" 2>/dev/null || true
+  fi
+  [[ -n "${_TUNNEL_PID:-}" ]] && kill "$_TUNNEL_PID" 2>/dev/null || true
   echo "👋 Bye!"
   exit 0
 }
 trap cleanup SIGTERM SIGINT SIGQUIT
 
-# ── Status summary ────────────────────────────────────────────────────────
+# ── Status ────────────────────────────────────────────────────────────────
 echo ""
-echo "═══════════════════════════════════════════"
-echo "  Admin Panel: http://localhost:${ADMIN_WEB_PORT:-8080}"
-echo "  Fish Module: http://localhost:${FISH_SERVER_PORT:-5100} (internal)"
-echo "  Tunnel:      ${AUTO_TUNNEL:-false} (provider: ${TUNNEL_PROVIDER:-cloudflared})"
-echo "  Token:       ${ADMIN_WEB_TOKEN:0:8}..."
-echo "═══════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════"
+echo "  Admin Panel : http://localhost:${ADMIN_WEB_PORT:-8080}"
+echo "  Fish Module : http://localhost:${FISH_SERVER_PORT:-5100} (internal)"
+echo "  Tunnel      : AUTO_TUNNEL=${AUTO_TUNNEL:-false} (${TUNNEL_PROVIDER:-cloudflared})"
+echo "  Brand       : ${BRAND_NAME:-BlackBugsAI}"
+echo "═══════════════════════════════════════════════════"
 echo ""
 
 # ── Launch ────────────────────────────────────────────────────────────────
+# Run Python as a child process (not exec) so the shell stays as PID 1
+# and the cleanup trap above can still fire on SIGTERM/SIGINT.
 echo "🚀 Launching BlackBugsAI..."
+if [ $# -gt 0 ]; then
+    "$@" &
+else
+    python3 -u bot.py &
+fi
+_BOT_PID=$!
+wait $_BOT_PID
 exec python3 -u bot.py
