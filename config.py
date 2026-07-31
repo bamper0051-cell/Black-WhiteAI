@@ -31,7 +31,7 @@ class _Config:
     @property
     def ENV_PATH(self):             return ENV_PATH
     @property
-    def TELEGRAM_BOT_TOKEN(self):   return get('TELEGRAM_BOT_TOKEN', '')
+    def TELEGRAM_BOT_TOKEN(self):   return get('TELEGRAM_BOT_TOKEN', '') or get('BOT_TOKEN', '')
     @property
     def TELEGRAM_CHAT_ID(self):     return get('TELEGRAM_CHAT_ID', '')
     @property
